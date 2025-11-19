@@ -53,16 +53,17 @@ with col_left:
     st.subheader("Global feature importance (SHAP)")
 
     sample = X.sample(min(300, len(X)), random_state=42)
-
     shap_values_global = explainer(sample)
 
-    fig, ax = plt.subplots()
+    # Let SHAP create the plot on the current figure
     shap.summary_plot(
         shap_values_global,
         sample,
         show=False
     )
-    st.pyplot(fig, clear_figure=True)
+
+    # Render the figure SHAP just drew on
+    st.pyplot(plt.gcf(), clear_figure=True)
 
     with st.expander("Show a few rows of the training data"):
         st.dataframe(df.head())
