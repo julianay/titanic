@@ -1,14 +1,15 @@
 ---
-title: Streamlit Template Space
+title: Titanic
 emoji: 🚀
 colorFrom: red
 colorTo: red
 sdk: docker
 app_port: 8501
 tags:
-  - streamlit
+- streamlit
 pinned: false
-short_description: Streamlit template space
+short_description: Interactive Titanic survival demo using SHAP
+license: mit
 ---
 
 # Welcome to Streamlit!
