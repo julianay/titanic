@@ -1,3 +1,12 @@
+---
+title: Titanic Survival – SHAP Explainer
+emoji: 🚢
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # Titanic Survival – SHAP-Powered Explainable ML Demo
 
 Interactive Streamlit app that predicts **Titanic passenger survival** and explains each prediction using **SHAP** (SHapley Additive exPlanations).  
@@ -63,7 +72,7 @@ titanic/
 ├── src/
 │   └── streamlit_app.py    # Main Streamlit app (UI + SHAP + what-if)
 ├── requirements.txt        # Python dependencies
-├── Dockerfile              # Used by Hugging Face Spaces
+├── Dockerfile              # Used by Hugging Face Spaces (sdk: docker)
 ├── README.md               # This file
 ├── .gitignore
 └── venv/                   # Local virtual environment (not committed)
