@@ -104,7 +104,7 @@ with col_right:
 
     # Robust handling of SHAP values shape → make it 1D (per-feature)
     vals_raw = shap_values_one.values[0]
-
+    
     if vals_raw.ndim == 1:
         vals = vals_raw
     elif vals_raw.ndim == 2:
@@ -116,6 +116,7 @@ with col_right:
         flat = vals_raw.reshape(-1)
         n_features = x_whatif.shape[1]
         vals = flat[:n_features]
+
 
     names = np.array(x_whatif.columns)
 
