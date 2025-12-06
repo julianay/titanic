@@ -15,6 +15,19 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Reduce main content padding
+st.markdown("""
+<style>
+    /* Reduce padding around main content block */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # =============================================================================
 # Initialize Session State
 # =============================================================================
@@ -119,7 +132,7 @@ def match_query(query):
 # Two-Column Layout
 # =============================================================================
 
-col1, col2 = st.columns([7, 3])
+col1, col2 = st.columns([3, 1])
 
 # =============================================================================
 # LEFT COLUMN: Visualization (HTML Component)
@@ -146,18 +159,20 @@ with col1:
             body {{
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 padding: 20px;
-                background: white;
+                background: #0e1117;
+                color: #fafafa;
             }}
 
             h1 {{
                 font-size: 32px;
                 font-weight: 700;
                 margin-bottom: 8px;
+                color: #fafafa;
             }}
 
             .subtitle {{
                 font-size: 18px;
-                color: #666;
+                color: #a0a0a0;
                 margin-bottom: 20px;
             }}
 
@@ -165,7 +180,7 @@ with col1:
                 font-size: 14px;
                 line-height: 1.6;
                 margin-bottom: 30px;
-                color: #333;
+                color: #d0d0d0;
             }}
 
             .cards-container {{
@@ -176,7 +191,7 @@ with col1:
             }}
 
             .card {{
-                border-bottom: 4px solid #000;
+                border-bottom: 4px solid #fafafa;
                 padding-bottom: 20px;
             }}
 
@@ -184,19 +199,23 @@ with col1:
                 font-size: 24px;
                 font-weight: 700;
                 margin-bottom: 8px;
+                color: #fafafa;
             }}
 
             .card .type {{
                 font-size: 14px;
                 margin-bottom: 8px;
+                color: #d0d0d0;
             }}
 
             .card .type strong {{
                 font-weight: 700;
+                color: #fafafa;
             }}
 
             .card .metrics {{
                 font-size: 14px;
+                color: #d0d0d0;
             }}
 
             .tree-section {{
@@ -207,18 +226,19 @@ with col1:
                 font-size: 20px;
                 font-weight: 600;
                 margin-bottom: 20px;
+                color: #fafafa;
             }}
 
             #tree-viz {{
                 width: 100%;
                 height: 700px;
-                background: #fafafa;
+                background: #0e1117;
                 border-radius: 8px;
                 overflow: visible;
             }}
 
             .node circle {{
-                stroke: #333;
+                stroke: #888;
                 stroke-width: 2px;
                 opacity: 0.4;
                 transition: all 0.3s ease;
@@ -227,7 +247,7 @@ with col1:
             .node circle.active {{
                 opacity: 1;
                 stroke-width: 3px;
-                filter: drop-shadow(0 0 6px rgba(0,0,0,0.3));
+                filter: drop-shadow(0 0 6px rgba(255,255,255,0.3));
             }}
 
             .node circle.final {{
@@ -243,6 +263,7 @@ with col1:
             .node text {{
                 font-size: 12px;
                 font-weight: 500;
+                fill: #999;
                 opacity: 0.4;
                 transition: opacity 0.3s ease;
             }}
@@ -250,11 +271,12 @@ with col1:
             .node text.active {{
                 opacity: 1;
                 font-weight: 700;
+                fill: #fafafa;
             }}
 
             .link {{
                 fill: none;
-                stroke: #999;
+                stroke: #666;
                 stroke-width: 2px;
                 opacity: 0.3;
                 transition: all 0.3s ease;
@@ -266,16 +288,16 @@ with col1:
             }}
 
             .link.active.survived {{
-                stroke: #2d6a4f;
+                stroke: #52b788;
             }}
 
             .link.active.died {{
-                stroke: #c1121f;
+                stroke: #e76f51;
             }}
 
             .edge-label {{
                 font-size: 11px;
-                fill: #666;
+                fill: #a0a0a0;
                 font-weight: 600;
             }}
 
@@ -518,51 +540,30 @@ with col1:
 # =============================================================================
 
 with col2:
-    # Add custom CSS for viewport-based chat layout
-    st.markdown("""
-    <style>
-    /* Make chat history container use available viewport height */
-    .chat-history-container {
-        max-height: calc(100vh - 400px);
-        min-height: 200px;
-        overflow-y: auto;
-        margin-bottom: 20px;
-    }
+    st.markdown("### 💬 Chat")
 
-    /* Ensure chat input stays visible at bottom */
-    [data-testid="stChatInput"] {
-        position: sticky;
-        bottom: 0;
-        background: var(--background-color);
-        padding: 10px 0;
-        z-index: 100;
-    }
+    # Calculate chat height to leave room for suggestions + input (~350px)
+    # Chat container uses remaining viewport height
+    chat_height = "calc(100vh - 550px)"
+
+    st.markdown(f"""
+    <style>
+    /* Style the chat container to use calculated height */
+    [data-testid="stVerticalBlock"] > [style*="height: 400px"] {{
+        height: {chat_height} !important;
+        min-height: 200px;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("### 💬 Chat")
-
-    # Display chat history in a container with viewport-based height
-    num_messages = len(st.session_state.chat_history)
-
-    # Use viewport-based height that adapts to browser window
-    # calc(100vh - 400px) accounts for: header, title, suggestions, input, and padding
-    if num_messages > 3:
-        # For longer conversations, use scrollable container
-        chat_container = st.container()
-        with chat_container:
-            for message in st.session_state.chat_history:
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
-    else:
-        # For initial messages, display naturally without scrolling
+    # Scrollable chat history container
+    chat_container = st.container(height=400)  # This will be overridden by CSS
+    with chat_container:
         for message in st.session_state.chat_history:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
     st.markdown("---")
-
-    # Suggestions section (always visible)
     st.markdown("**Or try one of these to get started**")
 
     # Suggestion buttons

@@ -121,14 +121,19 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ### 2025-12-06
 - **NEW: Chat-Based XAI Explorer** (`app.py`)
-  - Two-column layout: visualization (70%) + chat interface (30%)
+  - Two-column layout: visualization (75%) + chat interface (25%)
+  - **Dark mode UI**: Complete dark theme for left column matching Streamlit's native chat interface
+    - Dark background (#0e1117) for body and tree SVG
+    - Light text colors for readability (#fafafa, #d0d0d0, #a0a0a0)
+    - Adjusted node/link colors for dark background visibility
   - Natural language exploration with keyword matching
   - 4 preset patterns: women, men, 1st class child, 3rd class male
   - Dynamic path highlighting based on conversation
-  - Scrollable chat history with dynamic height (no empty gaps initially)
+  - Scrollable chat history (400px container) with suggestions and input below
   - Tree starts with no default path highlighted
   - Full-width D3 tree visualization (700px height, no clipping)
   - Model comparison cards at the top
+  - **Optimized layout**: Reduced main content padding by 50% for maximum visibility
 - **Removed** `app_simplified.py` (replaced by app.py)
 
 ### 2025-12-04

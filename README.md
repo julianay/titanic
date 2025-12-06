@@ -15,13 +15,15 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 ## 🎯 Features
 
 ### 💬 **Chat-Based XAI Explorer** (Latest - app.py)
-- **Two-column layout** – visualization on left (70%), chat interface on right (30%)
+- **Two-column layout** – visualization on left (75%), chat interface on right (25%)
+- **Dark mode UI** – cohesive dark theme matching Streamlit's native chat interface
 - **Natural language exploration** – ask questions like "what about women?" or "tell me about first class"
 - **Keyword matching** – intelligent query interpretation for exploration patterns
 - **4 preset patterns** – women, men, 1st class child, 3rd class male paths
 - **Dynamic path highlighting** – tree updates based on conversation
-- **Scrollable chat history** – conversation grows naturally as you explore
+- **Scrollable chat history** – 400px scrollable container for conversation messages
 - **Model comparison cards** – see Decision Tree vs XGBoost tradeoffs at a glance
+- **Optimized layout** – reduced padding for maximum content visibility
 
 ### 📊 **SHAP Explanations** (Multi-page version)
 - **Global model behavior** – which features matter most overall
@@ -56,11 +58,12 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 **Two Versions Available:**
 
 ### Version 1: Chat-Based Explorer (app.py) - **Recommended**
-- **Left Column**: Decision Tree visualization with model comparison cards
-- **Right Column**: Interactive chat interface for natural language exploration
+- **Left Column (75%)**: Decision Tree visualization with model comparison cards in dark mode
+- **Right Column (25%)**: Interactive chat interface for natural language exploration
 - Ask questions like "what about women?" or "show me first class children"
 - Tree highlights paths based on your conversation
 - 4 preset exploration patterns with detailed explanations
+- Cohesive dark theme throughout for improved readability
 
 ### Version 2: Multi-Page App (src/streamlit_app.py)
 
