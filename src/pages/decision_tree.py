@@ -133,12 +133,12 @@ path_json = json.dumps(prediction_path)
 # Display model stats and prediction
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric("Training Samples", data['X'].shape[0])
+    st.metric("Training Samples", data['X_train'].shape[0], help="80% of data used for training")
 with col2:
-    st.metric("Features Used", len(data['feature_names']))
+    st.metric("Test Samples", data['X_test'].shape[0], help="20% of data held out for testing")
 with col3:
-    accuracy = data['model'].score(data['X'], data['y'])
-    st.metric("Training Accuracy", f"{accuracy:.1%}")
+    test_accuracy = data['model'].score(data['X_test'], data['y_test'])
+    st.metric("Test Accuracy", f"{test_accuracy:.1%}", help="Model accuracy on held-out test set")
 with col4:
     prediction_label = "Survived ✓" if prediction == 1 else "Died ✗"
     prediction_color = "normal" if prediction == 1 else "inverse"

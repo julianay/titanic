@@ -103,6 +103,16 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-04
+- **CRITICAL FIX: Added proper train/test split to all pages**
+  - Fixed `streamlit_app.py`: Now trains RandomForest on 80% of data, evaluates on 20% test set
+  - Fixed `tree_data.py`: Implements train/test split in `get_tree_for_visualization()`
+  - Fixed `decision_tree.py`: Displays test accuracy instead of training accuracy
+  - Verified `model_comparison.py`: Already correctly implemented with train/test split
+  - All models now use stratified 80-20 split with random_state=42
+  - All accuracy metrics now reflect **test set performance**, not training performance
+  - Added visual indicators showing train/test split sizes
+
 ### 2025-12-02
 - **Added new Model Comparison page** (`src/pages/model_comparison.py`)
   - Demonstrates accuracy-interpretability tradeoff with DT vs XGBoost
@@ -141,7 +151,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 - Git repository synced to GitHub
 
 ### Known Issues
-- None currently identified
+- ✅ **RESOLVED** (2025-12-04): All models now use proper train/test split. Previously, models were training on 100% of data, resulting in invalid accuracy metrics.
 
 ### Technical Debt
 - None currently identified (project is clean for portfolio demo purposes)

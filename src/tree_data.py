@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
 import seaborn as sns
 
 
@@ -130,9 +131,17 @@ def get_tree_for_visualization(max_depth=4):
     """
     Main function to get tree data ready for visualization.
     Returns tree dict that can be used by both D3 and Plotly.
+    Includes train/test split for proper model evaluation.
     """
     X, y, features, label_encoders = load_titanic_data()
-    model = train_decision_tree(X, y, max_depth=max_depth)
+
+    # Train-test split (80-20, stratified)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+
+    # Train model on training set only
+    model = train_decision_tree(X_train, y_train, max_depth=max_depth)
     tree_dict = sklearn_tree_to_dict(model, features, label_encoders=label_encoders)
 
     return {
@@ -140,6 +149,8 @@ def get_tree_for_visualization(max_depth=4):
         'model': model,
         'feature_names': features,
         'label_encoders': label_encoders,
-        'X': X,
-        'y': y
+        'X_train': X_train,
+        'X_test': X_test,
+        'y_train': y_train,
+        'y_test': y_test
     }

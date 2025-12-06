@@ -19,6 +19,8 @@ st.write(
 
 @st.cache_resource
 def load_data_and_model():
+    from sklearn.model_selection import train_test_split
+
     # Load Titanic dataset directly from seaborn
     df = sns.load_dataset("titanic")
 
@@ -29,20 +31,25 @@ def load_data_and_model():
     X["sex"] = (X["sex"] == "male").astype(int)
     y = df["survived"].astype(int)
 
+    # Train-test split (80-20, stratified)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+
     model = RandomForestClassifier(
         n_estimators=100,
         max_depth=4,
         random_state=42
     )
-    model.fit(X, y)
+    model.fit(X_train, y_train)
 
     # Generic Explainer API – more robust across SHAP versions
-    background = X.sample(min(200, len(X)), random_state=42)
+    background = X_train.sample(min(200, len(X_train)), random_state=42)
     explainer = shap.Explainer(model, background)
 
-    return df, X, y, model, explainer
+    return df, X_train, X_test, y_train, y_test, model, explainer
 
-df, X, y, model, explainer = load_data_and_model()
+df, X_train, X_test, y_train, y_test, model, explainer = load_data_and_model()
 
 col_left, col_right = st.columns([1.2, 1])
 
@@ -52,7 +59,11 @@ col_left, col_right = st.columns([1.2, 1])
 with col_left:
     st.subheader("Global feature importance (SHAP)")
 
-    sample = X.sample(min(300, len(X)), random_state=42)
+    # Display test accuracy
+    test_accuracy = model.score(X_test, y_test)
+    st.metric("Test Accuracy", f"{test_accuracy:.1%}", help="Model accuracy on held-out test set (20% of data)")
+
+    sample = X_train.sample(min(300, len(X_train)), random_state=42)
     shap_values_global = explainer(sample)
 
     # Let SHAP create the plot on the current figure
