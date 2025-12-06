@@ -518,21 +518,44 @@ with col1:
 # =============================================================================
 
 with col2:
+    # Add custom CSS for viewport-based chat layout
+    st.markdown("""
+    <style>
+    /* Make chat history container use available viewport height */
+    .chat-history-container {
+        max-height: calc(100vh - 400px);
+        min-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+
+    /* Ensure chat input stays visible at bottom */
+    [data-testid="stChatInput"] {
+        position: sticky;
+        bottom: 0;
+        background: var(--background-color);
+        padding: 10px 0;
+        z-index: 100;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("### 💬 Chat")
 
-    # Create scrollable chat history with max height (only grows as needed)
-    # Use fixed height only if there are many messages
+    # Display chat history in a container with viewport-based height
     num_messages = len(st.session_state.chat_history)
-    container_height = 600 if num_messages > 3 else None
 
-    if container_height:
-        chat_container = st.container(height=container_height)
+    # Use viewport-based height that adapts to browser window
+    # calc(100vh - 400px) accounts for: header, title, suggestions, input, and padding
+    if num_messages > 3:
+        # For longer conversations, use scrollable container
+        chat_container = st.container()
         with chat_container:
             for message in st.session_state.chat_history:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
     else:
-        # No fixed height for initial messages - just display naturally
+        # For initial messages, display naturally without scrolling
         for message in st.session_state.chat_history:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
