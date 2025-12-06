@@ -14,6 +14,22 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## ✅ Completed Features
 
+### Chat-Based XAI Explorer (`app.py`) **NEW!**
+- ✅ Two-column layout (visualization 70%, chat 30%)
+- ✅ Natural language query interpretation with keyword matching
+- ✅ 4 preset exploration patterns:
+  - Women's path (high survival)
+  - Men's path (low survival)
+  - 1st class child (best odds)
+  - 3rd class male (worst odds)
+- ✅ Dynamic path highlighting in D3 tree based on chat
+- ✅ Scrollable chat history with smart height (grows as needed)
+- ✅ Model comparison cards (Decision Tree vs XGBoost)
+- ✅ Suggestion buttons that act as quick queries
+- ✅ Full-width tree visualization (700px height)
+- ✅ No default path on initial load
+- ✅ Responsive layout
+
 ### Core Application
 - ✅ Streamlit multi-page app architecture
 - ✅ Docker containerization for Hugging Face Spaces deployment
@@ -103,6 +119,18 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-06
+- **NEW: Chat-Based XAI Explorer** (`app.py`)
+  - Two-column layout: visualization (70%) + chat interface (30%)
+  - Natural language exploration with keyword matching
+  - 4 preset patterns: women, men, 1st class child, 3rd class male
+  - Dynamic path highlighting based on conversation
+  - Scrollable chat history with dynamic height (no empty gaps initially)
+  - Tree starts with no default path highlighted
+  - Full-width D3 tree visualization (700px height, no clipping)
+  - Model comparison cards at the top
+- **Removed** `app_simplified.py` (replaced by app.py)
+
 ### 2025-12-04
 - **CRITICAL FIX: Added proper train/test split to all pages**
   - Fixed `streamlit_app.py`: Now trains RandomForest on 80% of data, evaluates on 20% test set
@@ -144,11 +172,13 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ## 🔄 Current State
 
 ### Working Features
-- Both pages fully functional and deployed
+- **Chat-based explorer (app.py)** - Primary demo, fully functional
+- **Multi-page app** - All 3 pages fully functional (SHAP, Decision Tree, Model Comparison)
 - All visualizations rendering correctly
 - What-if scenarios working in real-time
+- Chat interface with natural language exploration
 - Docker deployment healthy on Hugging Face Spaces
-- Git repository synced to GitHub
+- Git repository synced to GitHub and Hugging Face
 
 ### Known Issues
 - ✅ **RESOLVED** (2025-12-04): All models now use proper train/test split. Previously, models were training on 100% of data, resulting in invalid accuracy metrics.
@@ -210,9 +240,11 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 | File | Purpose |
 |------|---------|
-| `src/streamlit_app.py` | Main SHAP explanations page |
+| `app.py` | **NEW** Chat-based XAI Explorer (recommended) |
+| `src/streamlit_app.py` | Multi-page: SHAP explanations page |
 | `src/tree_data.py` | ML pipeline & tree extraction module |
-| `src/pages/decision_tree.py` | D3.js Decision Tree visualization |
+| `src/pages/decision_tree.py` | Multi-page: D3.js Decision Tree visualization |
+| `src/pages/model_comparison.py` | Multi-page: DT vs XGBoost comparison |
 | `requirements.txt` | Python dependencies |
 | `Dockerfile` | Docker configuration for deployment |
 | `README.md` | Project documentation |
@@ -250,7 +282,10 @@ If you lose session context, remember:
 # Activate virtual environment
 source venv/bin/activate
 
-# Run locally
+# Run chat-based explorer (recommended)
+streamlit run app.py
+
+# OR run multi-page version
 streamlit run src/streamlit_app.py
 
 # Access app
