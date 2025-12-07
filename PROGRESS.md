@@ -1,6 +1,6 @@
 # Titanic Explainable AI - Project Progress
 
-**Last Updated:** 2025-12-02
+**Last Updated:** 2025-12-07
 
 ---
 
@@ -15,19 +15,31 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ## ✅ Completed Features
 
 ### Chat-Based XAI Explorer (`app.py`) **NEW!**
-- ✅ Two-column layout (visualization 70%, chat 30%)
+- ✅ Two-column layout (visualization 75%, chat 25%)
+- ✅ Tab-based interface with performance metrics in labels:
+  - **Decision Tree tab**: 81% accuracy, 60% recall
+  - **XGBoost tab**: 80% accuracy, 72% recall
 - ✅ Natural language query interpretation with keyword matching
 - ✅ 4 preset exploration patterns:
   - Women's path (high survival)
   - Men's path (low survival)
   - 1st class child (best odds)
   - 3rd class male (worst odds)
-- ✅ Dynamic path highlighting in D3 tree based on chat
-- ✅ Scrollable chat history with smart height (grows as needed)
-- ✅ Model comparison cards (Decision Tree vs XGBoost)
+- ✅ **Decision Tree visualization** (Tab 1):
+  - D3.js interactive tree with dynamic path highlighting
+  - No default path on initial load
+  - Real-time updates based on chat conversation
+- ✅ **XGBoost SHAP explanations** (Tab 2):
+  - Global feature importance (D3.js horizontal bar chart)
+  - Individual waterfall chart for cohort representatives
+  - Pre-selected woman's path as default (typical 30-year-old in 2nd class)
+  - Dynamic updates based on chat exploration
+  - Green/red color coding for positive/negative SHAP values
+- ✅ Scrollable chat history (300px container) with suggestions and input below
 - ✅ Suggestion buttons that act as quick queries
-- ✅ Full-width tree visualization (700px height)
-- ✅ No default path on initial load
+- ✅ Full-width visualizations (700px height)
+- ✅ Dark mode UI with cohesive theme (#0e1117 background)
+- ✅ Optimized typography (24px title, 20px h3, 14px body)
 - ✅ Responsive layout
 
 ### Core Application
@@ -119,6 +131,66 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-07 (Session 2)
+- **Bug fixes for tab switching and preset highlighting**:
+  - **Fixed**: Decision Tree clears existing SVG before re-rendering to prevent duplicate renders
+  - **Fixed**: Preset highlighting now updates immediately when clicking suggestion buttons (restored `st.rerun()` calls)
+  - **Fixed**: JavaScript initialization uses retry logic to handle tab visibility issues
+  - **Added**: MD5 hash of preset in HTML meta tag to force component re-render when preset changes
+  - **Added**: Unique container div ID based on preset hash for better browser cache invalidation
+  - **Known issue**: Decision Tree visualization doesn't display when switching from XGBoost tab to Decision Tree tab
+    - Workaround: Click any preset button to display the tree with highlighting
+    - Tree displays correctly on initial load and when presets are selected
+    - Issue is specific to Streamlit's `components.html()` iframe re-rendering behavior
+  - **Restored**: `st.rerun()` after preset changes to ensure immediate UI updates
+
+### 2025-12-07 (Session 1)
+- **MAJOR UPDATE: Tab-based interface with XGBoost SHAP explanations** (`app.py`)
+  - **Replaced model comparison cards with tabs**:
+    - Tab 1: Decision Tree (81% accuracy, 60% recall)
+    - Tab 2: XGBoost (80% accuracy, 72% recall)
+    - Performance metrics integrated into tab labels for quick comparison
+  - **XGBoost SHAP visualizations**:
+    - **Global feature importance**: D3.js horizontal bar chart showing mean absolute SHAP values
+    - **Individual waterfall chart**: D3.js waterfall showing SHAP contribution breakdown for cohort representatives
+    - Green (#52b788) bars for positive SHAP values (push toward survival)
+    - Red (#e76f51) bars for negative SHAP values (push toward death)
+    - Dynamic updates based on chat exploration (linked to preset patterns)
+  - **Tab-specific default behavior**:
+    - Decision Tree tab: No default path on load (clean slate)
+    - XGBoost tab: Pre-selected woman's path as default (typical 30-year-old in 2nd class)
+    - Preserves different UX patterns for different model types
+  - **Cohort-based SHAP explanations**:
+    - Uses representative passenger values for each demographic group
+    - More interpretable than averaging SHAP values across entire cohorts
+    - Example: "woman's path" = {pclass: 2, sex: 0, age: 30, fare: 20}
+  - **Updated copy from Figma design**:
+    - New chat column description emphasizing comparison and pattern exploration
+    - Clearer labeling of tabs and visualizations
+- **UI refinements and fixes**:
+  - **Typography updates**:
+    - Title (h1): 24px with 0 padding
+    - Subtitle (h3): 20px
+    - Body text: 14px across all components (chat messages, buttons, markdown)
+    - Applied to root elements (`html, body, .stApp`) for consistency
+  - **Layout adjustments**:
+    - Column ratio changed from 70/30 to 75/25 (visualization gets more space)
+    - Reduced main content padding for maximum visibility
+    - Chat column description moved to top for better alignment
+  - **Critical fix: Chat column clipping issue**:
+    - Problem: Description text at top of chat column was being clipped and invisible
+    - Root cause: Insufficient padding-top combined with h1 default padding
+    - Solution: Increased `.block-container` padding-top to 4rem AND removed h1 padding (0)
+    - Tried multiple approaches (sticky positioning, viewport heights, margins) before identifying padding as the issue
+  - **Chat history**: Reduced to 300px scrollable container (from 400px)
+  - **Dark mode consistency**: All D3 visualizations match dark theme (#0e1117 background)
+- **Technical implementation notes**:
+  - XGBoost model: 100 estimators, max_depth=6, learning_rate=0.1
+  - SHAP TreeExplainer with sample size of 200 for global plots
+  - Waterfall chart uses cumulative positioning for stacked bar effect
+  - Base value + sum of SHAP values = final prediction
+  - All visualizations use `st.markdown()` with HTML/JS for D3 embedding
+
 ### 2025-12-06
 - **NEW: Chat-Based XAI Explorer** (`app.py`)
   - Two-column layout: visualization (75%) + chat interface (25%)
@@ -186,17 +258,23 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 - Git repository synced to GitHub and Hugging Face
 
 ### Known Issues
+- ⚠️ **Tab switching issue** (2025-12-07): Decision Tree visualization doesn't display when switching from XGBoost tab back to Decision Tree tab
+  - **Workaround**: Click any preset button to display the tree with highlighting
+  - **Root cause**: Streamlit's `components.html()` iframe doesn't reliably re-render when tab visibility changes
+  - **Impact**: Low - users can still interact with presets to view the tree
+  - Tree displays correctly on initial page load and when any preset is clicked
 - ✅ **RESOLVED** (2025-12-04): All models now use proper train/test split. Previously, models were training on 100% of data, resulting in invalid accuracy metrics.
 
 ### Technical Debt
-- None currently identified (project is clean for portfolio demo purposes)
+- Tab switching re-render issue could be resolved by moving to a full React/D3 implementation instead of iframe-based components
 
 ---
 
 ## 📝 Future Enhancement Ideas
 
 ### Potential Features
-- [ ] Add SHAP explanations to Decision Tree page (combine both techniques)
+- [x] ✅ **COMPLETED**: Add SHAP explanations for XGBoost (implemented in Tab 2 of app.py)
+- [ ] Add SHAP explanations to Decision Tree page (combine both techniques in one view)
 - [ ] Side-by-side comparison: Decision Tree vs. RandomForest predictions
 - [ ] Model performance metrics page:
   - Confusion matrix
@@ -277,10 +355,15 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ### Context Recovery
 If you lose session context, remember:
 1. This is a **portfolio demo**, not production code
-2. Two pages: SHAP (RandomForest) + Decision Tree (D3.js)
-3. Features reduced to 4 for performance (sex, pclass, age, fare)
-4. Custom D3 visualization is the key portfolio showcase
-5. Deployed live on HuggingFace Spaces
+2. **Primary app** (`app.py`): Chat-based XAI Explorer with tabs
+   - Tab 1: Decision Tree with D3.js visualization
+   - Tab 2: XGBoost with SHAP explanations (global + individual waterfall)
+   - 75/25 two-column layout (visualization left, chat right)
+   - Dark mode UI throughout
+3. **Multi-page app** (`src/streamlit_app.py`): SHAP, Decision Tree, Model Comparison pages
+4. Features reduced to 4 for performance (sex, pclass, age, fare)
+5. Custom D3 visualizations are the key portfolio showcase
+6. Deployed live on HuggingFace Spaces
 
 ### Common Commands
 ```bash

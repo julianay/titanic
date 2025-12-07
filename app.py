@@ -6,6 +6,9 @@ Left: Visualization | Right: Chat Interface
 import streamlit as st
 import streamlit.components.v1 as components
 import json
+import shap
+import matplotlib.pyplot as plt
+from xgboost import XGBClassifier
 from src.tree_data import get_tree_for_visualization
 
 # Page configuration
@@ -15,15 +18,30 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Reduce main content padding
+# Reduce main content padding and customize font sizes
 st.markdown("""
 <style>
+    /* Set base font-size for entire app */
+    html, body, .stApp {
+        font-size: 14px !important;
+    }
+
     /* Reduce padding around main content block */
     .block-container {
-        padding-top: 2rem;
+        padding-top: 4rem;
         padding-bottom: 2rem;
         padding-left: 2rem;
         padding-right: 2rem;
+    }
+
+    /* Custom heading sizes */
+    h1 {
+        font-size: 24px !important;
+        padding: 0 !important;
+    }
+
+    h3 {
+        font-size: 20px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -36,7 +54,7 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = [
         {
             "role": "assistant",
-            "content": "Hi! I can help you explore survival patterns in the Titanic dataset. Try one of the suggestions below or ask your own question."
+            "content": "Ask a question — I'll navigate the models for you\n\nAsk about any group or pattern, and I'll highlight the tree, surface cohort stats, or compare the models' reasoning."
         }
     ]
 
@@ -44,7 +62,7 @@ if 'highlighted_path' not in st.session_state:
     st.session_state.highlighted_path = None
 
 if 'current_preset' not in st.session_state:
-    st.session_state.current_preset = None  # No default highlighting
+    st.session_state.current_preset = None  # No default - shows global view initially
 
 # =============================================================================
 # Load Data and Models
@@ -55,7 +73,36 @@ def load_tree_data():
     """Load decision tree data with train/test split."""
     return get_tree_for_visualization(max_depth=4)
 
+@st.cache_resource
+def load_xgboost_and_shap():
+    """Train XGBoost model and create SHAP explainer."""
+    tree_data = get_tree_for_visualization(max_depth=4)
+    X_train = tree_data['X_train']
+    y_train = tree_data['y_train']
+    X_test = tree_data['X_test']
+
+    # Train XGBoost
+    xgb_model = XGBClassifier(
+        n_estimators=100,
+        max_depth=6,
+        learning_rate=0.1,
+        random_state=42,
+        eval_metric='logloss'
+    )
+    xgb_model.fit(X_train, y_train)
+
+    # Create SHAP explainer
+    explainer = shap.TreeExplainer(xgb_model)
+
+    # Compute SHAP values for a sample
+    sample_size = min(200, len(X_test))
+    X_sample = X_test.sample(sample_size, random_state=42)
+    shap_values = explainer.shap_values(X_sample)
+
+    return xgb_model, explainer, shap_values, X_sample
+
 tree_data = load_tree_data()
+xgb_model, shap_explainer, shap_values, X_sample = load_xgboost_and_shap()
 
 # Calculate metrics
 dt_accuracy = tree_data['model'].score(tree_data['X_test'], tree_data['y_test'])
@@ -139,15 +186,33 @@ col1, col2 = st.columns([3, 1])
 # =============================================================================
 
 with col1:
+    # Native Streamlit header and subtitle
+    st.markdown("# Explainable AI Explorer")
+    st.markdown('<p style="font-size: 20px; color: #a0a0a0; margin-bottom: 20px;">Interactively compare how two models reason about the same prediction task</p>', unsafe_allow_html=True)
+
     # Get current preset for highlighting
     current_preset_key = st.session_state.current_preset
     current_preset_values = presets[current_preset_key]["values"] if current_preset_key else None
+
+    # Prepare preset values for JavaScript (null keyword, not string)
+    preset_values_js = "null" if current_preset_values is None else json.dumps(current_preset_values)
+
+    # Tabs for model comparison
+    tab1, tab2 = st.tabs([
+        "DECISION TREE  Accuracy: 81% | Recall: 60%",
+        "XGBOOST  Accuracy: 80% | Recall: 72%"
+    ])
+
+    # D3 Tree HTML - Include a hash of preset to make content unique when it changes
+    import hashlib
+    preset_hash = hashlib.md5(str(current_preset_key).encode()).hexdigest()[:8]
 
     html_code = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="utf-8">
+        <meta name="preset-hash" content="{preset_hash}">
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
             * {{
@@ -163,66 +228,7 @@ with col1:
                 color: #fafafa;
             }}
 
-            h1 {{
-                font-size: 32px;
-                font-weight: 700;
-                margin-bottom: 8px;
-                color: #fafafa;
-            }}
-
-            .subtitle {{
-                font-size: 18px;
-                color: #a0a0a0;
-                margin-bottom: 20px;
-            }}
-
-            .description {{
-                font-size: 14px;
-                line-height: 1.6;
-                margin-bottom: 30px;
-                color: #d0d0d0;
-            }}
-
-            .cards-container {{
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 40px;
-                margin-bottom: 30px;
-            }}
-
-            .card {{
-                border-bottom: 4px solid #fafafa;
-                padding-bottom: 20px;
-            }}
-
-            .card h2 {{
-                font-size: 24px;
-                font-weight: 700;
-                margin-bottom: 8px;
-                color: #fafafa;
-            }}
-
-            .card .type {{
-                font-size: 14px;
-                margin-bottom: 8px;
-                color: #d0d0d0;
-            }}
-
-            .card .type strong {{
-                font-weight: 700;
-                color: #fafafa;
-            }}
-
-            .card .metrics {{
-                font-size: 14px;
-                color: #d0d0d0;
-            }}
-
-            .tree-section {{
-                margin-top: 30px;
-            }}
-
-            .tree-section h3 {{
+            h3 {{
                 font-size: 20px;
                 font-weight: 600;
                 margin-bottom: 20px;
@@ -318,35 +324,17 @@ with col1:
         </style>
     </head>
     <body>
-        <h1>Explainable AI Explorer</h1>
-        <div class="subtitle">A Demo Using the Titanic Survival Dataset</div>
-        <div class="description">
-            If this were a real rescue scenario, XGBoost is better at the most important task - finding survivors -
-            even though its overall accuracy is slightly lower. This is the accuracy-interpretability tradeoff:
-            you gain prediction quality but lose the ability to easily explain why.
-        </div>
-
-        <div class="cards-container">
-            <div class="card">
-                <h2>DECISION TREE</h2>
-                <div class="type"><strong>INTERPRETABLE</strong> Built to be understood</div>
-                <div class="metrics">Accuracy: <strong>{dt_accuracy:.0%}</strong> | Finds survivors: <strong>{dt_recall:.0%}</strong></div>
-            </div>
-            <div class="card">
-                <h2>XGBOOST</h2>
-                <div class="type"><strong>EXPLAINABLE</strong> Needs explanation tools</div>
-                <div class="metrics">Accuracy: <strong>{xgb_accuracy:.0%}</strong> | Finds survivors: <strong>{xgb_recall:.0%}</strong></div>
-            </div>
-        </div>
-
-        <div class="tree-section">
-            <h3>Decision Tree Classifier</h3>
+        <h3>Decision Tree Classifier</h3>
+        <div id="tree-container-{preset_hash}">
             <div id="tree-viz"></div>
         </div>
 
         <script>
             const treeData = {tree_json};
-            const presetValues = {'null' if current_preset_values is None else json.dumps(current_preset_values)};
+            const presetValues = {preset_values_js};
+
+            console.log('Preset hash: {preset_hash}');
+            console.log('Preset values:', presetValues);
 
             let d3Tree = null;
 
@@ -407,6 +395,10 @@ with col1:
                 const width = container.offsetWidth;
                 const height = 700;
                 const margin = {{top: 20, right: 80, bottom: 20, left: 80}};
+
+                // Clear existing content to prevent duplicate renders
+                d3.select("#tree-viz").html("");
+                d3.selectAll(".tooltip").remove();
 
                 const svg = d3.select("#tree-viz")
                     .append("svg")
@@ -525,45 +517,369 @@ with col1:
                 }}
             }}
 
-            window.addEventListener('load', () => {{
-                initTree();
-            }});
+            // Initialize tree with retry logic for tab switching
+            function tryInitTree(attempts = 0) {{
+                const container = document.getElementById('tree-viz');
+                if (container && container.offsetWidth > 0) {{
+                    // Container is visible and has dimensions, safe to initialize
+                    initTree();
+                }} else if (attempts < 10) {{
+                    // Container not ready, retry after a short delay
+                    setTimeout(() => tryInitTree(attempts + 1), 100);
+                }} else {{
+                    console.error('Failed to initialize tree after 10 attempts');
+                }}
+            }}
+
+            // Start initialization
+            if (document.readyState === 'loading') {{
+                document.addEventListener('DOMContentLoaded', () => tryInitTree());
+            }} else {{
+                tryInitTree();
+            }}
         </script>
     </body>
     </html>
     """
 
-    components.html(html_code, height=1100, scrolling=False)
+    # Render tree in both tabs (same tree for now)
+    with tab1:
+        components.html(html_code, height=800, scrolling=False)
+
+    with tab2:
+        st.markdown("### 🔍 Making XGBoost Interpretable with SHAP")
+        st.markdown("""
+        While XGBoost is more accurate, it's harder to understand *why* it makes predictions.
+        **SHAP (SHapley Additive exPlanations)** helps explain XGBoost's decisions.
+        """)
+
+        st.markdown("#### 📈 Global Feature Importance")
+        st.markdown("This shows which features are most important across all predictions:")
+
+        # Calculate mean absolute SHAP values for each feature
+        import numpy as np
+        mean_shap_values = np.abs(shap_values).mean(axis=0)
+        feature_names = X_sample.columns.tolist()
+
+        # Create data for waterfall chart
+        shap_data = []
+        for i, (feat, val) in enumerate(zip(feature_names, mean_shap_values)):
+            shap_data.append({"feature": feat, "value": float(val)})
+
+        # Sort by value descending
+        shap_data_sorted = sorted(shap_data, key=lambda x: x['value'], reverse=True)
+        shap_json = json.dumps(shap_data_sorted)
+
+        # D3 Waterfall Chart
+        waterfall_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <script src="https://d3js.org/d3.v7.min.js"></script>
+            <style>
+                body {{
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    background: #0e1117;
+                    color: #fafafa;
+                    padding: 20px;
+                }}
+                .bar {{
+                    fill: #52b788;
+                    opacity: 0.8;
+                }}
+                .bar:hover {{
+                    opacity: 1;
+                }}
+                .axis text {{
+                    fill: #fafafa;
+                    font-size: 12px;
+                }}
+                .axis line, .axis path {{
+                    stroke: #666;
+                }}
+            </style>
+        </head>
+        <body>
+            <div id="waterfall"></div>
+            <script>
+                const data = {shap_json};
+
+                const margin = {{top: 20, right: 30, bottom: 60, left: 120}};
+                const width = 700 - margin.left - margin.right;
+                const height = 300 - margin.top - margin.bottom;
+
+                const svg = d3.select("#waterfall")
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
+
+                // Create scales
+                const y = d3.scaleBand()
+                    .domain(data.map(d => d.feature))
+                    .range([0, height])
+                    .padding(0.2);
+
+                const x = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.value)])
+                    .range([0, width]);
+
+                // Add bars
+                svg.selectAll(".bar")
+                    .data(data)
+                    .enter()
+                    .append("rect")
+                    .attr("class", "bar")
+                    .attr("y", d => y(d.feature))
+                    .attr("x", 0)
+                    .attr("height", y.bandwidth())
+                    .attr("width", d => x(d.value));
+
+                // Add value labels
+                svg.selectAll(".label")
+                    .data(data)
+                    .enter()
+                    .append("text")
+                    .attr("class", "label")
+                    .attr("y", d => y(d.feature) + y.bandwidth() / 2)
+                    .attr("x", d => x(d.value) + 5)
+                    .attr("dy", "0.35em")
+                    .attr("fill", "#fafafa")
+                    .attr("font-size", "11px")
+                    .text(d => d.value.toFixed(3));
+
+                // Add Y axis
+                svg.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y));
+
+                // Add X axis
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${{height}})`)
+                    .call(d3.axisBottom(x).ticks(5));
+
+                // Add X axis label
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height + 40)
+                    .attr("fill", "#fafafa")
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", "12px")
+                    .text("Mean |SHAP value|");
+            </script>
+        </body>
+        </html>
+        """
+
+        components.html(waterfall_html, height=400, scrolling=False)
+
+        st.markdown("---")
+
+        # Individual Prediction Waterfall (based on current preset)
+        st.markdown("#### 💧 Individual Prediction Explanation")
+
+        # Use woman's path as default for XGBoost tab if nothing selected
+        xgb_preset_key = current_preset_key if current_preset_key else "woman_path"
+        xgb_preset_values = presets[xgb_preset_key]["values"]
+        xgb_preset_info = presets[xgb_preset_key]
+
+        if current_preset_key:
+            st.markdown(f"Showing XGBoost's reasoning for: **{xgb_preset_info['label']}**")
+        else:
+            st.markdown(f"Showing XGBoost's reasoning for a typical woman: **30-year-old in 2nd class**")
+            st.caption("Click suggestions or ask questions to explore other cohorts")
+
+        # Create input for this passenger
+        import pandas as pd
+        x_input = pd.DataFrame([xgb_preset_values])
+
+        # Get SHAP values for this passenger
+        import numpy as np
+        shap_values_individual = shap_explainer.shap_values(x_input)[0]
+        base_value = shap_explainer.expected_value
+        final_prediction = float(base_value + np.sum(shap_values_individual))
+
+        # Prepare waterfall data
+        waterfall_data = []
+        cumulative = base_value
+
+        for i, (feat, shap_val) in enumerate(zip(x_input.columns, shap_values_individual)):
+            waterfall_data.append({
+                "feature": feat,
+                "value": float(shap_val),
+                "start": float(cumulative),
+                "end": float(cumulative + shap_val),
+                "feature_value": float(x_input.iloc[0][feat])
+            })
+            cumulative += shap_val
+
+        # Sort by absolute SHAP value
+        waterfall_data_sorted = sorted(waterfall_data, key=lambda x: abs(x['value']), reverse=True)
+        waterfall_json_individual = json.dumps(waterfall_data_sorted)
+
+        # D3 Waterfall Chart for Individual
+        individual_waterfall_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <script src="https://d3js.org/d3.v7.min.js"></script>
+                <style>
+                    body {{
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        background: #0e1117;
+                        color: #fafafa;
+                        padding: 20px;
+                    }}
+                    .bar-positive {{
+                        fill: #52b788;
+                    }}
+                    .bar-negative {{
+                        fill: #e76f51;
+                    }}
+                    .axis text {{
+                        fill: #fafafa;
+                        font-size: 12px;
+                    }}
+                    .axis line, .axis path {{
+                        stroke: #666;
+                    }}
+                    .baseline {{
+                        stroke: #666;
+                        stroke-width: 2;
+                        stroke-dasharray: 5,5;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div id="individual-waterfall"></div>
+                <script>
+                    const data = {waterfall_json_individual};
+                    const baseValue = {base_value};
+                    const finalValue = {final_prediction};
+
+                    const margin = {{top: 40, right: 30, bottom: 60, left: 120}};
+                    const width = 700 - margin.left - margin.right;
+                    const height = 350 - margin.top - margin.bottom;
+
+                    const svg = d3.select("#individual-waterfall")
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
+
+                    // Title
+                    svg.append("text")
+                        .attr("x", width / 2)
+                        .attr("y", -20)
+                        .attr("text-anchor", "middle")
+                        .attr("fill", "#fafafa")
+                        .attr("font-size", "14px")
+                        .attr("font-weight", "bold")
+                        .text(`Base Value: ${{baseValue.toFixed(3)}} → Final Prediction: ${{finalValue.toFixed(3)}}`);
+
+                    // Create scales
+                    const y = d3.scaleBand()
+                        .domain(data.map(d => d.feature))
+                        .range([0, height])
+                        .padding(0.2);
+
+                    const allValues = data.flatMap(d => [d.start, d.end]);
+                    const xExtent = d3.extent(allValues);
+                    const x = d3.scaleLinear()
+                        .domain(xExtent)
+                        .range([0, width]);
+
+                    // Add baseline at x=0
+                    svg.append("line")
+                        .attr("class", "baseline")
+                        .attr("x1", x(0))
+                        .attr("x2", x(0))
+                        .attr("y1", 0)
+                        .attr("y2", height);
+
+                    // Add bars
+                    svg.selectAll(".bar")
+                        .data(data)
+                        .enter()
+                        .append("rect")
+                        .attr("class", d => d.value >= 0 ? "bar-positive" : "bar-negative")
+                        .attr("y", d => y(d.feature))
+                        .attr("x", d => x(Math.min(d.start, d.end)))
+                        .attr("height", y.bandwidth())
+                        .attr("width", d => Math.abs(x(d.end) - x(d.start)));
+
+                    // Add value labels
+                    svg.selectAll(".label")
+                        .data(data)
+                        .enter()
+                        .append("text")
+                        .attr("y", d => y(d.feature) + y.bandwidth() / 2)
+                        .attr("x", d => x(d.end) + (d.value >= 0 ? 5 : -5))
+                        .attr("dy", "0.35em")
+                        .attr("fill", "#fafafa")
+                        .attr("font-size", "11px")
+                        .attr("text-anchor", d => d.value >= 0 ? "start" : "end")
+                        .text(d => d.value.toFixed(3));
+
+                    // Add Y axis with feature labels
+                    svg.append("g")
+                        .attr("class", "axis")
+                        .call(d3.axisLeft(y).tickFormat(d => {{
+                            const item = data.find(x => x.feature === d);
+                            return `${{d}} = ${{item.feature_value}}`;
+                        }}));
+
+                    // Add X axis
+                    svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", `translate(0,${{height}})`)
+                        .call(d3.axisBottom(x).ticks(5));
+
+                    // Add X axis label
+                    svg.append("text")
+                        .attr("x", width / 2)
+                        .attr("y", height + 45)
+                        .attr("fill", "#fafafa")
+                        .attr("text-anchor", "middle")
+                        .attr("font-size", "12px")
+                        .text("SHAP Value (Impact on Prediction)");
+                </script>
+            </body>
+            </html>
+        """
+
+        components.html(individual_waterfall_html, height=500, scrolling=False)
+
+        # Explanation
+        st.markdown("""
+        **How to read this chart:**
+        - 🟢 **Green bars** push prediction toward survival (positive SHAP values)
+        - 🔴 **Red bars** push prediction toward death (negative SHAP values)
+        - **Longer bars** = stronger impact on the prediction
+        - **Base value** = model's average prediction across all passengers
+        - **Final prediction** = base value + sum of all SHAP values
+        """)
 
 # =============================================================================
 # RIGHT COLUMN: Chat Interface (Streamlit)
 # =============================================================================
 
 with col2:
+    # Description paragraph at top of chat area
+    st.markdown('<p style="font-size: 14px; color: #d0d0d0; line-height: 1.6; margin-bottom: 20px;">Explore how an interpretable Decision Tree and a higher-performing XGBoost model approach survival predictions differently.<br>Use the chat to highlight decision paths, inspect cohorts, and uncover where model transparency and model accuracy diverge.</p>', unsafe_allow_html=True)
+
     st.markdown("### 💬 Chat")
 
-    # Calculate chat height to leave room for suggestions + input (~350px)
-    # Chat container uses remaining viewport height
-    chat_height = "calc(100vh - 550px)"
-
-    st.markdown(f"""
-    <style>
-    /* Style the chat container to use calculated height */
-    [data-testid="stVerticalBlock"] > [style*="height: 400px"] {{
-        height: {chat_height} !important;
-        min-height: 200px;
-    }}
-    </style>
-    """, unsafe_allow_html=True)
-
     # Scrollable chat history container
-    chat_container = st.container(height=400)  # This will be overridden by CSS
+    chat_container = st.container(height=300)
     with chat_container:
         for message in st.session_state.chat_history:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    st.markdown("---")
     st.markdown("**Or try one of these to get started**")
 
     # Suggestion buttons
@@ -579,7 +895,7 @@ with col2:
                 "role": "assistant",
                 "content": preset_info["response"]
             })
-            # Update highlighted path
+            # Update current preset (highlights tree and updates XGBoost explanations)
             st.session_state.current_preset = preset_key
             st.rerun()
 
@@ -603,7 +919,7 @@ with col2:
             "content": response
         })
 
-        # Update highlighted path if matched
+        # Update current preset if matched (highlights tree and updates XGBoost explanations)
         if matched_preset:
             st.session_state.current_preset = matched_preset
 
