@@ -1,10 +1,13 @@
 """
-Explainable AI Explorer - Alternative Gradient Version
+Explainable AI Explorer
 Two-Column Layout with Chat Interface
 Left: Visualization | Right: Chat Interface
 
-This is an alternative version with gradient-filled circle nodes.
-For the default pie chart node style, see app_pie_version.py
+This is the default version with pie chart nodes for the Decision Tree visualization.
+Each node shows the class distribution (died vs survived) as a pie chart with
+blue (died) and green (survived) slices for clearer visualization of splits.
+
+For an alternative gradient node style, see app.py
 """
 
 import streamlit as st
@@ -17,7 +20,7 @@ from src.tree_data import get_tree_for_visualization
 
 # Page configuration
 st.set_page_config(
-    page_title="Explainable AI Explorer - Gradient Version",
+    page_title="Explainable AI Explorer",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -191,7 +194,7 @@ col1, col2 = st.columns([3, 1])
 
 with col1:
     # Native Streamlit header and subtitle
-    st.markdown("# Explainable AI Explorer")
+    st.markdown("# Explainable AI Explorer", unsafe_allow_html=True)
     st.markdown('<p style="font-size: 20px; color: #a0a0a0; margin-bottom: 20px;">Interactively compare how two models reason about the same prediction task</p>', unsafe_allow_html=True)
 
     # Get current preset for highlighting
@@ -247,21 +250,28 @@ with col1:
                 overflow: visible;
             }}
 
-            .node circle {{
-                stroke: #888;
-                stroke-width: 2px;
+            /* PIE CHART STYLES */
+            .pie-chart path {{
                 opacity: 0.4;
                 transition: all 0.3s ease;
             }}
 
-            .node circle.active {{
+            .pie-chart.active path {{
                 opacity: 1;
-                stroke-width: 3px;
                 filter: drop-shadow(0 0 6px rgba(255,255,255,0.3));
             }}
 
-            .node circle.final {{
-                stroke-width: 5px;
+            /* Hover highlighting - temporary highlight on hover */
+            .pie-chart.hover-active path {{
+                opacity: 0.85;
+                filter: drop-shadow(0 0 4px rgba(255,215,0,0.4));
+            }}
+
+            .pie-chart.final path {{
+                filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
+            }}
+
+            .pie-chart.final {{
                 animation: pulse 1.5s ease-in-out infinite;
             }}
 
@@ -273,7 +283,7 @@ with col1:
             .node text {{
                 font-size: 12px;
                 font-weight: 500;
-                fill: #999;
+                fill: #fafafa;  /* White text for all labels */
                 opacity: 0.4;
                 transition: opacity 0.3s ease;
             }}
@@ -282,6 +292,12 @@ with col1:
                 opacity: 1;
                 font-weight: 700;
                 fill: #fafafa;
+            }}
+
+            /* Hover highlighting for text */
+            .node text.hover-active {{
+                opacity: 0.85;
+                fill: #ffd700;  /* Gold color for hover */
             }}
 
             .link {{
@@ -305,10 +321,30 @@ with col1:
                 stroke: #e76f51;
             }}
 
+            /* Hover highlighting for links */
+            .link.hover-active {{
+                stroke: #ffd700;  /* Gold color for hover */
+                stroke-width: 3px;
+                opacity: 0.8;
+            }}
+
             .edge-label {{
                 font-size: 11px;
-                fill: #a0a0a0;
+                fill: #fafafa;  /* White text for edge labels */
                 font-weight: 600;
+                opacity: 0.4;
+                transition: all 0.3s ease;
+            }}
+
+            .edge-label.active {{
+                opacity: 1;
+                font-weight: 700;
+            }}
+
+            .edge-label.hover-active {{
+                opacity: 0.85;
+                fill: #ffd700;  /* Gold color for hover */
+                transform: translateY(-16px);  /* Move up on hover for better readability */
             }}
 
             .tooltip {{
@@ -366,12 +402,33 @@ with col1:
                 return path;
             }}
 
+            // Get path from root to a specific node (for hover highlighting)
+            function getPathToNode(targetNode) {{
+                const path = [];
+                let current = targetNode;
+
+                // Walk up the tree from target to root
+                while (current) {{
+                    path.unshift(current.data.id);  // Add to beginning of array
+                    current = current.parent;
+                }}
+
+                return path;
+            }}
+
             function updateTreeHighlight(path) {{
                 const finalNodeId = path[path.length - 1];
 
-                d3.selectAll('.node circle')
-                    .classed('active', d => path.includes(d.data.id))
-                    .classed('final', d => d.data.id === finalNodeId);
+                // Update pie chart highlighting (select the .pie-chart groups)
+                d3.selectAll('.pie-chart')
+                    .classed('active', function() {{
+                        const nodeData = d3.select(this.parentNode).datum();
+                        return path.includes(nodeData.data.id);
+                    }})
+                    .classed('final', function() {{
+                        const nodeData = d3.select(this.parentNode).datum();
+                        return nodeData.data.id === finalNodeId;
+                    }});
 
                 d3.selectAll('.node text')
                     .classed('active', d => path.includes(d.data.id));
@@ -392,13 +449,17 @@ with col1:
                         }}
                         return false;
                     }});
+
+                // Update edge labels to match link highlighting
+                d3.selectAll('.edge-label')
+                    .classed('active', d => path.includes(d.source.data.id) && path.includes(d.target.data.id));
             }}
 
             function initTree() {{
                 const container = document.getElementById('tree-viz');
                 const width = container.offsetWidth;
                 const height = 700;
-                const margin = {{top: 20, right: 80, bottom: 20, left: 80}};
+                const margin = {{top: 20, right: 150, bottom: 20, left: 80}};  // Increased right margin for labels
 
                 // Clear existing content to prevent duplicate renders
                 d3.select("#tree-viz").html("");
@@ -446,11 +507,8 @@ with col1:
                     .text(d => {{
                         const isLeftChild = d.source.data.children && d.source.data.children[0] === d.target.data;
                         return isLeftChild ? (d.source.data.left_label || '') : (d.source.data.right_label || '');
-                    }})
-                    .style("fill", d => {{
-                        const isLeftChild = d.source.data.children && d.source.data.children[0] === d.target.data;
-                        return isLeftChild ? "#0066cc" : "#cc6600";
                     }});
+                    // Removed inline .style("fill") so CSS styling applies
 
                 const nodes = svg.selectAll(".node")
                     .data(treeLayout.descendants())
@@ -459,23 +517,82 @@ with col1:
                     .attr("class", "node")
                     .attr("transform", d => `translate(${{d.y}},${{d.x}})`);
 
-                nodes.append("circle")
-                    .attr("r", d => Math.sqrt(d.data.samples) * 2)
-                    .style("fill", d => {{
-                        const prob = d.data.probability;
-                        if (prob > 0.5) {{
-                            const intensity = (prob - 0.5) * 2;
-                            return d3.interpolateGreens(0.3 + intensity * 0.5);
-                        }} else {{
-                            const intensity = (0.5 - prob) * 2;
-                            return d3.interpolateBlues(0.3 + intensity * 0.5);
-                        }}
-                    }})
-                    .on("mouseover", function(event, d) {{
-                        d3.select(this)
-                            .transition()
+                // PIE CHART NODES: Show class distribution as pie charts
+                // Create pie generator
+                const pie = d3.pie()
+                    .value(d => d.value)
+                    .sort(null);
+
+                // Add pie chart to each node
+                nodes.each(function(d) {{
+                    const nodeGroup = d3.select(this);
+                    const radius = Math.sqrt(d.data.samples) * 2;
+
+                    // Create arc generator for this node's radius
+                    const arc = d3.arc()
+                        .innerRadius(0)
+                        .outerRadius(radius);
+
+                    // Prepare data for pie chart: [died, survived]
+                    const pieData = pie([
+                        {{ label: 'died', value: d.data.class_0, color: '#5b8db8' }},  // Blue for died
+                        {{ label: 'survived', value: d.data.class_1, color: '#52b788' }}  // Green for survived
+                    ]);
+
+                    // Create a group for the pie chart
+                    const pieGroup = nodeGroup.append("g")
+                        .attr("class", "pie-chart");
+
+                    // Append pie slices
+                    pieGroup.selectAll("path")
+                        .data(pieData)
+                        .enter()
+                        .append("path")
+                        .attr("d", arc)
+                        .attr("fill", d => d.data.color)
+                        .attr("stroke", "#888")
+                        .attr("stroke-width", 1);
+
+                    // Add invisible circle for hover target (easier to hover)
+                    const hoverCircle = nodeGroup.append("circle")
+                        .attr("r", radius)
+                        .attr("fill", "transparent")
+                        .attr("pointer-events", "all");
+
+                    // Hover effects on the entire node
+                    hoverCircle.on("mouseover", function(event) {{
+                        // Scale up the pie chart
+                        pieGroup.transition()
                             .duration(200)
-                            .attr("r", Math.sqrt(d.data.samples) * 2.5);
+                            .attr("transform", "scale(1.25)");
+
+                        // Highlight the path from root to this node
+                        const hoverPath = getPathToNode(d);
+                        d3.selectAll('.pie-chart')
+                            .classed('hover-active', function() {{
+                                const nodeData = d3.select(this.parentNode).datum();
+                                return hoverPath.includes(nodeData.data.id);
+                            }});
+
+                        d3.selectAll('.node text')
+                            .classed('hover-active', function() {{
+                                const nodeData = d3.select(this.parentNode).datum();
+                                return hoverPath.includes(nodeData.data.id);
+                            }});
+
+                        d3.selectAll('.link')
+                            .classed('hover-active', function() {{
+                                const linkData = d3.select(this).datum();
+                                return hoverPath.includes(linkData.source.data.id) &&
+                                       hoverPath.includes(linkData.target.data.id);
+                            }});
+
+                        d3.selectAll('.edge-label')
+                            .classed('hover-active', function() {{
+                                const linkData = d3.select(this).datum();
+                                return hoverPath.includes(linkData.source.data.id) &&
+                                       hoverPath.includes(linkData.target.data.id);
+                            }});
 
                         const survivalRate = (d.data.probability * 100).toFixed(1);
                         tooltip.transition()
@@ -490,21 +607,37 @@ with col1:
                             .style("left", (event.pageX + 15) + "px")
                             .style("top", (event.pageY - 28) + "px");
                     }})
-                    .on("mouseout", function(event, d) {{
-                        d3.select(this)
-                            .transition()
+                    .on("mouseout", function(event) {{
+                        // Scale back to normal
+                        pieGroup.transition()
                             .duration(200)
-                            .attr("r", Math.sqrt(d.data.samples) * 2);
+                            .attr("transform", "scale(1)");
+
+                        // Remove hover highlighting
+                        d3.selectAll('.pie-chart').classed('hover-active', false);
+                        d3.selectAll('.node text').classed('hover-active', false);
+                        d3.selectAll('.link').classed('hover-active', false);
+                        d3.selectAll('.edge-label').classed('hover-active', false);
 
                         tooltip.transition()
                             .duration(500)
                             .style("opacity", 0);
                     }});
+                }});
 
+                // Labels: leaf nodes on right, internal nodes below
                 nodes.append("text")
-                    .attr("dy", d => d.data.is_leaf ? -15 : 5)
-                    .attr("x", d => d.data.is_leaf ? 0 : 12)
-                    .attr("text-anchor", d => d.data.is_leaf ? "middle" : "start")
+                    .attr("dy", d => {{
+                        const radius = Math.sqrt(d.data.samples) * 2;
+                        // Leaf nodes: center vertically, Internal nodes: below circle
+                        return d.data.is_leaf ? 5 : radius + 15;
+                    }})
+                    .attr("x", d => {{
+                        const radius = Math.sqrt(d.data.samples) * 2;
+                        // Leaf nodes: to the right, Internal nodes: centered
+                        return d.data.is_leaf ? radius + 10 : 0;
+                    }})
+                    .attr("text-anchor", d => d.data.is_leaf ? "start" : "middle")
                     .text(d => {{
                         if (d.data.is_leaf) {{
                             return d.data.predicted_class === 1 ? "✓ Survived" : "✗ Died";
@@ -512,7 +645,7 @@ with col1:
                             return d.data.feature || "";
                         }}
                     }})
-                    .style("fill", d => d.data.is_leaf ? (d.data.predicted_class === 1 ? "#2d6a4f" : "#1e3a8a") : "#333");
+                    .style("fill", "#fafafa");  // White text for all labels
 
                 // Initial highlight only if presetValues exists
                 if (presetValues) {{

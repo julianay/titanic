@@ -14,7 +14,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 ## 🎯 Features
 
-### 💬 **Chat-Based XAI Explorer** (Latest - app.py)
+### 💬 **Chat-Based XAI Explorer** (Latest - app_pie_version.py)
 - **Two-column layout** – visualization on left (75%), chat interface on right (25%)
 - **Tab-based model comparison** – switch between Decision Tree and XGBoost visualizations
   - **Decision Tree tab**: Interactive D3.js tree with dynamic path highlighting (81% accuracy, 60% recall)
@@ -58,11 +58,14 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 ## 🔍 What this app shows
 
-**Two Versions Available:**
+**Three Versions Available:**
 
-### Version 1: Chat-Based Explorer (app.py) - **Recommended**
+### Version 1: Chat-Based Explorer with Pie Charts (app_pie_version.py) - **Recommended**
 - **Left Column (75%)**: Tab-based visualization in dark mode
-  - **Decision Tree tab**: Interactive D3.js tree with dynamic path highlighting
+  - **Decision Tree tab**: Interactive D3.js tree with pie chart nodes showing class distribution
+    - Blue slice for died, green slice for survived
+    - Hover over any node to highlight the decision path from root (gold color)
+    - Click presets to highlight specific passenger paths (white color)
   - **XGBoost tab**: SHAP global feature importance + individual waterfall explanations
 - **Right Column (25%)**: Interactive chat interface for natural language exploration
 - Ask questions like "what about women?" or "show me first class children"
@@ -70,8 +73,14 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 - 4 preset exploration patterns with detailed explanations
 - Cohesive dark theme throughout for improved readability
 - Performance metrics displayed in tab labels for quick comparison
+- **New feature**: Hover path highlighting shows decision flow through the tree
 
-### Version 2: Multi-Page App (src/streamlit_app.py)
+### Version 2: Chat-Based Explorer with Gradient Nodes (app.py)
+- Alternative visualization style using gradient-filled circles instead of pie charts
+- Same chat interface and functionality as Version 1
+- Simpler visual style may be preferred for cleaner aesthetic
+
+### Version 3: Multi-Page App (src/streamlit_app.py)
 
 1. **SHAP Explanations** (Random Forest classifier)
    - Global feature importance visualizations
@@ -142,7 +151,8 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 ```text
 titanic/
-├── app.py                          # NEW: Chat-based XAI Explorer (recommended)
+├── app_pie_version.py              # Chat-based XAI Explorer (recommended, pie chart nodes)
+├── app.py                          # Alternative: gradient node version
 ├── src/
 │   ├── streamlit_app.py           # Multi-page: SHAP explanations
 │   ├── tree_data.py                # Tree data extraction module (visualization-agnostic)
@@ -178,7 +188,10 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 python3 -m pip install --upgrade pip
 python3 -m pip install -r requirements.txt
 
-# Run the chat-based explorer (recommended)
+# Run the chat-based explorer (recommended - pie chart nodes)
+streamlit run app_pie_version.py
+
+# OR run the gradient node version
 streamlit run app.py
 
 # OR run the multi-page version
@@ -186,7 +199,8 @@ streamlit run src/streamlit_app.py
 ```
 
 **Access the app:**
-- **Chat Explorer**: http://localhost:8501 (app.py)
+- **Chat Explorer (pie chart)**: http://localhost:8501 (app_pie_version.py) - **recommended**
+- **Chat Explorer (gradient)**: http://localhost:8501 (app.py) - alternative style
 - **Multi-page version**: http://localhost:8501 (src/streamlit_app.py)
   - Main page (SHAP): http://localhost:8501
   - Decision Tree page: Available in sidebar navigation
@@ -215,6 +229,21 @@ streamlit run src/streamlit_app.py
 - Color coding: Green (survival) vs. Red (death) vs. Blue/Orange (split directions)
 - Animation: Pulsing final node draws attention to prediction
 - Responsive feedback: Smooth transitions create polished UX
+
+**Pie Chart Nodes (app_pie_version.py - Default):**
+- **Chosen as default**: Pie chart visualization provides clearer class distribution at each node
+- **Key advantages**:
+  - Immediate visual of class split at each node (e.g., 70% died / 30% survived)
+  - More information density without adding text labels
+  - Aligns with common data viz patterns (pie = proportions)
+  - Hover path highlighting shows decision flow from root to any node
+- **Implementation details**:
+  - Blue slice for died passengers, green slice for survived
+  - Node size proportional to sample count
+  - Gold color for hover highlighting vs. white for preset selection
+  - Edge labels offset upward on hover for better readability
+  - Optimized label positioning (leaf labels on right, internal labels below)
+- **Alternative**: Gradient node version (app.py) available for simpler aesthetic preference
 
 ---
 

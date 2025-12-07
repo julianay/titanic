@@ -131,6 +131,40 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-07 (Session 3)
+- **NEW EXPERIMENTAL VERSION: Pie Chart Nodes** (`app_pie_version.py`)
+  - Created experimental version to test pie chart visualization vs gradient circles
+  - **Pie chart implementation**:
+    - Each node displays class distribution as a two-slice pie chart
+    - Blue slice (#5b8db8): Died passengers (uses `d.data.class_0`)
+    - Green slice (#52b788): Survived passengers (uses `d.data.class_1`)
+    - Same node sizing: `Math.sqrt(d.data.samples) * 2` radius
+    - Replaces gradient-filled circles from original version
+  - **Hover path highlighting** (NEW FEATURE):
+    - Added `getPathToNode()` function to trace from any node to root
+    - Hovering over a node highlights the entire decision path leading to it
+    - Gold color scheme (#ffd700) for hover state vs white for preset selection
+    - Path highlighting includes nodes, links, labels, and edge labels
+    - Temporary highlighting clears on mouseout
+  - **Label positioning optimizations**:
+    - Node labels: White text (#fafafa) with opacity behavior (40% default, 100% active, 85% hover)
+    - Leaf node labels: Positioned on right side of pie charts (`radius + 10px`) with left alignment
+    - Internal node labels: Positioned below circles (`radius + 15px`) with center alignment
+    - Edge labels: White text with same opacity behavior as node labels
+    - Edge labels on hover: Shift up 16px (`translateY(-16px)`) for better readability when highlighted
+  - **Layout adjustments**:
+    - Increased right margin from 80px to 150px to prevent label clipping
+    - Tree drawing area compressed to accommodate right-aligned labels
+    - SVG size unchanged (full container width)
+  - **Visual indicators**:
+    - Orange "PIE CHART VERSION" badge in header
+    - Updated subtitle to explain pie chart nodes
+    - Page title updated to distinguish from gradient version
+  - **Comparison approach**:
+    - Original `app.py` remains unchanged with gradient circles
+    - Users can run both versions side-by-side for comparison
+    - Both versions share same functionality (chat, SHAP tabs, presets)
+
 ### 2025-12-07 (Session 2)
 - **Bug fixes for tab switching and preset highlighting**:
   - **Fixed**: Decision Tree clears existing SVG before re-rendering to prevent duplicate renders
