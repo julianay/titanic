@@ -412,9 +412,6 @@ with col1:
             const treeData = {tree_json};
             const presetValues = {preset_values_js};
 
-            console.log('Preset hash: {preset_hash}');
-            console.log('Preset values:', presetValues);
-
             let d3Tree = null;
 
             function tracePath(node, inputValues) {{
