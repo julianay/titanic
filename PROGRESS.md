@@ -1,6 +1,6 @@
 # Titanic Explainable AI - Project Progress
 
-**Last Updated:** 2025-12-07
+**Last Updated:** 2025-12-08
 
 ---
 
@@ -14,7 +14,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## ✅ Completed Features
 
-### Chat-Based XAI Explorer (`app.py`) **NEW!**
+### Interactive XAI Explorer (`app_pie_version.py`)
 - ✅ Two-column layout (visualization 75%, chat 25%)
 - ✅ Tab-based interface with performance metrics in labels:
   - **Decision Tree tab**: 81% accuracy, 60% recall
@@ -26,69 +26,38 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
   - 1st class child (best odds)
   - 3rd class male (worst odds)
 - ✅ **Decision Tree visualization** (Tab 1):
-  - D3.js interactive tree with dynamic path highlighting
+  - D3.js interactive tree with donut chart nodes
+  - Proportional edge widths showing passenger flow (1-32px range)
+  - Hover path highlighting with gold color
   - No default path on initial load
-  - Real-time updates based on chat conversation
+  - Real-time updates based on chat conversation and what-if controls
 - ✅ **XGBoost SHAP explanations** (Tab 2):
   - Global feature importance (D3.js horizontal bar chart)
-  - Individual waterfall chart for cohort representatives
+  - Dual waterfall charts (standard + alternative floating bar style)
+  - Individual explanations for cohort representatives
   - Pre-selected woman's path as default (typical 30-year-old in 2nd class)
-  - Dynamic updates based on chat exploration
+  - Dynamic updates based on chat exploration and what-if controls
   - Green/red color coding for positive/negative SHAP values
-- ✅ Scrollable chat history (300px container) with suggestions and input below
-- ✅ Suggestion buttons that act as quick queries
+- ✅ **What-If Scenario controls**:
+  - Interactive sliders and radio buttons (Sex, Class, Age, Fare)
+  - Inline label layout for compact design
+  - Real-time tree path and SHAP value updates
+  - Automatically clears when preset buttons are clicked
+- ✅ **Tab-aware chat interface**:
+  - Context-specific responses based on selected tab
+  - Scrollable chat history (300px container)
+  - Suggestion buttons that act as quick queries
+  - Decision Tree responses: path explanations and survival statistics
+  - XGBoost responses: SHAP explanations with typical passenger details
 - ✅ Full-width visualizations (700px height)
 - ✅ Dark mode UI with cohesive theme (#0e1117 background)
 - ✅ Optimized typography (24px title, 20px h3, 14px body)
 - ✅ Responsive layout
 
 ### Core Application
-- ✅ Streamlit multi-page app architecture
+- ✅ Streamlit single-page application
 - ✅ Docker containerization for Hugging Face Spaces deployment
 - ✅ Clean modular codebase with separation of concerns
-
-### Page 1: SHAP Explanations (`src/streamlit_app.py`)
-- ✅ RandomForest classifier (100 estimators, max_depth=4)
-- ✅ Global SHAP feature importance visualization
-- ✅ Local SHAP explanations for individual passengers
-- ✅ What-if scenario controls (passenger class, sex, age, fare)
-- ✅ Real-time prediction probability display
-- ✅ Two-column responsive layout
-- ✅ Training data preview
-
-### Page 2: Decision Tree Visualization (`src/pages/decision_tree.py`)
-- ✅ Custom D3.js interactive tree (hierarchical layout)
-- ✅ Real-time path tracing through decision nodes
-- ✅ What-if sidebar controls for passenger characteristics
-- ✅ Color-coded nodes:
-  - Green gradient for survival probability
-  - Blue/red for death probability
-  - Size proportional to sample count
-- ✅ Animated predictions with pulsing final leaf node
-- ✅ Dimmed inactive paths (30% opacity)
-- ✅ Edge labels with human-readable values ("female"/"male")
-- ✅ Hover tooltips showing:
-  - Split rules
-  - Sample counts
-  - Survival rates
-  - Probability distributions
-- ✅ Feature importance expander with model feature weights
-- ✅ Model metrics dashboard (accuracy, samples, features)
-- ✅ Educational expander explaining decision tree mechanics
-- ✅ Smooth CSS transitions and animations
-
-### Page 3: Model Comparison - DT vs XGBoost (`src/pages/model_comparison.py`) **NEW!**
-- ✅ Side-by-side comparison of Decision Tree vs XGBoost models
-- ✅ Performance metrics comparison (accuracy, precision, recall, F1-score)
-- ✅ Confusion matrices for both models
-- ✅ Delta indicators showing XGBoost performance gains
-- ✅ SHAP global feature importance for XGBoost (summary plot)
-- ✅ SHAP individual explanations (waterfall plot)
-- ✅ What-if scenarios for both models simultaneously
-- ✅ Side-by-side prediction comparison
-- ✅ Educational content on accuracy-interpretability tradeoff
-- ✅ Technical details expander
-- ✅ Demonstrates why XGBoost needs SHAP for interpretability
 
 ### Data Pipeline (`src/tree_data.py`)
 - ✅ Modular, visualization-agnostic tree extraction
@@ -130,6 +99,25 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ---
 
 ## 🚀 Recent Changes
+
+### 2025-12-08 (Session 6 - Project Cleanup)
+- **PROJECT SIMPLIFICATION: Removed unused files**
+  - **Context**: User is only using `app_pie_version.py` as the main application
+  - **Deleted files**:
+    - `app.py` - Alternative gradient node version (no longer needed)
+    - `src/streamlit_app.py` - Standalone SHAP what-if demo (not used by main app)
+    - `src/pages/decision_tree.py` - Standalone decision tree page (not used by main app)
+    - `src/pages/model_comparison.py` - Model comparison page (not used by main app)
+    - `src/pages/` directory - Removed entirely (no longer needed)
+  - **Remaining files**:
+    - `app_pie_version.py` - Main application with tree, XGBoost, and SHAP visualizations
+    - `src/tree_data.py` - Supporting data module used by main app
+  - **Result**: Streamlined codebase focused on single comprehensive application
+  - **Benefits**:
+    - Clearer project structure
+    - Reduced maintenance burden
+    - Eliminates confusion about which file to run
+    - All features consolidated in one place
 
 ### 2025-12-08 (Session 5 - ONGOING - CRITICAL BUG)
 - **CRITICAL BUG TO FIX**: Chat preset buttons require double-click after using what-if controls
@@ -392,11 +380,13 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ## 🔄 Current State
 
 ### Working Features
-- **Chat-based explorer (app.py)** - Primary demo, fully functional
-- **Multi-page app** - All 3 pages fully functional (SHAP, Decision Tree, Model Comparison)
+- **Interactive XAI Explorer (app_pie_version.py)** - Single comprehensive application, fully functional
 - All visualizations rendering correctly
-- What-if scenarios working in real-time
-- Chat interface with natural language exploration
+  - Decision Tree with donut chart nodes and proportional edge widths
+  - XGBoost with dual waterfall SHAP visualizations
+- What-if scenario controls working in real-time
+- Tab-aware chat interface with natural language exploration
+- Preset exploration patterns (4 demographic cohorts)
 - Docker deployment healthy on Hugging Face Spaces
 - Git repository synced to GitHub and Hugging Face
 
@@ -416,23 +406,20 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ## 📝 Future Enhancement Ideas
 
 ### Potential Features
-- [x] ✅ **COMPLETED**: Add SHAP explanations for XGBoost (implemented in Tab 2 of app.py)
-- [ ] Add SHAP explanations to Decision Tree page (combine both techniques in one view)
-- [ ] Side-by-side comparison: Decision Tree vs. RandomForest predictions
-- [ ] Model performance metrics page:
+- [x] ✅ **COMPLETED**: Add SHAP explanations for XGBoost (implemented in Tab 2 of app_pie_version.py)
+- [ ] Upgrade to LLM-based chat (OpenAI/Anthropic) for true conversational AI
+- [ ] Add more sophisticated pattern matching for natural language queries
+- [ ] Support compound queries ("show me wealthy women")
+- [ ] Model performance metrics visualization:
   - Confusion matrix
   - ROC curve / AUC
   - Precision-Recall curves
-- [ ] Feature importance comparison across models
 - [ ] Downloadable prediction reports (PDF/CSV)
-- [ ] Additional ML models:
-  - Logistic Regression (simple baseline)
-  - Gradient Boosting (XGBoost/LightGBM)
-  - Neural Network (small MLP)
 - [ ] Counterfactual explanations (e.g., "Change age from 30 to 12 to survive")
 - [ ] Batch prediction mode (upload CSV of passengers)
 - [ ] Data exploration page with EDA visualizations
-- [ ] Model training interface (let users adjust hyperparameters)
+- [ ] Voice input capability for chat interface
+- [ ] Export conversation history
 
 ### UX/Design Enhancements
 - [ ] Dark mode toggle
@@ -466,11 +453,8 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 | File | Purpose |
 |------|---------|
-| `app.py` | **NEW** Chat-based XAI Explorer (recommended) |
-| `src/streamlit_app.py` | Multi-page: SHAP explanations page |
+| `app_pie_version.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP |
 | `src/tree_data.py` | ML pipeline & tree extraction module |
-| `src/pages/decision_tree.py` | Multi-page: D3.js Decision Tree visualization |
-| `src/pages/model_comparison.py` | Multi-page: DT vs XGBoost comparison |
 | `requirements.txt` | Python dependencies |
 | `Dockerfile` | Docker configuration for deployment |
 | `README.md` | Project documentation |
@@ -498,12 +482,14 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ### Context Recovery
 If you lose session context, remember:
 1. This is a **portfolio demo**, not production code
-2. **Primary app** (`app.py`): Chat-based XAI Explorer with tabs
-   - Tab 1: Decision Tree with D3.js visualization
-   - Tab 2: XGBoost with SHAP explanations (global + individual waterfall)
-   - 75/25 two-column layout (visualization left, chat right)
+2. **Single application** (`app_pie_version.py`): Interactive XAI Explorer with tabs
+   - Tab 1: Decision Tree with D3.js donut chart node visualization
+   - Tab 2: XGBoost with SHAP explanations (global + dual waterfall charts)
+   - 75/25 two-column layout (visualization left, what-if controls + chat right)
    - Dark mode UI throughout
-3. **Multi-page app** (`src/streamlit_app.py`): SHAP, Decision Tree, Model Comparison pages
+   - What-If controls for real-time exploration
+   - Tab-aware chat with context-specific responses
+3. **Supporting module** (`src/tree_data.py`): ML pipeline and tree extraction
 4. Features reduced to 4 for performance (sex, pclass, age, fare)
 5. Custom D3 visualizations are the key portfolio showcase
 6. Deployed live on HuggingFace Spaces
@@ -513,11 +499,8 @@ If you lose session context, remember:
 # Activate virtual environment
 source venv/bin/activate
 
-# Run chat-based explorer (recommended)
-streamlit run app.py
-
-# OR run multi-page version
-streamlit run src/streamlit_app.py
+# Run the application
+streamlit run app_pie_version.py
 
 # Access app
 http://localhost:8501
