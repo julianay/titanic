@@ -131,6 +131,32 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-08 (Session 5 - ONGOING - CRITICAL BUG)
+- **CRITICAL BUG TO FIX**: Chat preset buttons require double-click after using what-if controls
+  - **Problem**: When user adjusts what-if sliders/radio buttons, then clicks a chat preset button, it requires TWO clicks to work
+  - **Root cause**: Unclear - tried multiple approaches:
+    - Approach 1: Used `on_change` callbacks on widgets → caused double-click issue
+    - Approach 2: Removed callbacks, checked values during render and modified state → caused reruns, still double-click
+    - Approach 3: Removed `st.rerun()` from button handlers → WORSE - now buttons don't work on first click even without using what-if
+    - Approach 4: Restored `st.rerun()` - buttons work on first click normally, but still double-click after using what-if
+  - **Current state**: `st.rerun()` restored in button handlers (lines ~1422, ~1457)
+  - **Code locations**:
+    - Button handlers: Lines ~1394-1422 (preset buttons), ~1427-1457 (chat input)
+    - What-if widget creation: Lines ~1322-1379
+    - What-if update logic: Lines ~211-217 (applies `whatif_updates` BEFORE columns - IMPORTANT!)
+  - **Session state variables involved**:
+    - `whatif_sex`, `whatif_pclass`, `whatif_age`, `whatif_fare` - widget values
+    - `whatif_updates` - pending updates from button clicks (dict with sex/pclass/age/fare)
+    - `current_preset` - tracks which preset was last selected (for label display)
+  - **Desired behavior**:
+    1. User uses what-if controls → tree updates immediately ✅ WORKS
+    2. User clicks chat preset button → updates what-if controls AND tree on FIRST click ❌ REQUIRES 2 CLICKS AFTER USING WHAT-IF
+    3. User manually changes what-if after chat → tree updates, label shows "What-If Scenario" ✅ WORKS
+  - **Key insight**: Streamlit widgets with `key` parameter auto-store values in session state, but you can't modify that state AFTER widget is created in same run
+  - **Recent fix applied**: Moved `whatif_updates` application to BEFORE `st.columns()` (lines 211-217) - this fixed D3 waterfall sync issue
+  - **D3 waterfall was one click behind**: XGBoost D3 waterfalls were reading old session state because `whatif_updates` was applied in col2 AFTER col1 rendered. Fixed by applying updates before columns are created.
+  - **Next approach to try**: Unknown - may need to rethink the entire what-if/chat integration approach
+
 ### 2025-12-08 (Session 5)
 - **MAJOR VISUAL ENHANCEMENTS: Proportional Edge Widths & What-If Controls** (`app_pie_version.py`)
   - **Proportional stroke widths for decision tree edges** (NEW):

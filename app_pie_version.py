@@ -81,6 +81,10 @@ if 'whatif_age' not in st.session_state:
 if 'whatif_fare' not in st.session_state:
     st.session_state.whatif_fare = 15.0
 
+# Pending updates for what-if controls (set when preset is selected via chat)
+if 'whatif_updates' not in st.session_state:
+    st.session_state.whatif_updates = None
+
 # =============================================================================
 # Load Data and Models
 # =============================================================================
@@ -201,6 +205,18 @@ def match_query(query):
         return None, "I can help you explore survival patterns. Try asking about: women, men, social class (1st/2nd/3rd), children, or combinations like '3rd class males'."
 
 # =============================================================================
+# Apply pending what-if updates BEFORE rendering columns
+# =============================================================================
+
+# Apply pending what-if updates from button clicks (before widgets are created)
+if 'whatif_updates' in st.session_state and st.session_state.whatif_updates:
+    st.session_state.whatif_sex = st.session_state.whatif_updates['sex']
+    st.session_state.whatif_pclass = st.session_state.whatif_updates['pclass']
+    st.session_state.whatif_age = st.session_state.whatif_updates['age']
+    st.session_state.whatif_fare = st.session_state.whatif_updates['fare']
+    st.session_state.whatif_updates = None  # Clear after applying
+
+# =============================================================================
 # Two-Column Layout
 # =============================================================================
 
@@ -215,17 +231,15 @@ with col1:
     st.markdown("# Explainable AI Explorer", unsafe_allow_html=True)
     st.markdown('<p style="font-size: 20px; color: #a0a0a0; margin-bottom: 20px;">Interactively compare how two models reason about the same prediction task</p>', unsafe_allow_html=True)
 
-    # Get current preset for highlighting
+    # Get current preset key for chat context
     current_preset_key = st.session_state.current_preset
 
-    # Check if we have what-if values or preset values
-    # If any what-if widget has been interacted with and no preset is active, use what-if values
-    if (current_preset_key is None and
-        'whatif_sex' in st.session_state and
+    # Always use what-if values (they get synced when presets are selected via chat)
+    if ('whatif_sex' in st.session_state and
         'whatif_pclass' in st.session_state and
         'whatif_age' in st.session_state and
         'whatif_fare' in st.session_state):
-        # Build what-if values from session state
+        # Build values from what-if session state
         current_preset_values = {
             'sex': st.session_state.whatif_sex[1],
             'pclass': st.session_state.whatif_pclass[1],
@@ -233,7 +247,8 @@ with col1:
             'fare': st.session_state.whatif_fare
         }
     else:
-        current_preset_values = presets[current_preset_key]["values"] if current_preset_key else None
+        # Fallback to None if what-if not initialized yet
+        current_preset_values = None
 
     # Prepare preset values for JavaScript (null keyword, not string)
     preset_values_js = "null" if current_preset_values is None else json.dumps(current_preset_values)
@@ -864,36 +879,37 @@ with col1:
         with col_global_right:
             st.markdown("#### 💧 Individual Prediction Explanation")
 
-            # Prepare data for alternative waterfall using what-if or preset values
-            if (current_preset_key is None and
-                'whatif_sex' in st.session_state and
-                'whatif_pclass' in st.session_state and
-                'whatif_age' in st.session_state and
-                'whatif_fare' in st.session_state):
-                # What-if scenario is active
-                demo_preset_values = {
-                    'sex': st.session_state.whatif_sex[1],
-                    'pclass': st.session_state.whatif_pclass[1],
-                    'age': st.session_state.whatif_age,
-                    'fare': st.session_state.whatif_fare
-                }
-                sex_label = "Female" if demo_preset_values['sex'] == 0 else "Male"
-                pclass_label = f"{int(demo_preset_values['pclass'])}{'st' if demo_preset_values['pclass']==1 else 'nd' if demo_preset_values['pclass']==2 else 'rd'} class"
-                demo_passenger_desc = f"{sex_label}, {pclass_label}, age {int(demo_preset_values['age'])}, fare £{demo_preset_values['fare']:.2f}"
-                st.markdown(f"Showing XGBoost's reasoning for: **What-If Scenario**")
-                st.caption(f"Analyzing: {demo_passenger_desc}")
-            else:
-                # Use preset (or default to woman's path)
-                demo_preset_key = current_preset_key if current_preset_key else "woman_path"
-                demo_preset_values = presets[demo_preset_key]["values"]
-                demo_preset_info = presets[demo_preset_key]
-                demo_passenger_desc = presets[demo_preset_key]["passenger_desc"]
+            # Prepare data for alternative waterfall - always use what-if values
+            demo_preset_values = {
+                'sex': st.session_state.whatif_sex[1],
+                'pclass': st.session_state.whatif_pclass[1],
+                'age': st.session_state.whatif_age,
+                'fare': st.session_state.whatif_fare
+            }
 
-                if current_preset_key:
-                    st.markdown(f"Showing XGBoost's reasoning for: **{demo_preset_info['label']}**")
-                else:
-                    st.markdown(f"Showing XGBoost's reasoning for a typical woman")
-                st.caption(f"Analyzing: {demo_passenger_desc}")
+            # Generate passenger description from what-if values
+            sex_label = "Female" if demo_preset_values['sex'] == 0 else "Male"
+            pclass_label = f"{int(demo_preset_values['pclass'])}{'st' if demo_preset_values['pclass']==1 else 'nd' if demo_preset_values['pclass']==2 else 'rd'} class"
+            demo_passenger_desc = f"{sex_label}, {pclass_label}, age {int(demo_preset_values['age'])}, fare £{demo_preset_values['fare']:.2f}"
+
+            # Check if current what-if values match the preset (for label display only)
+            values_match_preset = False
+            if current_preset_key:
+                preset_vals = presets[current_preset_key]["values"]
+                values_match_preset = (
+                    demo_preset_values['sex'] == preset_vals['sex'] and
+                    demo_preset_values['pclass'] == preset_vals['pclass'] and
+                    demo_preset_values['age'] == preset_vals['age'] and
+                    demo_preset_values['fare'] == preset_vals['fare']
+                )
+
+            # Show title based on whether values match a preset
+            if current_preset_key and values_match_preset:
+                preset_label = presets[current_preset_key]["label"]
+                st.markdown(f"Showing XGBoost's reasoning for: **{preset_label}**")
+            else:
+                st.markdown(f"Showing XGBoost's reasoning for: **What-If Scenario**")
+            st.caption(f"Analyzing: {demo_passenger_desc}")
 
             # Create input for this passenger
             import pandas as pd
@@ -1363,9 +1379,6 @@ with col2:
             label_visibility="collapsed"
         )
 
-    # Update session state with what-if values (these will be picked up on next rerun)
-    # Note: Values are automatically stored in session state via the 'key' parameter
-
     st.markdown("### 💬 Chat")
 
     # Scrollable chat history container
@@ -1398,8 +1411,18 @@ with col2:
                 "role": "assistant",
                 "content": response_text
             })
-            # Update current preset (highlights tree and updates XGBoost explanations)
-            st.session_state.current_preset = preset_key
+            # Update what-if widget values directly (must be done before widgets are created)
+            # Since we're in a button callback, we'll update on the NEXT rerun
+            preset_values = presets[preset_key]["values"]
+            if 'whatif_updates' not in st.session_state:
+                st.session_state.whatif_updates = {}
+            st.session_state.whatif_updates = {
+                'sex': ("Female", 0) if preset_values['sex'] == 0 else ("Male", 1),
+                'pclass': (preset_values['pclass'], preset_values['pclass']),
+                'age': preset_values['age'],
+                'fare': preset_values['fare']
+            }
+            st.session_state.current_preset = preset_key  # Track which preset for chat context
             st.rerun()
 
     # Chat input at the bottom
@@ -1422,8 +1445,17 @@ with col2:
             "content": response
         })
 
-        # Update current preset if matched (highlights tree and updates XGBoost explanations)
+        # Update what-if controls if matched (highlights tree and updates XGBoost explanations)
         if matched_preset:
-            st.session_state.current_preset = matched_preset
+            preset_values = presets[matched_preset]["values"]
+            if 'whatif_updates' not in st.session_state:
+                st.session_state.whatif_updates = {}
+            st.session_state.whatif_updates = {
+                'sex': ("Female", 0) if preset_values['sex'] == 0 else ("Male", 1),
+                'pclass': (preset_values['pclass'], preset_values['pclass']),
+                'age': preset_values['age'],
+                'fare': preset_values['fare']
+            }
+            st.session_state.current_preset = matched_preset  # Track which preset for chat context
 
         st.rerun()
