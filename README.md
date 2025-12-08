@@ -17,8 +17,16 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 ### 💬 **Chat-Based XAI Explorer** (Latest - app_pie_version.py)
 - **Two-column layout** – visualization on left (75%), chat interface on right (25%)
 - **Tab-based model comparison** – switch between Decision Tree and XGBoost visualizations
-  - **Decision Tree tab**: Interactive D3.js tree with dynamic path highlighting (81% accuracy, 60% recall)
-  - **XGBoost tab**: SHAP explanations with global importance + individual waterfall charts (80% accuracy, 72% recall)
+  - **Decision Tree tab**: Interactive D3.js tree with pie chart nodes showing class distribution (81% accuracy, 60% recall)
+    - Hover over nodes to see decision path from root with gold highlighting
+  - **XGBoost tab**: SHAP explanations with dual waterfall visualizations (80% accuracy, 72% recall)
+    - Global feature importance chart (25% width)
+    - **Alternative waterfall chart** (50% width) - floating bars showing cumulative SHAP impact
+    - Standard waterfall chart (full width below)
+- **Tab-aware chat** – context-specific responses based on which model you're viewing
+  - Decision Tree: Path explanations and survival statistics
+  - XGBoost: SHAP explanations with typical passenger details (e.g., "female, 2nd class, age 30, fare £15")
+- **Dynamic descriptions** – chat header adapts to selected model
 - **Dark mode UI** – cohesive dark theme matching Streamlit's native chat interface
 - **Natural language exploration** – ask questions like "what about women?" or "tell me about first class"
 - **Keyword matching** – intelligent query interpretation for exploration patterns
@@ -26,7 +34,6 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 - **Dynamic updates** – both visualizations update based on conversation
 - **Scrollable chat history** – 300px scrollable container for conversation messages
 - **Optimized layout** – reduced padding for maximum content visibility
-- **Note**: When switching from XGBoost to Decision Tree tab, click any preset button to display the tree
 
 ### 📊 **SHAP Explanations** (Multi-page version)
 - **Global model behavior** – which features matter most overall
@@ -66,14 +73,20 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
     - Blue slice for died, green slice for survived
     - Hover over any node to highlight the decision path from root (gold color)
     - Click presets to highlight specific passenger paths (white color)
-  - **XGBoost tab**: SHAP global feature importance + individual waterfall explanations
-- **Right Column (25%)**: Interactive chat interface for natural language exploration
+  - **XGBoost tab**: SHAP explanations with dual waterfall visualizations
+    - Top row: Global feature importance (25%) + Alternative waterfall with floating bars (50%)
+    - Alternative waterfall shows cumulative SHAP impact from base value to final prediction
+    - Bottom: Standard waterfall chart (full width)
+    - All charts display typical passenger characteristics being analyzed
+- **Right Column (25%)**: Interactive chat interface with tab-aware responses
+  - Decision Tree: Shows path explanations and survival statistics
+  - XGBoost: Explains typical passenger being analyzed (e.g., "female, 2nd class, age 30, fare £15")
 - Ask questions like "what about women?" or "show me first class children"
 - Visualizations update based on your conversation
 - 4 preset exploration patterns with detailed explanations
 - Cohesive dark theme throughout for improved readability
 - Performance metrics displayed in tab labels for quick comparison
-- **New feature**: Hover path highlighting shows decision flow through the tree
+- **Radio-style tabs** prevent visualization rendering issues
 
 ### Version 2: Chat-Based Explorer with Gradient Nodes (app.py)
 - Alternative visualization style using gradient-filled circles instead of pie charts
@@ -115,13 +128,17 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 **UX / Data Viz Highlights**
 
-- **Tab-based comparison** – seamlessly switch between Decision Tree and XGBoost views
+- **Tab-aware chat** – context-specific responses adapt to which model you're viewing
+- **Alternative waterfall visualization** – floating bars show cumulative SHAP impact progression
 - **Interactive visualizations** using D3.js for custom tree and SHAP charts
+- **Hover path highlighting** – trace decision paths from root to any node in the tree
 - **Conversational exploration** – chat interface with natural language queries
 - **Dynamic updates** – visualizations respond to chat interactions in real-time
+- **Typical passenger transparency** – clearly shows which specific passenger is being analyzed for SHAP
 - **What-if scenarios** on all pages for hands-on exploration
 - **Human-readable labels** (decoded categorical features)
 - **Dark mode design** with cohesive theming and smooth CSS transitions
+- **Radio-style tabs** – eliminates visualization rendering bugs
 
 ---
 
@@ -262,15 +279,6 @@ streamlit run src/streamlit_app.py
 - [ ] Implement feature importance comparison across models
 - [ ] Add downloadable prediction reports
 - [ ] Add data exploration page with EDA visualizations
-
----
-
-## 🔧 Troubleshooting
-
-**Decision Tree not displaying when switching tabs?**
-- **Issue**: The Decision Tree visualization may not display when switching from the XGBoost tab back to the Decision Tree tab
-- **Workaround**: Click any preset button (e.g., "Shows women's path") to display the tree with highlighting
-- **Note**: This is a known limitation with Streamlit's iframe component rendering. The tree displays correctly on initial page load and when presets are selected.
 
 ---
 

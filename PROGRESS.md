@@ -131,6 +131,44 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-07 (Session 4)
+- **MAJOR IMPROVEMENTS: Alternative Waterfall Chart & Tab-Aware Chat** (`app_pie_version.py`)
+  - **Alternative waterfall chart visualization** (NEW):
+    - Added floating bar waterfall chart alongside traditional horizontal bar chart
+    - Shows cumulative SHAP impact progression from base value to final prediction
+    - Features on Y-axis (vertical), cumulative SHAP values on X-axis (horizontal)
+    - **Floating bars**: Each bar positioned at its cumulative value, not anchored at zero
+    - **Connector lines**: Dashed lines (#888, 3px dash) show flow between contributions
+    - **Color scheme**: Green (#52b788) for positive, red (#e76f51) for negative, gray (#666) for base
+    - **Layout**: Two-column display (1:2 ratio) - Global importance (25%) + Waterfall (50%)
+    - Chart dimensions: 650x300px for waterfall, 280x300px for global chart
+    - Title displays base value → final prediction (e.g., "Base Value: -0.386 → Final Prediction: -1.012")
+  - **Tab tracking with radio buttons** (REPLACED st.tabs):
+    - Replaced `st.tabs()` with `st.radio()` to enable tab selection tracking
+    - **Fixed disappearing tree bug**: Conditional rendering eliminates iframe re-render issues
+    - Custom CSS styles radio buttons to look like tabs (rounded corners, hover effects, active state)
+    - Green bottom border (#4CAF50) on selected tab for clear visual feedback
+    - Tab options include performance metrics in labels for quick comparison
+  - **Tab-aware chat responses**:
+    - Chat responses now adapt based on which model tab is selected
+    - **Decision Tree tab**: Shows tree path explanations (e.g., "Here's the typical path women took...")
+    - **XGBoost tab**: Shows SHAP explanations with typical passenger details (e.g., "I'm using a typical woman passenger: female, 2nd class, age 30, fare £15...")
+    - Each preset includes both `response` (tree) and `xgb_response` (SHAP) text
+    - Passenger descriptions appear in chart captions (e.g., "Analyzing: Typical woman: Female, 2nd class, age 30, fare £15")
+  - **Dynamic chat descriptions**:
+    - Chat header description changes based on selected tab
+    - Decision Tree: "Explore how the Decision Tree makes transparent, rule-based predictions..."
+    - XGBoost: "Explore how XGBoost makes predictions and what drives them using SHAP explanations..."
+  - **Typical passenger documentation**:
+    - Added `passenger_desc` field to each preset (e.g., "Typical man: Male, 3rd class, age 30, fare £10")
+    - Passenger characteristics displayed in waterfall chart captions
+    - Clear explanation of which specific passenger is being analyzed for SHAP values
+  - **UX improvements**:
+    - Alternative waterfall given 2x the space of global chart for better visibility
+    - Chart titles synchronized across both waterfall visualizations
+    - Standard waterfall chart renamed to "Standard Waterfall Chart" to distinguish from alternative
+    - Improved left margin (100px) on alternative waterfall for longer feature labels
+
 ### 2025-12-07 (Session 3)
 - **NEW EXPERIMENTAL VERSION: Pie Chart Nodes** (`app_pie_version.py`)
   - Created experimental version to test pie chart visualization vs gradient circles

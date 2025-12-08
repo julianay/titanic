@@ -50,6 +50,30 @@ st.markdown("""
     h3 {
         font-size: 20px !important;
     }
+
+    /* Style radio buttons to look like tabs */
+    div[data-testid="stRadio"] > div {
+        gap: 0px;
+    }
+
+    div[data-testid="stRadio"] label {
+        background-color: #262730;
+        padding: 12px 24px;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+        margin-right: 4px;
+    }
+
+    div[data-testid="stRadio"] label:hover {
+        background-color: #333;
+    }
+
+    div[data-testid="stRadio"] input:checked + div {
+        background-color: #0e1117 !important;
+        border-bottom: 3px solid #4CAF50;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -70,6 +94,9 @@ if 'highlighted_path' not in st.session_state:
 
 if 'current_preset' not in st.session_state:
     st.session_state.current_preset = None  # No default - shows global view initially
+
+if 'selected_tab' not in st.session_state:
+    st.session_state.selected_tab = "DECISION TREE  Accuracy: 81% | Recall: 60%"  # Track which tab is active
 
 # =============================================================================
 # Load Data and Models
@@ -125,22 +152,30 @@ presets = {
     "woman_path": {
         "label": "Shows women's path (high survival)",
         "values": {'sex': 0, 'pclass': 2, 'age': 30, 'fare': 15.0},
-        "response": "Women had a 74% survival rate. The 'women and children first' protocol was largely followed. Here's the typical path women took through the decision tree."
+        "response": "Women had a 74% survival rate. The 'women and children first' protocol was largely followed. Here's the typical path women took through the decision tree.",
+        "xgb_response": "Women had a 74% survival rate. For the SHAP analysis, I'm using a **typical woman passenger**: female, 2nd class, age 30, fare £15. The XGBoost tab shows which features pushed this passenger toward survival.",
+        "passenger_desc": "Typical woman: Female, 2nd class, age 30, fare £15"
     },
     "man_path": {
         "label": "Shows men's path (low survival)",
         "values": {'sex': 1, 'pclass': 3, 'age': 30, 'fare': 10.0},
-        "response": "Men had only a 19% survival rate (109 survived out of 577). Here's their typical path through the tree."
+        "response": "Men had only a 19% survival rate (109 survived out of 577). Here's their typical path through the tree.",
+        "xgb_response": "Men had only a 19% survival rate (109 survived out of 577). For the SHAP analysis, I'm using a **typical man passenger**: male, 3rd class, age 30, fare £10. The XGBoost tab shows which features pushed this passenger toward death.",
+        "passenger_desc": "Typical man: Male, 3rd class, age 30, fare £10"
     },
     "first_class_child": {
         "label": "Shows 1st class child (best odds)",
         "values": {'sex': 0, 'pclass': 1, 'age': 5, 'fare': 50.0},
-        "response": "First class children had the best odds. Children, especially in 1st and 2nd class, had high survival rates. Here's their path through the tree."
+        "response": "First class children had the best odds. Children, especially in 1st and 2nd class, had high survival rates. Here's their path through the tree.",
+        "xgb_response": "First class children had the best odds. For the SHAP analysis, I'm using a **1st class child**: female, 1st class, age 5, fare £50. The XGBoost tab shows which features strongly pushed this passenger toward survival.",
+        "passenger_desc": "1st class child: Female, 1st class, age 5, fare £50"
     },
     "third_class_male": {
         "label": "Shows 3rd class male (worst odds)",
         "values": {'sex': 1, 'pclass': 3, 'age': 40, 'fare': 8.0},
-        "response": "Third class males had the worst odds (24% survival rate). They were located furthest from lifeboats and had limited access to the deck."
+        "response": "Third class males had the worst odds (24% survival rate). They were located furthest from lifeboats and had limited access to the deck.",
+        "xgb_response": "Third class males had the worst odds (24% survival rate). For the SHAP analysis, I'm using a **3rd class male**: male, 3rd class, age 40, fare £8. The XGBoost tab shows which features strongly pushed this passenger toward death.",
+        "passenger_desc": "3rd class male: Male, 3rd class, age 40, fare £8"
     }
 }
 
@@ -204,11 +239,15 @@ with col1:
     # Prepare preset values for JavaScript (null keyword, not string)
     preset_values_js = "null" if current_preset_values is None else json.dumps(current_preset_values)
 
-    # Tabs for model comparison
-    tab1, tab2 = st.tabs([
-        "DECISION TREE  Accuracy: 81% | Recall: 60%",
-        "XGBOOST  Accuracy: 80% | Recall: 72%"
-    ])
+    # Tab selector with radio buttons (styled horizontally)
+    st.session_state.selected_tab = st.radio(
+        "Select Model",
+        ["DECISION TREE  Accuracy: 81% | Recall: 60%", "XGBOOST  Accuracy: 80% | Recall: 72%"],
+        index=0 if st.session_state.selected_tab in ["Decision Tree", "DECISION TREE  Accuracy: 81% | Recall: 60%"] else 1,
+        horizontal=True,
+        label_visibility="collapsed",
+        key="tab_selector"
+    )
 
     # D3 Tree HTML - Include a hash of preset to make content unique when it changes
     import hashlib
@@ -679,26 +718,23 @@ with col1:
     </html>
     """
 
-    # Render tree in both tabs (same tree for now)
-    with tab1:
+    # Render content based on selected tab
+    if "DECISION TREE" in st.session_state.selected_tab:
         components.html(html_code, height=800, scrolling=False)
 
-    with tab2:
+    else:  # XGBoost tab
         st.markdown("### 🔍 Making XGBoost Interpretable with SHAP")
         st.markdown("""
         While XGBoost is more accurate, it's harder to understand *why* it makes predictions.
         **SHAP (SHapley Additive exPlanations)** helps explain XGBoost's decisions.
         """)
 
-        st.markdown("#### 📈 Global Feature Importance")
-        st.markdown("This shows which features are most important across all predictions:")
-
-        # Calculate mean absolute SHAP values for each feature
+        # Calculate mean absolute SHAP values for each feature (needed for both charts)
         import numpy as np
         mean_shap_values = np.abs(shap_values).mean(axis=0)
         feature_names = X_sample.columns.tolist()
 
-        # Create data for waterfall chart
+        # Create data for global chart
         shap_data = []
         for i, (feat, val) in enumerate(zip(feature_names, mean_shap_values)):
             shap_data.append({"feature": feat, "value": float(val)})
@@ -707,126 +743,364 @@ with col1:
         shap_data_sorted = sorted(shap_data, key=lambda x: x['value'], reverse=True)
         shap_json = json.dumps(shap_data_sorted)
 
-        # D3 Waterfall Chart
-        waterfall_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <script src="https://d3js.org/d3.v7.min.js"></script>
-            <style>
-                body {{
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                    background: #0e1117;
-                    color: #fafafa;
-                    padding: 20px;
-                }}
-                .bar {{
-                    fill: #52b788;
-                    opacity: 0.8;
-                }}
-                .bar:hover {{
-                    opacity: 1;
-                }}
-                .axis text {{
-                    fill: #fafafa;
-                    font-size: 12px;
-                }}
-                .axis line, .axis path {{
-                    stroke: #666;
-                }}
-            </style>
-        </head>
-        <body>
-            <div id="waterfall"></div>
-            <script>
-                const data = {shap_json};
+        # Two-column layout for global charts (1:2 ratio = 25% global, 50% waterfall)
+        col_global_left, col_global_right = st.columns([1, 2])
 
-                const margin = {{top: 20, right: 30, bottom: 60, left: 120}};
-                const width = 700 - margin.left - margin.right;
-                const height = 300 - margin.top - margin.bottom;
+        with col_global_left:
+            st.markdown("#### 📈 Global Feature Importance")
+            st.caption("Which features matter most across all predictions")
 
-                const svg = d3.select("#waterfall")
-                    .append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
-                    .append("g")
-                    .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
+            # D3 Global Feature Importance Chart
+            waterfall_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <script src="https://d3js.org/d3.v7.min.js"></script>
+                <style>
+                    body {{
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        background: #0e1117;
+                        color: #fafafa;
+                        padding: 20px;
+                    }}
+                    .bar {{
+                        fill: #52b788;
+                        opacity: 0.8;
+                    }}
+                    .bar:hover {{
+                        opacity: 1;
+                    }}
+                    .axis text {{
+                        fill: #fafafa;
+                        font-size: 12px;
+                    }}
+                    .axis line, .axis path {{
+                        stroke: #666;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div id="waterfall"></div>
+                <script>
+                    const data = {shap_json};
 
-                // Create scales
-                const y = d3.scaleBand()
-                    .domain(data.map(d => d.feature))
-                    .range([0, height])
-                    .padding(0.2);
+                    const margin = {{top: 20, right: 30, bottom: 60, left: 80}};
+                    const width = 280 - margin.left - margin.right;
+                    const height = 300 - margin.top - margin.bottom;
 
-                const x = d3.scaleLinear()
-                    .domain([0, d3.max(data, d => d.value)])
-                    .range([0, width]);
+                    const svg = d3.select("#waterfall")
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
 
-                // Add bars
-                svg.selectAll(".bar")
-                    .data(data)
-                    .enter()
-                    .append("rect")
-                    .attr("class", "bar")
-                    .attr("y", d => y(d.feature))
-                    .attr("x", 0)
-                    .attr("height", y.bandwidth())
-                    .attr("width", d => x(d.value));
+                    // Create scales
+                    const y = d3.scaleBand()
+                        .domain(data.map(d => d.feature))
+                        .range([0, height])
+                        .padding(0.2);
 
-                // Add value labels
-                svg.selectAll(".label")
-                    .data(data)
-                    .enter()
-                    .append("text")
-                    .attr("class", "label")
-                    .attr("y", d => y(d.feature) + y.bandwidth() / 2)
-                    .attr("x", d => x(d.value) + 5)
-                    .attr("dy", "0.35em")
-                    .attr("fill", "#fafafa")
-                    .attr("font-size", "11px")
-                    .text(d => d.value.toFixed(3));
+                    const x = d3.scaleLinear()
+                        .domain([0, d3.max(data, d => d.value)])
+                        .range([0, width]);
 
-                // Add Y axis
-                svg.append("g")
-                    .attr("class", "axis")
-                    .call(d3.axisLeft(y));
+                    // Add bars
+                    svg.selectAll(".bar")
+                        .data(data)
+                        .enter()
+                        .append("rect")
+                        .attr("class", "bar")
+                        .attr("y", d => y(d.feature))
+                        .attr("x", 0)
+                        .attr("height", y.bandwidth())
+                        .attr("width", d => x(d.value));
 
-                // Add X axis
-                svg.append("g")
-                    .attr("class", "axis")
-                    .attr("transform", `translate(0,${{height}})`)
-                    .call(d3.axisBottom(x).ticks(5));
+                    // Add value labels
+                    svg.selectAll(".label")
+                        .data(data)
+                        .enter()
+                        .append("text")
+                        .attr("class", "label")
+                        .attr("y", d => y(d.feature) + y.bandwidth() / 2)
+                        .attr("x", d => x(d.value) + 5)
+                        .attr("dy", "0.35em")
+                        .attr("fill", "#fafafa")
+                        .attr("font-size", "11px")
+                        .text(d => d.value.toFixed(3));
 
-                // Add X axis label
-                svg.append("text")
-                    .attr("x", width / 2)
-                    .attr("y", height + 40)
-                    .attr("fill", "#fafafa")
-                    .attr("text-anchor", "middle")
-                    .attr("font-size", "12px")
-                    .text("Mean |SHAP value|");
-            </script>
-        </body>
-        </html>
-        """
+                    // Add Y axis
+                    svg.append("g")
+                        .attr("class", "axis")
+                        .call(d3.axisLeft(y));
 
-        components.html(waterfall_html, height=400, scrolling=False)
+                    // Add X axis
+                    svg.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", `translate(0,${{height}})`)
+                        .call(d3.axisBottom(x).ticks(5));
+
+                    // Add X axis label
+                    svg.append("text")
+                        .attr("x", width / 2)
+                        .attr("y", height + 40)
+                        .attr("fill", "#fafafa")
+                        .attr("text-anchor", "middle")
+                        .attr("font-size", "11px")
+                        .text("Mean |SHAP value|");
+                </script>
+            </body>
+            </html>
+            """
+
+            components.html(waterfall_html, height=400, scrolling=False)
+
+        with col_global_right:
+            st.markdown("#### 💧 Individual Prediction Explanation")
+
+            # Prepare data for alternative waterfall using a sample preset
+            # Use woman's path as default for demonstration
+            demo_preset_key = current_preset_key if current_preset_key else "woman_path"
+            demo_preset_values = presets[demo_preset_key]["values"]
+            demo_preset_info = presets[demo_preset_key]
+            demo_passenger_desc = presets[demo_preset_key]["passenger_desc"]
+
+            if current_preset_key:
+                st.markdown(f"Showing XGBoost's reasoning for: **{demo_preset_info['label']}**")
+            else:
+                st.markdown(f"Showing XGBoost's reasoning for a typical woman")
+            st.caption(f"Analyzing: {demo_passenger_desc}")
+
+            # Create input for this passenger
+            import pandas as pd
+            x_input_demo = pd.DataFrame([demo_preset_values])
+
+            # Get SHAP values for this passenger
+            shap_values_demo = shap_explainer.shap_values(x_input_demo)[0]
+            base_value_demo = shap_explainer.expected_value
+            final_prediction_demo = float(base_value_demo + np.sum(shap_values_demo))
+
+            # Prepare waterfall data
+            waterfall_data_demo = []
+            cumulative_demo = base_value_demo
+
+            for i, (feat, shap_val) in enumerate(zip(x_input_demo.columns, shap_values_demo)):
+                waterfall_data_demo.append({
+                    "feature": feat,
+                    "value": float(shap_val),
+                    "start": float(cumulative_demo),
+                    "end": float(cumulative_demo + shap_val),
+                    "feature_value": float(x_input_demo.iloc[0][feat])
+                })
+                cumulative_demo += shap_val
+
+            # Sort by absolute SHAP value
+            waterfall_data_sorted_demo = sorted(waterfall_data_demo, key=lambda x: abs(x['value']), reverse=True)
+
+            # Prepare data for alternative waterfall (use same data, but need cumulative positions)
+            alternative_waterfall_data_demo = []
+            cumulative_alt_demo = base_value_demo
+
+            # Add base value as starting point
+            alternative_waterfall_data_demo.append({
+                "feature": "Base Value",
+                "value": 0,
+                "start": float(base_value_demo),
+                "end": float(base_value_demo),
+                "cumulative": float(base_value_demo),
+                "feature_value": ""
+            })
+
+            # Add each feature contribution
+            for item in waterfall_data_sorted_demo:
+                cumulative_alt_demo += item['value']
+                alternative_waterfall_data_demo.append({
+                    "feature": item['feature'],
+                    "value": float(item['value']),
+                    "start": float(cumulative_alt_demo - item['value']),
+                    "end": float(cumulative_alt_demo),
+                    "cumulative": float(cumulative_alt_demo),
+                    "feature_value": float(item['feature_value'])
+                })
+
+            alternative_waterfall_json_demo = json.dumps(alternative_waterfall_data_demo)
+
+            # D3 Alternative Waterfall Chart with Floating Bars (Horizontal)
+            alternative_waterfall_html_demo = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <script src="https://d3js.org/d3.v7.min.js"></script>
+                    <style>
+                        body {{
+                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                            background: #0e1117;
+                            color: #fafafa;
+                            padding: 20px;
+                        }}
+                        .bar-positive {{
+                            fill: #52b788;
+                            stroke: #6fcf97;
+                            stroke-width: 1.5;
+                        }}
+                        .bar-negative {{
+                            fill: #e76f51;
+                            stroke: #f4a261;
+                            stroke-width: 1.5;
+                        }}
+                        .bar-base {{
+                            fill: #666;
+                            stroke: #888;
+                            stroke-width: 1.5;
+                        }}
+                        .connector-line {{
+                            stroke: #888;
+                            stroke-width: 1.5;
+                            stroke-dasharray: 3,3;
+                        }}
+                        .axis text {{
+                            fill: #fafafa;
+                            font-size: 10px;
+                        }}
+                        .axis line, .axis path {{
+                            stroke: #666;
+                        }}
+                        .value-label {{
+                            fill: #fafafa;
+                            font-size: 9px;
+                            font-weight: bold;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div id="alternative-waterfall-global"></div>
+                    <script>
+                        const data = {alternative_waterfall_json_demo};
+                        const baseValue = {base_value_demo};
+                        const finalValue = {final_prediction_demo};
+
+                        const margin = {{top: 20, right: 60, bottom: 50, left: 100}};
+                        const width = 650 - margin.left - margin.right;
+                        const height = 300 - margin.top - margin.bottom;
+
+                        const svg = d3.select("#alternative-waterfall-global")
+                            .append("svg")
+                            .attr("width", width + margin.left + margin.right)
+                            .attr("height", height + margin.top + margin.bottom)
+                            .append("g")
+                            .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
+
+                        // Title with base value and final prediction
+                        svg.append("text")
+                            .attr("x", width / 2)
+                            .attr("y", -5)
+                            .attr("text-anchor", "middle")
+                            .attr("fill", "#fafafa")
+                            .attr("font-size", "11px")
+                            .attr("font-weight", "bold")
+                            .text(`Base Value: ${{baseValue.toFixed(3)}} → Final Prediction: ${{finalValue.toFixed(3)}}`);
+
+                        // Create scales - HORIZONTAL orientation
+                        const y = d3.scaleBand()
+                            .domain(data.map((d, i) => i))
+                            .range([0, height])
+                            .padding(0.3);
+
+                        const allValues = data.flatMap(d => [d.start, d.end]);
+                        const xExtent = d3.extent(allValues);
+                        const x = d3.scaleLinear()
+                            .domain(xExtent)
+                            .range([0, width])
+                            .nice();
+
+                        // Add X axis
+                        svg.append("g")
+                            .attr("class", "axis")
+                            .attr("transform", `translate(0,${{height}})`)
+                            .call(d3.axisBottom(x).ticks(5));
+
+                        // Add X axis label
+                        svg.append("text")
+                            .attr("x", width / 2)
+                            .attr("y", height + 38)
+                            .attr("fill", "#fafafa")
+                            .attr("text-anchor", "middle")
+                            .attr("font-size", "11px")
+                            .text("Cumulative SHAP");
+
+                        // Draw connector lines between bars (horizontal)
+                        for (let i = 0; i < data.length - 1; i++) {{
+                            const current = data[i];
+                            const next = data[i + 1];
+
+                            svg.append("line")
+                                .attr("class", "connector-line")
+                                .attr("x1", x(current.end))
+                                .attr("y1", y(i) + y.bandwidth())
+                                .attr("x2", x(next.start))
+                                .attr("y2", y(i + 1));
+                        }}
+
+                        // Draw floating bars (horizontal)
+                        svg.selectAll(".bar")
+                            .data(data)
+                            .enter()
+                            .append("rect")
+                            .attr("class", (d, i) => {{
+                                if (i === 0) return "bar-base";
+                                return d.value >= 0 ? "bar-positive" : "bar-negative";
+                            }})
+                            .attr("y", (d, i) => y(i))
+                            .attr("x", d => x(Math.min(d.start, d.end)))
+                            .attr("height", y.bandwidth())
+                            .attr("width", d => Math.abs(x(d.start) - x(d.end)) || 3)
+                            .attr("rx", 2);
+
+                        // Add value labels on bars (skip base value, smaller font)
+                        svg.selectAll(".value-label")
+                            .data(data.filter((d, i) => i > 0))
+                            .enter()
+                            .append("text")
+                            .attr("class", "value-label")
+                            .attr("y", (d, i) => y(i + 1) + y.bandwidth() / 2)
+                            .attr("x", d => x(d.end) + (d.value >= 0 ? 5 : -5))
+                            .attr("dy", "0.35em")
+                            .attr("text-anchor", d => d.value >= 0 ? "start" : "end")
+                            .attr("fill", d => d.value >= 0 ? "#52b788" : "#e76f51")
+                            .text(d => (d.value >= 0 ? "+" : "") + d.value.toFixed(2));
+
+                        // Add Y axis with feature labels
+                        svg.append("g")
+                            .attr("class", "axis")
+                            .call(d3.axisLeft(y).tickFormat((d, i) => {{
+                                const item = data[i];
+                                if (i === 0) return "Base";
+                                return item.feature_value !== "" ? `${{item.feature}}=${{item.feature_value}}` : item.feature;
+                            }}));
+                    </script>
+                </body>
+                </html>
+            """
+
+            components.html(alternative_waterfall_html_demo, height=400, scrolling=False)
 
         st.markdown("---")
 
-        # Individual Prediction Waterfall (based on current preset)
-        st.markdown("#### 💧 Individual Prediction Explanation")
+        # Individual Prediction Waterfall (based on current preset) - Standard View
+        st.markdown("#### 💧 Standard Waterfall Chart")
 
         # Use woman's path as default for XGBoost tab if nothing selected
         xgb_preset_key = current_preset_key if current_preset_key else "woman_path"
         xgb_preset_values = presets[xgb_preset_key]["values"]
         xgb_preset_info = presets[xgb_preset_key]
+        xgb_passenger_desc = presets[xgb_preset_key]["passenger_desc"]
 
         if current_preset_key:
             st.markdown(f"Showing XGBoost's reasoning for: **{xgb_preset_info['label']}**")
+            st.caption(f"Analyzing: {xgb_passenger_desc}")
         else:
-            st.markdown(f"Showing XGBoost's reasoning for a typical woman: **30-year-old in 2nd class**")
-            st.caption("Click suggestions or ask questions to explore other cohorts")
+            st.markdown(f"Showing XGBoost's reasoning for a typical woman")
+            st.caption(f"Analyzing: {xgb_passenger_desc} • Click suggestions to explore other cohorts")
 
         # Create input for this passenger
         import pandas as pd
@@ -1005,8 +1279,19 @@ with col1:
 # =============================================================================
 
 with col2:
-    # Description paragraph at top of chat area
-    st.markdown('<p style="font-size: 14px; color: #d0d0d0; line-height: 1.6; margin-bottom: 20px;">Explore how an interpretable Decision Tree and a higher-performing XGBoost model approach survival predictions differently.<br>Use the chat to highlight decision paths, inspect cohorts, and uncover where model transparency and model accuracy diverge.</p>', unsafe_allow_html=True)
+    # Description paragraph at top of chat area - changes based on selected tab
+    if "DECISION TREE" in st.session_state.selected_tab:
+        description = """<p style="font-size: 14px; color: #d0d0d0; line-height: 1.6; margin-bottom: 20px;">
+        Explore how the <strong>Decision Tree</strong> makes transparent, rule-based predictions.<br>
+        Use the chat to highlight decision paths and explore how different passenger characteristics lead to survival or death predictions.
+        </p>"""
+    else:  # XGBoost tab
+        description = """<p style="font-size: 14px; color: #d0d0d0; line-height: 1.6; margin-bottom: 20px;">
+        Explore how <strong>XGBoost</strong> makes predictions and what drives them using SHAP explanations.<br>
+        Use the chat to see which features push typical passengers toward survival or death, and understand the model's reasoning through interactive visualizations.
+        </p>"""
+
+    st.markdown(description, unsafe_allow_html=True)
 
     st.markdown("### 💬 Chat")
 
@@ -1027,10 +1312,18 @@ with col2:
                 "role": "user",
                 "content": preset_info["label"]
             })
-            # Add bot response to chat
+
+            # Add bot response based on which tab is active
+            if "XGBOOST" in st.session_state.selected_tab and "xgb_response" in preset_info:
+                # Show XGBoost-specific explanation with typical passenger
+                response_text = preset_info["xgb_response"]
+            else:
+                # Show Decision Tree explanation
+                response_text = preset_info["response"]
+
             st.session_state.chat_history.append({
                 "role": "assistant",
-                "content": preset_info["response"]
+                "content": response_text
             })
             # Update current preset (highlights tree and updates XGBoost explanations)
             st.session_state.current_preset = preset_key
