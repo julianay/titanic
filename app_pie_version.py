@@ -50,30 +50,6 @@ st.markdown("""
     h3 {
         font-size: 20px !important;
     }
-
-    /* Style radio buttons to look like tabs */
-    div[data-testid="stRadio"] > div {
-        gap: 0px;
-    }
-
-    div[data-testid="stRadio"] label {
-        background-color: #262730;
-        padding: 12px 24px;
-        border-radius: 8px 8px 0 0;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.2s;
-        margin-right: 4px;
-    }
-
-    div[data-testid="stRadio"] label:hover {
-        background-color: #333;
-    }
-
-    div[data-testid="stRadio"] input:checked + div {
-        background-color: #0e1117 !important;
-        border-bottom: 3px solid #4CAF50;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -89,14 +65,21 @@ if 'chat_history' not in st.session_state:
         }
     ]
 
-if 'highlighted_path' not in st.session_state:
-    st.session_state.highlighted_path = None
-
 if 'current_preset' not in st.session_state:
     st.session_state.current_preset = None  # No default - shows global view initially
 
 if 'selected_tab' not in st.session_state:
     st.session_state.selected_tab = "DECISION TREE  Accuracy: 81% | Recall: 60%"  # Track which tab is active
+
+# Initialize what-if controls with default values (Female, 2nd class, age 30, fare 15)
+if 'whatif_sex' not in st.session_state:
+    st.session_state.whatif_sex = ("Female", 0)
+if 'whatif_pclass' not in st.session_state:
+    st.session_state.whatif_pclass = (2, 2)
+if 'whatif_age' not in st.session_state:
+    st.session_state.whatif_age = 30
+if 'whatif_fare' not in st.session_state:
+    st.session_state.whatif_fare = 15.0
 
 # =============================================================================
 # Load Data and Models
@@ -234,7 +217,23 @@ with col1:
 
     # Get current preset for highlighting
     current_preset_key = st.session_state.current_preset
-    current_preset_values = presets[current_preset_key]["values"] if current_preset_key else None
+
+    # Check if we have what-if values or preset values
+    # If any what-if widget has been interacted with and no preset is active, use what-if values
+    if (current_preset_key is None and
+        'whatif_sex' in st.session_state and
+        'whatif_pclass' in st.session_state and
+        'whatif_age' in st.session_state and
+        'whatif_fare' in st.session_state):
+        # Build what-if values from session state
+        current_preset_values = {
+            'sex': st.session_state.whatif_sex[1],
+            'pclass': st.session_state.whatif_pclass[1],
+            'age': st.session_state.whatif_age,
+            'fare': st.session_state.whatif_fare
+        }
+    else:
+        current_preset_values = presets[current_preset_key]["values"] if current_preset_key else None
 
     # Prepare preset values for JavaScript (null keyword, not string)
     preset_values_js = "null" if current_preset_values is None else json.dumps(current_preset_values)
@@ -342,13 +341,12 @@ with col1:
             .link {{
                 fill: none;
                 stroke: #666;
-                stroke-width: 2px;
-                opacity: 0.3;
+                stroke-linecap: round;
+                stroke-opacity: 0.6;
                 transition: all 0.3s ease;
             }}
 
             .link.active {{
-                stroke-width: 4px;
                 opacity: 1;
             }}
 
@@ -363,7 +361,6 @@ with col1:
             /* Hover highlighting for links */
             .link.hover-active {{
                 stroke: #ffd700;  /* Gold color for hover */
-                stroke-width: 3px;
                 opacity: 0.8;
             }}
 
@@ -404,6 +401,9 @@ with col1:
     </head>
     <body>
         <h3>Decision Tree Classifier</h3>
+        <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">
+            <strong>Edge thickness</strong> represents the number of passengers following that path
+        </div>
         <div id="tree-container-{preset_hash}">
             <div id="tree-viz"></div>
         </div>
@@ -515,6 +515,12 @@ with col1:
                 const treeLayout = tree(root);
                 d3Tree = treeLayout;
 
+                // Add stroke width scale based on sample counts
+                const maxSamples = d3.max(treeLayout.descendants(), d => d.data.samples);
+                const strokeScale = d3.scaleSqrt()
+                    .domain([0, maxSamples])
+                    .range([1, 32]);
+
                 const tooltip = d3.select("body")
                     .append("div")
                     .attr("class", "tooltip");
@@ -526,7 +532,10 @@ with col1:
                     .attr("class", "link")
                     .attr("d", d3.linkHorizontal()
                         .x(d => d.y)
-                        .y(d => d.x));
+                        .y(d => d.x))
+                    .attr("stroke-width", d => strokeScale(d.target.data.samples))
+                    .attr("stroke-linecap", "round")
+                    .attr("stroke-opacity", 0.6);
 
                 svg.selectAll(".edge-label")
                     .data(treeLayout.links())
@@ -564,9 +573,9 @@ with col1:
                     const nodeGroup = d3.select(this);
                     const radius = Math.sqrt(d.data.samples) * 2;
 
-                    // Create arc generator for this node's radius
+                    // Create arc generator for this node's radius (donut style)
                     const arc = d3.arc()
-                        .innerRadius(0)
+                        .innerRadius(radius * 0.5)
                         .outerRadius(radius);
 
                     // Prepare data for pie chart: [died, survived]
@@ -855,18 +864,36 @@ with col1:
         with col_global_right:
             st.markdown("#### 💧 Individual Prediction Explanation")
 
-            # Prepare data for alternative waterfall using a sample preset
-            # Use woman's path as default for demonstration
-            demo_preset_key = current_preset_key if current_preset_key else "woman_path"
-            demo_preset_values = presets[demo_preset_key]["values"]
-            demo_preset_info = presets[demo_preset_key]
-            demo_passenger_desc = presets[demo_preset_key]["passenger_desc"]
-
-            if current_preset_key:
-                st.markdown(f"Showing XGBoost's reasoning for: **{demo_preset_info['label']}**")
+            # Prepare data for alternative waterfall using what-if or preset values
+            if (current_preset_key is None and
+                'whatif_sex' in st.session_state and
+                'whatif_pclass' in st.session_state and
+                'whatif_age' in st.session_state and
+                'whatif_fare' in st.session_state):
+                # What-if scenario is active
+                demo_preset_values = {
+                    'sex': st.session_state.whatif_sex[1],
+                    'pclass': st.session_state.whatif_pclass[1],
+                    'age': st.session_state.whatif_age,
+                    'fare': st.session_state.whatif_fare
+                }
+                sex_label = "Female" if demo_preset_values['sex'] == 0 else "Male"
+                pclass_label = f"{int(demo_preset_values['pclass'])}{'st' if demo_preset_values['pclass']==1 else 'nd' if demo_preset_values['pclass']==2 else 'rd'} class"
+                demo_passenger_desc = f"{sex_label}, {pclass_label}, age {int(demo_preset_values['age'])}, fare £{demo_preset_values['fare']:.2f}"
+                st.markdown(f"Showing XGBoost's reasoning for: **What-If Scenario**")
+                st.caption(f"Analyzing: {demo_passenger_desc}")
             else:
-                st.markdown(f"Showing XGBoost's reasoning for a typical woman")
-            st.caption(f"Analyzing: {demo_passenger_desc}")
+                # Use preset (or default to woman's path)
+                demo_preset_key = current_preset_key if current_preset_key else "woman_path"
+                demo_preset_values = presets[demo_preset_key]["values"]
+                demo_preset_info = presets[demo_preset_key]
+                demo_passenger_desc = presets[demo_preset_key]["passenger_desc"]
+
+                if current_preset_key:
+                    st.markdown(f"Showing XGBoost's reasoning for: **{demo_preset_info['label']}**")
+                else:
+                    st.markdown(f"Showing XGBoost's reasoning for a typical woman")
+                st.caption(f"Analyzing: {demo_passenger_desc}")
 
             # Create input for this passenger
             import pandas as pd
@@ -1276,19 +1303,68 @@ with col1:
 # =============================================================================
 
 with col2:
-    # Description paragraph at top of chat area - changes based on selected tab
-    if "DECISION TREE" in st.session_state.selected_tab:
-        description = """<p style="font-size: 14px; color: #d0d0d0; line-height: 1.6; margin-bottom: 20px;">
-        Explore how the <strong>Decision Tree</strong> makes transparent, rule-based predictions.<br>
-        Use the chat to highlight decision paths and explore how different passenger characteristics lead to survival or death predictions.
-        </p>"""
-    else:  # XGBoost tab
-        description = """<p style="font-size: 14px; color: #d0d0d0; line-height: 1.6; margin-bottom: 20px;">
-        Explore how <strong>XGBoost</strong> makes predictions and what drives them using SHAP explanations.<br>
-        Use the chat to see which features push typical passengers toward survival or death, and understand the model's reasoning through interactive visualizations.
-        </p>"""
+    # What-If Scenario Controls - Inline layout with columns
+    st.markdown("### 🔮 What-If Scenario")
 
-    st.markdown(description, unsafe_allow_html=True)
+    # Sex - inline with label
+    col_sex_label, col_sex_input = st.columns([1, 4])
+    with col_sex_label:
+        st.markdown("**Sex:**")
+    with col_sex_input:
+        sex_input = st.radio(
+            "Sex",
+            options=[("Female", 0), ("Male", 1)],
+            format_func=lambda x: x[0],
+            horizontal=True,
+            key="whatif_sex",
+            label_visibility="collapsed"
+        )
+
+    # Passenger Class - inline with label using radio buttons
+    col_pclass_label, col_pclass_input = st.columns([1, 4])
+    with col_pclass_label:
+        st.markdown("**Passenger Class:**")
+    with col_pclass_input:
+        pclass_input = st.radio(
+            "Passenger Class",
+            options=[(1, 1), (2, 2), (3, 3)],
+            format_func=lambda x: f"{x[0]}",
+            horizontal=True,
+            key="whatif_pclass",
+            label_visibility="collapsed"
+        )
+
+    # Age - inline with label
+    col_age_label, col_age_input = st.columns([1, 4])
+    with col_age_label:
+        st.markdown("**Age:**")
+    with col_age_input:
+        age_input = st.slider(
+            "Age",
+            min_value=0,
+            max_value=80,
+            value=30,
+            key="whatif_age",
+            label_visibility="collapsed"
+        )
+
+    # Fare - inline with label
+    col_fare_label, col_fare_input = st.columns([1, 4])
+    with col_fare_label:
+        st.markdown("**Fare:**")
+    with col_fare_input:
+        fare_input = st.slider(
+            "Fare",
+            min_value=0.0,
+            max_value=500.0,
+            value=15.0,
+            step=0.5,
+            key="whatif_fare",
+            label_visibility="collapsed"
+        )
+
+    # Update session state with what-if values (these will be picked up on next rerun)
+    # Note: Values are automatically stored in session state via the 'key' parameter
 
     st.markdown("### 💬 Chat")
 

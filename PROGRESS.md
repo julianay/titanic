@@ -131,6 +131,51 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-08 (Session 5)
+- **MAJOR VISUAL ENHANCEMENTS: Proportional Edge Widths & What-If Controls** (`app_pie_version.py`)
+  - **Proportional stroke widths for decision tree edges** (NEW):
+    - Edge thickness now represents the number of passengers flowing through each split
+    - **Scale implementation**: `d3.scaleSqrt()` with domain `[0, maxSamples]` and range `[1, 32]`
+    - Square root scale prevents extreme thickness differences while maintaining clear visual hierarchy
+    - **Thickest edges**: Root split (sex) with ~571 passengers total
+    - **Thinnest edges**: Leaf nodes with small passenger groups (10-50 passengers)
+    - **Stroke attributes**: `stroke-linecap: round`, `stroke-opacity: 0.6` for polished appearance
+    - **Legend added**: "Edge thickness represents the number of passengers following that path" below tree title
+    - **Highlighted paths**: Maintain proportional widths (no fixed override) to show passenger flow even when highlighted
+    - Color changes on highlight (green for survival, red for death, gold for hover) but width stays proportional
+  - **Donut charts instead of pie charts** (VISUAL CHANGE):
+    - Converted filled pie charts to donut style for cleaner, more modern look
+    - Changed `innerRadius` from `0` to `radius * 0.5` (50% donut hole)
+    - Reduces visual clutter while preserving class distribution information
+    - Same color scheme: Blue (#5b8db8) for died, Green (#52b788) for survived
+  - **What-If Scenario controls** (NEW FEATURE):
+    - Added interactive controls in right column (col2) above chat interface
+    - **Control layout**: Inline labels using `st.columns([1, 4])` for compact design
+    - **Sex**: Radio buttons (Female/Male) - horizontal layout, label on same line
+    - **Passenger Class**: Radio buttons (1/2/3) - horizontal layout, label on same line
+    - **Age**: Slider (0-80 years, default 30) - label on same line
+    - **Fare**: Slider (£0-£500, default £15, step 0.5) - label on same line
+    - All controls use `label_visibility="collapsed"` with markdown labels in left column
+  - **What-If functionality** (IMPLEMENTATION):
+    - Controls use session state keys: `whatif_sex`, `whatif_pclass`, `whatif_age`, `whatif_fare`
+    - Initialized with defaults: Female, 2nd class, age 30, fare £15
+    - **Decision Tree**: Path updates in real-time based on what-if values
+    - **XGBoost tab**: Both waterfall charts update to show SHAP values for custom passenger
+    - Caption shows: "Analyzing: Male, 3rd class, age 43, fare £15.00" (example)
+    - Chart title shows "What-If Scenario" instead of preset label
+    - **Session state logic**: Reads from `st.session_state.whatif_*` when no preset is active
+    - Clicking preset buttons clears what-if and uses preset values instead
+  - **UI cleanup**:
+    - Removed all custom CSS styling for radio buttons (reverted to Streamlit defaults)
+    - Session 4's tab styling removed - tabs now use standard Streamlit radio appearance
+    - Removed description text above what-if controls for more compact layout
+    - Right column now starts directly with "🔮 What-If Scenario" section
+  - **Bug fixes**:
+    - Fixed what-if updates not triggering tree path changes
+    - Issue: Controls in col2 rendered after col1 tried to read values
+    - Solution: Read widget values from session state in col1 (values auto-stored via `key` parameter)
+    - Removed unused `highlighted_path` session state variable
+
 ### 2025-12-07 (Session 4)
 - **MAJOR IMPROVEMENTS: Alternative Waterfall Chart & Tab-Aware Chat** (`app_pie_version.py`)
   - **Alternative waterfall chart visualization** (NEW):

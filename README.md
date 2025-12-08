@@ -15,23 +15,30 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 ## 🎯 Features
 
 ### 💬 **Chat-Based XAI Explorer** (Latest - app_pie_version.py)
-- **Two-column layout** – visualization on left (75%), chat interface on right (25%)
+- **Two-column layout** – visualization on left (75%), interactive controls + chat on right (25%)
 - **Tab-based model comparison** – switch between Decision Tree and XGBoost visualizations
-  - **Decision Tree tab**: Interactive D3.js tree with pie chart nodes showing class distribution (81% accuracy, 60% recall)
+  - **Decision Tree tab**: Interactive D3.js tree with donut chart nodes showing class distribution (81% accuracy, 60% recall)
+    - **Proportional edge widths** – thickness represents passenger flow (1-32px range, sqrt scale)
+    - **Donut charts** at each node – blue for died, green for survived with 50% center hole
     - Hover over nodes to see decision path from root with gold highlighting
+    - Edge thickness legend for clear visual communication
   - **XGBoost tab**: SHAP explanations with dual waterfall visualizations (80% accuracy, 72% recall)
     - Global feature importance chart (25% width)
     - **Alternative waterfall chart** (50% width) - floating bars showing cumulative SHAP impact
     - Standard waterfall chart (full width below)
+- **What-If Scenario controls** – interactive sliders and radio buttons above chat
+  - Set Sex, Passenger Class, Age, and Fare to explore custom passengers
+  - Real-time tree path updates and SHAP value recalculation
+  - Inline label layout for compact, space-efficient design
+  - Automatically clears when preset buttons are clicked
 - **Tab-aware chat** – context-specific responses based on which model you're viewing
   - Decision Tree: Path explanations and survival statistics
   - XGBoost: SHAP explanations with typical passenger details (e.g., "female, 2nd class, age 30, fare £15")
-- **Dynamic descriptions** – chat header adapts to selected model
 - **Dark mode UI** – cohesive dark theme matching Streamlit's native chat interface
 - **Natural language exploration** – ask questions like "what about women?" or "tell me about first class"
 - **Keyword matching** – intelligent query interpretation for exploration patterns
 - **4 preset patterns** – women, men, 1st class child, 3rd class male paths
-- **Dynamic updates** – both visualizations update based on conversation
+- **Dynamic updates** – both visualizations update based on conversation or what-if controls
 - **Scrollable chat history** – 300px scrollable container for conversation messages
 - **Optimized layout** – reduced padding for maximum content visibility
 
@@ -67,22 +74,28 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 **Three Versions Available:**
 
-### Version 1: Chat-Based Explorer with Pie Charts (app_pie_version.py) - **Recommended**
+### Version 1: Chat-Based Explorer with Donut Charts (app_pie_version.py) - **Recommended**
 - **Left Column (75%)**: Tab-based visualization in dark mode
-  - **Decision Tree tab**: Interactive D3.js tree with pie chart nodes showing class distribution
-    - Blue slice for died, green slice for survived
+  - **Decision Tree tab**: Interactive D3.js tree with donut chart nodes showing class distribution
+    - Donut charts with 50% center hole (blue for died, green for survived)
+    - **Proportional edge widths** show passenger flow (thicker = more passengers)
+    - Edge thickness ranges from 1px (small groups) to 32px (root split)
+    - Legend explains edge thickness visualization
     - Hover over any node to highlight the decision path from root (gold color)
-    - Click presets to highlight specific passenger paths (white color)
+    - Highlighted paths maintain proportional widths to show passenger flow
   - **XGBoost tab**: SHAP explanations with dual waterfall visualizations
     - Top row: Global feature importance (25%) + Alternative waterfall with floating bars (50%)
     - Alternative waterfall shows cumulative SHAP impact from base value to final prediction
     - Bottom: Standard waterfall chart (full width)
     - All charts display typical passenger characteristics being analyzed
-- **Right Column (25%)**: Interactive chat interface with tab-aware responses
-  - Decision Tree: Shows path explanations and survival statistics
-  - XGBoost: Explains typical passenger being analyzed (e.g., "female, 2nd class, age 30, fare £15")
+- **Right Column (25%)**: What-If controls and interactive chat
+  - **What-If Scenario**: Set Sex, Passenger Class, Age, Fare with inline controls
+  - Real-time updates for both Decision Tree path and SHAP explanations
+  - **Tab-aware chat** with context-specific responses:
+    - Decision Tree: Shows path explanations and survival statistics
+    - XGBoost: Explains typical passenger being analyzed (e.g., "female, 2nd class, age 30, fare £15")
 - Ask questions like "what about women?" or "show me first class children"
-- Visualizations update based on your conversation
+- Visualizations update based on conversation or what-if controls
 - 4 preset exploration patterns with detailed explanations
 - Cohesive dark theme throughout for improved readability
 - Performance metrics displayed in tab labels for quick comparison
@@ -128,14 +141,17 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 **UX / Data Viz Highlights**
 
+- **Proportional edge widths** – visual encoding of passenger flow through decision tree (1-32px range)
+- **Donut chart nodes** – cleaner visual showing class distribution with 50% center hole
+- **What-If Scenario controls** – interactive sliders and radio buttons for real-time exploration
 - **Tab-aware chat** – context-specific responses adapt to which model you're viewing
 - **Alternative waterfall visualization** – floating bars show cumulative SHAP impact progression
 - **Interactive visualizations** using D3.js for custom tree and SHAP charts
 - **Hover path highlighting** – trace decision paths from root to any node in the tree
 - **Conversational exploration** – chat interface with natural language queries
-- **Dynamic updates** – visualizations respond to chat interactions in real-time
+- **Dynamic updates** – visualizations respond to chat interactions and what-if controls
 - **Typical passenger transparency** – clearly shows which specific passenger is being analyzed for SHAP
-- **What-if scenarios** on all pages for hands-on exploration
+- **Inline control layout** – compact design with labels on same line as inputs
 - **Human-readable labels** (decoded categorical features)
 - **Dark mode design** with cohesive theming and smooth CSS transitions
 - **Radio-style tabs** – eliminates visualization rendering bugs
@@ -247,20 +263,29 @@ streamlit run src/streamlit_app.py
 - Animation: Pulsing final node draws attention to prediction
 - Responsive feedback: Smooth transitions create polished UX
 
-**Pie Chart Nodes (app_pie_version.py - Default):**
-- **Chosen as default**: Pie chart visualization provides clearer class distribution at each node
+**Donut Chart Nodes (app_pie_version.py - Default):**
+- **Chosen as default**: Donut chart visualization provides clearer class distribution with reduced visual clutter
 - **Key advantages**:
   - Immediate visual of class split at each node (e.g., 70% died / 30% survived)
+  - 50% center hole reduces visual weight compared to filled pies
   - More information density without adding text labels
-  - Aligns with common data viz patterns (pie = proportions)
+  - Aligns with common data viz patterns (donut = proportions)
   - Hover path highlighting shows decision flow from root to any node
 - **Implementation details**:
   - Blue slice for died passengers, green slice for survived
-  - Node size proportional to sample count
-  - Gold color for hover highlighting vs. white for preset selection
+  - Node size proportional to sample count (`Math.sqrt(samples) * 2`)
+  - Inner radius at 50% of outer radius for donut effect
+  - Gold color for hover highlighting (preset selections maintain proportional widths)
   - Edge labels offset upward on hover for better readability
   - Optimized label positioning (leaf labels on right, internal labels below)
 - **Alternative**: Gradient node version (app.py) available for simpler aesthetic preference
+
+**Proportional Edge Widths:**
+- **Visual encoding**: Edge thickness represents number of passengers following that split
+- **Scale**: `d3.scaleSqrt()` with range [1, 32] prevents extreme differences
+- **Square root scale**: Balances visibility of small groups while showing hierarchy
+- **Highlighted paths**: Maintain proportional widths to show passenger flow even when highlighted
+- **Legend**: Clear explanation below tree title for user guidance
 
 ---
 
