@@ -137,38 +137,26 @@ tree_json = json.dumps(tree_data['tree'])
 # Preset scenarios
 presets = {
     "woman_path": {
-        "label": "Shows women's path (high survival)",
-        "values": {'sex': 0, 'pclass': 2, 'age': 30, 'fare': 15.0},
-        "response": "Women had a 74% survival rate. The 'women and children first' protocol was largely followed. Here's the typical path women took through the decision tree.",
-        "xgb_response": "Women had a 74% survival rate. For the SHAP analysis, I'm using a **typical woman passenger**: female, 2nd class, age 30, fare £15. The XGBoost tab shows which features pushed this passenger toward survival.",
-        "passenger_desc": "Typical woman: Female, 2nd class, age 30, fare £15"
+        "label": "Women's path (high survival)",
+        "values": {'sex': 0, 'pclass': 2, 'age': 30, 'fare': 20.0}
     },
     "man_path": {
-        "label": "Shows men's path (low survival)",
-        "values": {'sex': 1, 'pclass': 3, 'age': 30, 'fare': 10.0},
-        "response": "Men had only a 19% survival rate (109 survived out of 577). Here's their typical path through the tree.",
-        "xgb_response": "Men had only a 19% survival rate (109 survived out of 577). For the SHAP analysis, I'm using a **typical man passenger**: male, 3rd class, age 30, fare £10. The XGBoost tab shows which features pushed this passenger toward death.",
-        "passenger_desc": "Typical man: Male, 3rd class, age 30, fare £10"
+        "label": "Men's path (low survival)",
+        "values": {'sex': 1, 'pclass': 3, 'age': 30, 'fare': 13.0}
     },
     "first_class_child": {
-        "label": "Shows 1st class child (best odds)",
-        "values": {'sex': 0, 'pclass': 1, 'age': 5, 'fare': 50.0},
-        "response": "First class children had the best odds. Children, especially in 1st and 2nd class, had high survival rates. Here's their path through the tree.",
-        "xgb_response": "First class children had the best odds. For the SHAP analysis, I'm using a **1st class child**: female, 1st class, age 5, fare £50. The XGBoost tab shows which features strongly pushed this passenger toward survival.",
-        "passenger_desc": "1st class child: Female, 1st class, age 5, fare £50"
+        "label": "1st class child (best odds)",
+        "values": {'sex': 0, 'pclass': 1, 'age': 5, 'fare': 84.0}
     },
     "third_class_male": {
-        "label": "Shows 3rd class male (worst odds)",
-        "values": {'sex': 1, 'pclass': 3, 'age': 40, 'fare': 8.0},
-        "response": "Third class males had the worst odds (24% survival rate). They were located furthest from lifeboats and had limited access to the deck.",
-        "xgb_response": "Third class males had the worst odds (24% survival rate). For the SHAP analysis, I'm using a **3rd class male**: male, 3rd class, age 40, fare £8. The XGBoost tab shows which features strongly pushed this passenger toward death.",
-        "passenger_desc": "3rd class male: Male, 3rd class, age 40, fare £8"
+        "label": "3rd class male (worst odds)",
+        "values": {'sex': 1, 'pclass': 3, 'age': 40, 'fare': 8.0}
     }
 }
 
 # =============================================================================
-# Cohort Matching System (NEW - for flexible chat parsing)
-# Phase 1: Foundation code - will integrate in Phase 2
+# Cohort Matching System (Integrated - Phase 2 Complete)
+# Provides flexible, priority-based chat parsing and unified state management
 # =============================================================================
 
 cohort_patterns = {
@@ -373,59 +361,56 @@ def format_passenger_description(sex, pclass, age, fare):
     return f"{age}-year-old {sex_label} in {class_label}, £{fare:.0f} fare"
 
 
-# =============================================================================
-# Test Cases for New Functions (to be removed after Phase 2)
-# =============================================================================
-# Test match_to_cohort:
-#   match_to_cohort(0, 1, 5, 84)  -> should match "first_class_child"
-#   match_to_cohort(1, 3, 40, 8)  -> should match "third_class_male"
-#   match_to_cohort(0, 2, 30, 20) -> should match "women"
-#
-# Test parse_passenger_query:
-#   "show me a woman in 1st class" -> {sex: 0, pclass: 1, age: 30, fare: 84}
-#   "what about a young boy in 3rd" -> {sex: 1, pclass: 3, age: 8, fare: 13}
-#   "elderly man in second class" -> {sex: 1, pclass: 2, age: 65, fare: 20}
-#
-# Test format_passenger_description:
-#   (0, 1, 40, 84) -> "40-year-old female in 1st class, £84 fare"
+def update_whatif_and_respond(sex, pclass, age, fare, user_message):
+    """
+    Unified function to update what-if state and generate response.
+    This is the single mechanism for all chat interactions.
 
-# =============================================================================
-# Keyword Matching Function
-# =============================================================================
+    Args:
+        sex: 0 for female, 1 for male
+        pclass: 1, 2, or 3
+        age: passenger age
+        fare: ticket fare
+        user_message: What the user said (for chat history)
 
-def match_query(query):
-    """Match user query to a preset path and response."""
-    query_lower = query.lower()
+    Returns:
+        response_text: Assistant's response with educational context
+    """
+    # Match to cohort for educational context
+    cohort_name, cohort_info = match_to_cohort(sex, pclass, age, fare)
 
-    # Women/female
-    if any(word in query_lower for word in ['women', 'woman', 'female', 'lady', 'ladies']):
-        return "woman_path", presets["woman_path"]["response"]
+    # Format passenger description
+    passenger_desc = format_passenger_description(sex, pclass, age, fare)
 
-    # Men/male
-    elif any(word in query_lower for word in ['men', 'man', 'male', 'gentleman']):
-        return "man_path", presets["man_path"]["response"]
-
-    # First class
-    elif any(word in query_lower for word in ['first class', '1st class', 'upper class', 'wealthy']):
-        if any(word in query_lower for word in ['child', 'children', 'kid']):
-            return "first_class_child", presets["first_class_child"]["response"]
-        else:
-            return "woman_path", "First class passengers had a 63% survival rate (136 survived out of 216). Wealth and proximity to lifeboats mattered. Here's a typical first class passenger path."
-
-    # Third class
-    elif any(word in query_lower for word in ['third class', '3rd class', 'poor', 'lower class']):
-        if any(word in query_lower for word in ['male', 'men', 'man']):
-            return "third_class_male", presets["third_class_male"]["response"]
-        else:
-            return "man_path", "Third class passengers had the worst odds (119 survived out of 491, 24% survival rate). They were located furthest from lifeboats."
-
-    # Children
-    elif any(word in query_lower for word in ['child', 'children', 'kid', 'kids', 'young']):
-        return "first_class_child", presets["first_class_child"]["response"]
-
-    # Default
+    # Select response template based on active tab (tab-aware)
+    if "XGBOOST" in st.session_state.selected_tab:
+        response_template = cohort_info['xgb_response']
     else:
-        return None, "I can help you explore survival patterns. Try asking about: women, men, social class (1st/2nd/3rd), children, or combinations like '3rd class males'."
+        response_template = cohort_info['response']
+
+    # Format response with passenger description
+    response_text = response_template.format(passenger_desc=passenger_desc)
+
+    # Add to chat history
+    st.session_state.chat_history.append({
+        "role": "user",
+        "content": user_message
+    })
+    st.session_state.chat_history.append({
+        "role": "assistant",
+        "content": response_text
+    })
+
+    # Update what-if state (SINGLE SOURCE OF TRUTH)
+    st.session_state.whatif_updates = {
+        'sex': ("Female", 0) if sex == 0 else ("Male", 1),
+        'pclass': (pclass, pclass),
+        'age': age,
+        'fare': fare
+    }
+    st.session_state.current_preset = cohort_name  # Track for label display
+
+    return response_text
 
 # =============================================================================
 # Apply pending what-if updates BEFORE rendering columns
@@ -1115,21 +1100,27 @@ with col1:
             pclass_label = f"{int(demo_preset_values['pclass'])}{'st' if demo_preset_values['pclass']==1 else 'nd' if demo_preset_values['pclass']==2 else 'rd'} class"
             demo_passenger_desc = f"{sex_label}, {pclass_label}, age {int(demo_preset_values['age'])}, fare £{demo_preset_values['fare']:.2f}"
 
-            # Check if current what-if values match the preset (for label display only)
-            values_match_preset = False
-            if current_preset_key:
-                preset_vals = presets[current_preset_key]["values"]
-                values_match_preset = (
-                    demo_preset_values['sex'] == preset_vals['sex'] and
-                    demo_preset_values['pclass'] == preset_vals['pclass'] and
-                    demo_preset_values['age'] == preset_vals['age'] and
-                    demo_preset_values['fare'] == preset_vals['fare']
-                )
+            # Match current values to cohort for display label
+            matched_cohort, _ = match_to_cohort(
+                demo_preset_values['sex'],
+                demo_preset_values['pclass'],
+                demo_preset_values['age'],
+                demo_preset_values['fare']
+            )
 
-            # Show title based on whether values match a preset
-            if current_preset_key and values_match_preset:
-                preset_label = presets[current_preset_key]["label"]
-                st.markdown(f"Showing XGBoost's reasoning for: **{preset_label}**")
+            # Show title based on cohort match
+            if matched_cohort:
+                # Use cohort name as label
+                cohort_labels = {
+                    "first_class_child": "1st class child (best odds)",
+                    "third_class_male": "3rd class male (worst odds)",
+                    "women": "Women's path (high survival)",
+                    "men": "Men's path (low survival)",
+                    "first_class": "1st class passengers",
+                    "third_class": "3rd class passengers"
+                }
+                label = cohort_labels.get(matched_cohort, "Custom passenger")
+                st.markdown(f"Showing XGBoost's reasoning for: **{label}**")
             else:
                 st.markdown(f"Showing XGBoost's reasoning for: **What-If Scenario**")
             st.caption(f"Analyzing: {demo_passenger_desc}")
@@ -1349,25 +1340,49 @@ with col1:
 
         st.markdown("---")
 
-        # Individual Prediction Waterfall (based on current preset) - Standard View
+        # Individual Prediction Waterfall (based on current what-if values) - Standard View
         st.markdown("#### 💧 Standard Waterfall Chart")
 
-        # Use woman's path as default for XGBoost tab if nothing selected
-        xgb_preset_key = current_preset_key if current_preset_key else "woman_path"
-        xgb_preset_values = presets[xgb_preset_key]["values"]
-        xgb_preset_info = presets[xgb_preset_key]
-        xgb_passenger_desc = presets[xgb_preset_key]["passenger_desc"]
+        # Use current what-if values (same as alternative waterfall for consistency)
+        std_preset_values = {
+            'sex': st.session_state.whatif_sex[1],
+            'pclass': st.session_state.whatif_pclass[1],
+            'age': st.session_state.whatif_age,
+            'fare': st.session_state.whatif_fare
+        }
 
-        if current_preset_key:
-            st.markdown(f"Showing XGBoost's reasoning for: **{xgb_preset_info['label']}**")
-            st.caption(f"Analyzing: {xgb_passenger_desc}")
+        # Generate passenger description from what-if values
+        sex_label = "Female" if std_preset_values['sex'] == 0 else "Male"
+        pclass_label = f"{int(std_preset_values['pclass'])}{'st' if std_preset_values['pclass']==1 else 'nd' if std_preset_values['pclass']==2 else 'rd'} class"
+        std_passenger_desc = f"{sex_label}, {pclass_label}, age {int(std_preset_values['age'])}, fare £{std_preset_values['fare']:.2f}"
+
+        # Match to cohort for display label
+        matched_cohort_std, _ = match_to_cohort(
+            std_preset_values['sex'],
+            std_preset_values['pclass'],
+            std_preset_values['age'],
+            std_preset_values['fare']
+        )
+
+        # Show title based on cohort match
+        if matched_cohort_std:
+            cohort_labels = {
+                "first_class_child": "1st class child (best odds)",
+                "third_class_male": "3rd class male (worst odds)",
+                "women": "Women's path (high survival)",
+                "men": "Men's path (low survival)",
+                "first_class": "1st class passengers",
+                "third_class": "3rd class passengers"
+            }
+            label = cohort_labels.get(matched_cohort_std, "Custom passenger")
+            st.markdown(f"Showing XGBoost's reasoning for: **{label}**")
         else:
-            st.markdown(f"Showing XGBoost's reasoning for a typical woman")
-            st.caption(f"Analyzing: {xgb_passenger_desc} • Click suggestions to explore other cohorts")
+            st.markdown(f"Showing XGBoost's reasoning for: **What-If Scenario**")
+        st.caption(f"Analyzing: {std_passenger_desc}")
 
         # Create input for this passenger
         import pandas as pd
-        x_input = pd.DataFrame([xgb_preset_values])
+        x_input = pd.DataFrame([std_preset_values])
 
         # Get SHAP values for this passenger
         import numpy as np
@@ -1643,39 +1658,21 @@ with col2:
 
     st.markdown("**Or try one of these to get started**")
 
-    # Suggestion buttons
+    # Suggestion buttons - now use unified update mechanism
     for preset_key, preset_info in presets.items():
         if st.button(preset_info["label"], key=f"btn_{preset_key}", use_container_width=True):
-            # Add user message to chat
-            st.session_state.chat_history.append({
-                "role": "user",
-                "content": preset_info["label"]
-            })
+            # Extract values from preset
+            preset_values = preset_info["values"]
 
-            # Add bot response based on which tab is active
-            if "XGBOOST" in st.session_state.selected_tab and "xgb_response" in preset_info:
-                # Show XGBoost-specific explanation with typical passenger
-                response_text = preset_info["xgb_response"]
-            else:
-                # Show Decision Tree explanation
-                response_text = preset_info["response"]
+            # Use unified update function
+            update_whatif_and_respond(
+                sex=preset_values['sex'],
+                pclass=preset_values['pclass'],
+                age=preset_values['age'],
+                fare=preset_values['fare'],
+                user_message=preset_info["label"]
+            )
 
-            st.session_state.chat_history.append({
-                "role": "assistant",
-                "content": response_text
-            })
-            # Update what-if widget values directly (must be done before widgets are created)
-            # Since we're in a button callback, we'll update on the NEXT rerun
-            preset_values = presets[preset_key]["values"]
-            if 'whatif_updates' not in st.session_state:
-                st.session_state.whatif_updates = {}
-            st.session_state.whatif_updates = {
-                'sex': ("Female", 0) if preset_values['sex'] == 0 else ("Male", 1),
-                'pclass': (preset_values['pclass'], preset_values['pclass']),
-                'age': preset_values['age'],
-                'fare': preset_values['fare']
-            }
-            st.session_state.current_preset = preset_key  # Track which preset for chat context
             st.rerun()
 
     # Chat input at the bottom
@@ -1683,32 +1680,27 @@ with col2:
 
     # Handle text input
     if user_input:
-        # Add user message to chat
-        st.session_state.chat_history.append({
-            "role": "user",
-            "content": user_input
-        })
+        # Try to parse natural language
+        parsed = parse_passenger_query(user_input)
 
-        # Match query and get response
-        matched_preset, response = match_query(user_input)
-
-        # Add bot response to chat
-        st.session_state.chat_history.append({
-            "role": "assistant",
-            "content": response
-        })
-
-        # Update what-if controls if matched (highlights tree and updates XGBoost explanations)
-        if matched_preset:
-            preset_values = presets[matched_preset]["values"]
-            if 'whatif_updates' not in st.session_state:
-                st.session_state.whatif_updates = {}
-            st.session_state.whatif_updates = {
-                'sex': ("Female", 0) if preset_values['sex'] == 0 else ("Male", 1),
-                'pclass': (preset_values['pclass'], preset_values['pclass']),
-                'age': preset_values['age'],
-                'fare': preset_values['fare']
-            }
-            st.session_state.current_preset = matched_preset  # Track which preset for chat context
+        if parsed:
+            # Successfully parsed - use unified update
+            update_whatif_and_respond(
+                sex=parsed['sex'],
+                pclass=parsed['pclass'],
+                age=parsed['age'],
+                fare=parsed['fare'],
+                user_message=user_input
+            )
+        else:
+            # Couldn't parse - provide helpful fallback
+            st.session_state.chat_history.append({
+                "role": "user",
+                "content": user_input
+            })
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": "I couldn't parse that query. Try asking about specific passengers like:\n- 'show me a woman in 1st class'\n- 'what about a young boy in 3rd'\n- 'elderly man in second class'\n\nOr use the preset buttons below!"
+            })
 
         st.rerun()

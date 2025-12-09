@@ -100,6 +100,53 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-08 (Session 8 - Chat Refactor: Phase 2 Integration)
+- **COHORT MATCHING SYSTEM INTEGRATION** (`app_pie_version.py`)
+  - **Unified state management** (MAJOR ARCHITECTURAL CHANGE):
+    - Created `update_whatif_and_respond()` as single mechanism for all chat interactions
+    - Replaces duplicated logic across preset buttons and chat input handlers
+    - Handles cohort matching, response generation, and state updates in one place
+    - Single source of truth eliminates race conditions
+  - **Fixed double-click bug** ✅:
+    - Root cause: Separate update mechanisms for buttons and manual adjustments caused state conflicts
+    - Solution: Unified update function ensures consistent state transitions
+    - Result: Preset buttons now work on FIRST click, even after manual what-if adjustments
+  - **Natural language query parsing** (NEW):
+    - Integrated `parse_passenger_query()` into chat input handler
+    - Can now type queries like "show me a 40-year-old woman in 1st class"
+    - Examples that now work:
+      - "what about a young boy in 3rd"
+      - "elderly man in second class"
+      - "show me a woman in 1st class"
+    - Unparseable queries get helpful fallback message with examples
+  - **Simplified presets dictionary**:
+    - Removed redundant `response`, `xgb_response`, and `passenger_desc` fields
+    - Now only contains `label` and `values`
+    - Responses generated dynamically from `cohort_patterns` dictionary
+  - **Updated preset button handlers**:
+    - Reduced from 35 lines to 15 lines
+    - Now call `update_whatif_and_respond()` directly
+    - Single rerun, unified state management
+  - **Updated chat input handler**:
+    - Uses `parse_passenger_query()` for natural language
+    - Successfully parsed queries use unified update function
+    - Maintains tab-aware responses
+  - **Bug fixes**:
+    - Fixed `KeyError: 'first_class'` - XGBoost tab was trying to look up cohort names in presets dictionary
+    - Fixed `KeyError: 'passenger_desc'` - Standard waterfall chart was accessing removed preset fields
+    - Updated both waterfall charts to use current what-if values and cohort matching
+  - **Code improvements**:
+    - Removed old `match_query()` function (no longer needed)
+    - Removed Phase 1 test case comments
+    - Updated comment headers to reflect Phase 2 completion
+    - Both waterfall charts now consistent (use same passenger values and labeling logic)
+  - **Benefits**:
+    - ✅ ~200 lines of duplicated logic replaced with cohort matching system
+    - ✅ More maintainable: single update function instead of scattered logic
+    - ✅ More flexible: handles any passenger combination, not just hardcoded presets
+    - ✅ Better UX: immediate response to all interactions
+    - ✅ Extensible: easy to add new cohort patterns without touching UI code
+
 ### 2025-12-08 (Session 7 - What-If UX Improvements)
 - **WHAT-IF CONTROLS ENHANCEMENTS** (`app_pie_version.py`)
   - **Fixed widget initialization warning**:

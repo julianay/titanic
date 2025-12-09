@@ -38,10 +38,13 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
   - Decision Tree: Path explanations and survival statistics
   - XGBoost: SHAP explanations with typical passenger details (e.g., "female, 2nd class, age 30, fare £15")
 - **Dark mode UI** – cohesive dark theme matching Streamlit's native chat interface
-- **Natural language exploration** – ask questions like "what about women?" or "tell me about first class"
-- **Keyword matching** – intelligent query interpretation for exploration patterns
-- **4 preset patterns** – women, men, 1st class child, 3rd class male paths
-- **Dynamic updates** – both visualizations update based on conversation or what-if controls
+- **Natural language exploration** – flexible query parsing with intelligent cohort matching
+  - Type queries like "show me a 40-year-old woman in 1st class" or "what about a young boy in 3rd"
+  - Priority-based matching handles overlapping criteria (e.g., child > class > gender)
+  - Helpful fallback messages for unparseable queries
+- **4 preset patterns** – quick buttons for common cohorts (women, men, 1st class child, 3rd class male)
+- **Dynamic updates** – both visualizations update immediately based on conversation or what-if controls
+- **Fixed double-click bug** – unified state management ensures preset buttons work on first click
 - **Scrollable chat history** – 300px scrollable container for conversation messages
 - **Optimized layout** – reduced padding for maximum content visibility
 
@@ -78,12 +81,14 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
   - Smart fare updates: Auto-adjusts to historical average when class changes
   - Contextual hints: Warns about unusual fare/class combinations
 - Real-time updates for both Decision Tree path and SHAP explanations
-- **Tab-aware chat** with context-specific responses:
+- **Tab-aware chat** with natural language parsing:
   - Decision Tree: Shows path explanations and survival statistics
   - XGBoost: Explains typical passenger being analyzed (e.g., "female, 2nd class, age 30, fare £15")
-- Ask questions like "what about women?" or "show me first class children"
-- Visualizations update based on conversation or what-if controls
-- 4 preset exploration patterns with detailed explanations
+  - Parse flexible queries: "show me a 40-year-old woman in 1st class" or "what about a young boy in 3rd"
+  - Priority-based cohort matching for intelligent interpretation
+- Visualizations update immediately based on conversation or what-if controls
+- 4 preset exploration buttons for common cohorts
+- Unified state management ensures buttons work on first click (fixed double-click bug)
 - Cohesive dark theme throughout for improved readability
 - Performance metrics displayed in tab labels for quick comparison
 - **Radio-style tabs** prevent visualization rendering issues
@@ -100,12 +105,14 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 - **Proportional edge widths** – visual encoding of passenger flow through decision tree (1-32px range)
 - **Donut chart nodes** – cleaner visual showing class distribution with 50% center hole
 - **Smart What-If controls** – auto-updates fare to historical averages when class changes, shows contextual hints for unusual combinations
+- **Natural language parsing** – flexible query interpretation with priority-based cohort matching
+- **Unified state management** – single update mechanism eliminates double-click bug, ensures consistent behavior
 - **Tab-aware chat** – context-specific responses adapt to which model you're viewing
 - **Alternative waterfall visualization** – floating bars show cumulative SHAP impact progression
 - **Interactive visualizations** using D3.js for custom tree and SHAP charts
 - **Hover path highlighting** – trace decision paths from root to any node in the tree
-- **Conversational exploration** – chat interface with natural language queries
-- **Dynamic updates** – visualizations respond to chat interactions and what-if controls
+- **Conversational exploration** – chat interface with natural language queries and helpful fallback messages
+- **Dynamic updates** – visualizations respond immediately to chat interactions and what-if controls
 - **Typical passenger transparency** – clearly shows which specific passenger is being analyzed for SHAP
 - **Inline control layout** – compact design with labels on same line as inputs
 - **Human-readable labels** (decoded categorical features)
