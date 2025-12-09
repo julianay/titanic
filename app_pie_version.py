@@ -1359,7 +1359,6 @@ with col2:
             "Age",
             min_value=0,
             max_value=80,
-            value=30,
             key="whatif_age",
             label_visibility="collapsed"
         )
@@ -1373,7 +1372,6 @@ with col2:
             "Fare",
             min_value=0.0,
             max_value=500.0,
-            value=15.0,
             step=0.5,
             key="whatif_fare",
             label_visibility="collapsed"
