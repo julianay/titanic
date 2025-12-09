@@ -100,6 +100,35 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-08 (Session 7 - What-If UX Improvements)
+- **WHAT-IF CONTROLS ENHANCEMENTS** (`app_pie_version.py`)
+  - **Fixed widget initialization warning**:
+    - Removed explicit `value` parameters from age and fare sliders
+    - Eliminated "widget created with default value" warning on app load
+    - Widgets now use session state values exclusively (initialized at startup)
+  - **Auto-update fare when class changes** (NEW):
+    - When user selects a passenger class, fare automatically updates to historical average:
+      - 1st class → £84 (average fare)
+      - 2nd class → £20 (average fare)
+      - 3rd class → £13 (average fare)
+    - Implemented using `on_change` callback on passenger class radio button
+    - User can still manually adjust fare after auto-update for edge case exploration
+    - Provides realistic starting point while maintaining exploration freedom
+  - **Contextual hint for unusual fare/class combinations** (NEW):
+    - Shows warning when fare is outside typical range for selected class:
+      - 1st class typical: £30-500
+      - 2nd class typical: £10-30
+      - 3rd class typical: £0-15
+    - Uses ⚠️ triangle icon with small caption text
+    - Example: "⚠️ £100.00 is unusually high for 3rd class (typical: £0-£15)"
+    - Non-intrusive educational hint that doesn't prevent exploration
+    - Demonstrates attention to historical accuracy while allowing counterfactual scenarios
+  - **Design rationale**:
+    - Fare and class remain independent controls (reflects model's feature independence)
+    - Allows users to test which feature has stronger predictive power
+    - Educational value: shows models can reason about correlated features independently
+    - Enables counterfactual exploration (e.g., "what if 3rd class passenger paid 1st class prices?")
+
 ### 2025-12-08 (Session 6 - Project Cleanup)
 - **PROJECT SIMPLIFICATION: Removed unused files**
   - **Context**: User is only using `app_pie_version.py` as the main application
@@ -118,6 +147,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
     - Reduced maintenance burden
     - Eliminates confusion about which file to run
     - All features consolidated in one place
+  - **Dockerfile fix**: Removed reference to deleted `app.py` file
 
 ### 2025-12-08 (Session 5 - ONGOING - CRITICAL BUG)
 - **CRITICAL BUG TO FIX**: Chat preset buttons require double-click after using what-if controls

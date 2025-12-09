@@ -167,6 +167,229 @@ presets = {
 }
 
 # =============================================================================
+# Cohort Matching System (NEW - for flexible chat parsing)
+# Phase 1: Foundation code - will integrate in Phase 2
+# =============================================================================
+
+cohort_patterns = {
+    "first_class_child": {
+        "priority": 3,  # Highest priority (most specific)
+        "match_criteria": {
+            "pclass": 1,
+            "age_range": (0, 12)
+        },
+        "response": "First class children had the best odds. Children, especially in 1st and 2nd class, had high survival rates.",
+        "xgb_response": "First class children had the best odds. For the SHAP analysis, I'm using this passenger: {passenger_desc}. The XGBoost tab shows which features strongly pushed this passenger toward survival."
+    },
+    "third_class_male": {
+        "priority": 2,
+        "match_criteria": {
+            "sex": 1,
+            "pclass": 3
+        },
+        "response": "Third class males had the worst odds (24% survival rate). They were located furthest from lifeboats and had limited access to the deck.",
+        "xgb_response": "Third class males had the worst odds (24% survival rate). For the SHAP analysis, I'm using this passenger: {passenger_desc}. The XGBoost tab shows which features strongly pushed this passenger toward death."
+    },
+    "women": {
+        "priority": 1,
+        "match_criteria": {
+            "sex": 0
+        },
+        "response": "Women had a 74% survival rate. The 'women and children first' protocol was largely followed.",
+        "xgb_response": "Women had a 74% survival rate. For the SHAP analysis, I'm using this passenger: {passenger_desc}. The XGBoost tab shows which features pushed this passenger toward survival."
+    },
+    "men": {
+        "priority": 1,
+        "match_criteria": {
+            "sex": 1
+        },
+        "response": "Men had only a 19% survival rate (109 survived out of 577).",
+        "xgb_response": "Men had only a 19% survival rate (109 survived out of 577). For the SHAP analysis, I'm using this passenger: {passenger_desc}. The XGBoost tab shows which features pushed this passenger toward death."
+    },
+    "first_class": {
+        "priority": 2,
+        "match_criteria": {
+            "pclass": 1
+        },
+        "response": "First class passengers had a 63% survival rate (136 survived out of 216). Wealth and proximity to lifeboats mattered.",
+        "xgb_response": "First class passengers had a 63% survival rate. Analyzing this passenger: {passenger_desc}."
+    },
+    "third_class": {
+        "priority": 2,
+        "match_criteria": {
+            "pclass": 3
+        },
+        "response": "Third class passengers had the worst odds (119 survived out of 491, 24% survival rate). They were located furthest from lifeboats.",
+        "xgb_response": "Third class passengers had the worst odds (24% survival rate). Analyzing this passenger: {passenger_desc}."
+    }
+}
+
+
+def match_to_cohort(sex, pclass, age, fare):
+    """
+    Match passenger parameters to the best cohort pattern.
+    Returns (cohort_name, cohort_info) tuple.
+
+    Args:
+        sex: 0 for female, 1 for male
+        pclass: 1, 2, or 3
+        age: passenger age in years
+        fare: ticket fare in pounds
+
+    Returns:
+        (cohort_name, cohort_info) or (None, fallback_info)
+    """
+    # Sort cohorts by priority (highest first)
+    sorted_cohorts = sorted(
+        cohort_patterns.items(),
+        key=lambda x: x[1]['priority'],
+        reverse=True
+    )
+
+    for cohort_name, cohort_info in sorted_cohorts:
+        criteria = cohort_info['match_criteria']
+
+        # Check sex if specified
+        if 'sex' in criteria and criteria['sex'] != sex:
+            continue
+
+        # Check pclass if specified
+        if 'pclass' in criteria and criteria['pclass'] != pclass:
+            continue
+
+        # Check age range if specified
+        if 'age_range' in criteria:
+            min_age, max_age = criteria['age_range']
+            if not (min_age <= age <= max_age):
+                continue
+
+        # All criteria matched!
+        return cohort_name, cohort_info
+
+    # No match found, return generic fallback
+    fallback = {
+        "response": "Here's the analysis for this passenger profile.",
+        "xgb_response": "Analyzing this passenger: {passenger_desc}."
+    }
+    return None, fallback
+
+
+def parse_passenger_query(query_text):
+    """
+    Parse natural language query into passenger parameters.
+
+    Args:
+        query_text: User's natural language query
+
+    Returns:
+        dict with keys {sex, pclass, age, fare} or None if can't parse
+
+    Examples:
+        "show me a woman in 1st class" -> {sex: 0, pclass: 1, age: 30, fare: 84}
+        "what about a young boy in 3rd" -> {sex: 1, pclass: 3, age: 8, fare: 13}
+    """
+    query_lower = query_text.lower()
+
+    # Parse sex
+    sex = None
+    if any(word in query_lower for word in ['woman', 'women', 'female', 'lady', 'ladies', 'girl']):
+        sex = 0
+    elif any(word in query_lower for word in ['man', 'men', 'male', 'gentleman', 'boy']):
+        sex = 1
+
+    # Parse class
+    pclass = None
+    if any(phrase in query_lower for phrase in ['1st class', 'first class', 'upper class', 'wealthy', 'rich']):
+        pclass = 1
+    elif any(phrase in query_lower for phrase in ['2nd class', 'second class', 'middle class']):
+        pclass = 2
+    elif any(phrase in query_lower for phrase in ['3rd class', 'third class', 'lower class', 'poor', 'cheap']):
+        pclass = 3
+
+    # Parse age (approximate)
+    age = None
+    if any(word in query_lower for word in ['child', 'children', 'kid', 'young', 'baby', 'infant']):
+        age = 8  # Young child
+    elif any(word in query_lower for word in ['elderly', 'senior', 'older', 'old']):
+        age = 65  # Senior
+    elif any(word in query_lower for word in ['adult', 'middle-aged', 'middle aged']):
+        age = 35  # Middle-aged adult
+    else:
+        # Try to extract numeric age
+        import re
+        age_match = re.search(r'\b(\d+)[\s-]*(year|yr|y\.o\.|old)?\b', query_lower)
+        if age_match:
+            age = int(age_match.group(1))
+
+    # Default age if not specified
+    if age is None:
+        age = 30  # Default adult age
+
+    # Set fare based on class (historical averages)
+    fare = None
+    if pclass == 1:
+        fare = 84.0
+    elif pclass == 2:
+        fare = 20.0
+    elif pclass == 3:
+        fare = 13.0
+
+    # Must have at least sex or pclass to be valid
+    if sex is None and pclass is None:
+        return None
+
+    # Fill in defaults for missing values
+    if sex is None:
+        sex = 0  # Default to female
+    if pclass is None:
+        pclass = 2  # Default to 2nd class
+    if fare is None:
+        fare = 20.0  # Default to 2nd class fare
+
+    return {
+        'sex': sex,
+        'pclass': pclass,
+        'age': age,
+        'fare': fare
+    }
+
+
+def format_passenger_description(sex, pclass, age, fare):
+    """
+    Format passenger parameters into human-readable description.
+
+    Args:
+        sex: 0 for female, 1 for male
+        pclass: 1, 2, or 3
+        age: passenger age
+        fare: ticket fare
+
+    Returns:
+        String like "30-year-old woman in 2nd class, £20 fare"
+    """
+    sex_label = "female" if sex == 0 else "male"
+    class_label = {1: "1st class", 2: "2nd class", 3: "3rd class"}[pclass]
+
+    return f"{age}-year-old {sex_label} in {class_label}, £{fare:.0f} fare"
+
+
+# =============================================================================
+# Test Cases for New Functions (to be removed after Phase 2)
+# =============================================================================
+# Test match_to_cohort:
+#   match_to_cohort(0, 1, 5, 84)  -> should match "first_class_child"
+#   match_to_cohort(1, 3, 40, 8)  -> should match "third_class_male"
+#   match_to_cohort(0, 2, 30, 20) -> should match "women"
+#
+# Test parse_passenger_query:
+#   "show me a woman in 1st class" -> {sex: 0, pclass: 1, age: 30, fare: 84}
+#   "what about a young boy in 3rd" -> {sex: 1, pclass: 3, age: 8, fare: 13}
+#   "elderly man in second class" -> {sex: 1, pclass: 2, age: 65, fare: 20}
+#
+# Test format_passenger_description:
+#   (0, 1, 40, 84) -> "40-year-old female in 1st class, £84 fare"
+
+# =============================================================================
 # Keyword Matching Function
 # =============================================================================
 
@@ -1319,6 +1542,18 @@ with col1:
 # =============================================================================
 
 with col2:
+    # Callback function to update fare when class changes
+    def update_fare_for_class():
+        """Update fare to average for selected class."""
+        selected_pclass = st.session_state.whatif_pclass[1]
+        # Average fares by class (historical Titanic data)
+        class_avg_fares = {
+            1: 84.0,   # 1st class average
+            2: 20.0,   # 2nd class average
+            3: 13.0    # 3rd class average
+        }
+        st.session_state.whatif_fare = class_avg_fares[selected_pclass]
+
     # What-If Scenario Controls - Inline layout with columns
     st.markdown("### 🔮 What-If Scenario")
 
@@ -1347,7 +1582,8 @@ with col2:
             format_func=lambda x: f"{x[0]}",
             horizontal=True,
             key="whatif_pclass",
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            on_change=update_fare_for_class
         )
 
     # Age - inline with label
@@ -1376,6 +1612,25 @@ with col2:
             key="whatif_fare",
             label_visibility="collapsed"
         )
+
+    # Show hint if fare/class combination is historically unusual
+    selected_pclass = st.session_state.whatif_pclass[1]
+    selected_fare = st.session_state.whatif_fare
+
+    # Typical fare ranges by class (historical Titanic data)
+    fare_ranges = {
+        1: (30, 500, "1st class"),
+        2: (10, 30, "2nd class"),
+        3: (0, 15, "3rd class")
+    }
+
+    min_fare, max_fare, class_name = fare_ranges[selected_pclass]
+
+    if selected_fare < min_fare or selected_fare > max_fare:
+        if selected_fare > max_fare:
+            st.caption(f"⚠️ £{selected_fare:.2f} is unusually high for {class_name} (typical: £{min_fare}-£{max_fare})")
+        else:
+            st.caption(f"⚠️ £{selected_fare:.2f} is unusually low for {class_name} (typical: £{min_fare}-£{max_fare})")
 
     st.markdown("### 💬 Chat")
 

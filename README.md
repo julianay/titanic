@@ -28,9 +28,12 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
     - Standard waterfall chart (full width below)
 - **What-If Scenario controls** – interactive sliders and radio buttons above chat
   - Set Sex, Passenger Class, Age, and Fare to explore custom passengers
+  - **Smart fare updates**: Automatically adjusts to historical average when class changes (1st: £84, 2nd: £20, 3rd: £13)
+  - **Contextual hints**: Shows warning when fare/class combinations are historically unusual
   - Real-time tree path updates and SHAP value recalculation
   - Inline label layout for compact, space-efficient design
   - Automatically clears when preset buttons are clicked
+  - Independent controls allow counterfactual exploration (e.g., "what if 3rd class paid 1st class prices?")
 - **Tab-aware chat** – context-specific responses based on which model you're viewing
   - Decision Tree: Path explanations and survival statistics
   - XGBoost: SHAP explanations with typical passenger details (e.g., "female, 2nd class, age 30, fare £15")
@@ -72,6 +75,8 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 **Right Column (25%)**: What-If controls and interactive chat
 - **What-If Scenario**: Set Sex, Passenger Class, Age, Fare with inline controls
+  - Smart fare updates: Auto-adjusts to historical average when class changes
+  - Contextual hints: Warns about unusual fare/class combinations
 - Real-time updates for both Decision Tree path and SHAP explanations
 - **Tab-aware chat** with context-specific responses:
   - Decision Tree: Shows path explanations and survival statistics
@@ -94,7 +99,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 **UX / Data Viz Highlights**
 - **Proportional edge widths** – visual encoding of passenger flow through decision tree (1-32px range)
 - **Donut chart nodes** – cleaner visual showing class distribution with 50% center hole
-- **What-If Scenario controls** – interactive sliders and radio buttons for real-time exploration
+- **Smart What-If controls** – auto-updates fare to historical averages when class changes, shows contextual hints for unusual combinations
 - **Tab-aware chat** – context-specific responses adapt to which model you're viewing
 - **Alternative waterfall visualization** – floating bars show cumulative SHAP impact progression
 - **Interactive visualizations** using D3.js for custom tree and SHAP charts
