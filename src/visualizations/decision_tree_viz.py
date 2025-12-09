@@ -50,130 +50,130 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
         <meta name="preset-hash" content="{preset_hash}">
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
-            * {{{{
+            * {{
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
-            }}}}
+            }}
 
-            body {{{{
+            body {{
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 padding: 20px;
                 background: #0e1117;
                 color: #fafafa;
-            }}}}
+            }}
 
-            h3 {{{{
+            h3 {{
                 font-size: 20px;
                 font-weight: 600;
                 margin-bottom: 20px;
                 color: #fafafa;
-            }}}}
+            }}
 
-            #tree-viz {{{{
+            #tree-viz {{
                 width: 100%;
                 height: 700px;
                 background: #0e1117;
                 border-radius: 8px;
                 overflow: visible;
-            }}}}
+            }}
 
             /* PIE CHART STYLES */
-            .pie-chart path {{{{
+            .pie-chart path {{
                 opacity: 0.4;
                 transition: all 0.3s ease;
-            }}}}
+            }}
 
-            .pie-chart.active path {{{{
+            .pie-chart.active path {{
                 opacity: 1;
                 filter: drop-shadow(0 0 6px rgba(255,255,255,0.3));
-            }}}}
+            }}
 
             /* Hover highlighting - temporary highlight on hover */
-            .pie-chart.hover-active path {{{{
+            .pie-chart.hover-active path {{
                 opacity: 0.85;
                 filter: drop-shadow(0 0 4px rgba(255,215,0,0.4));
-            }}}}
+            }}
 
-            .pie-chart.final path {{{{
+            .pie-chart.final path {{
                 filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
-            }}}}
+            }}
 
-            .pie-chart.final {{{{
+            .pie-chart.final {{
                 animation: pulse 1.5s ease-in-out infinite;
-            }}}}
+            }}
 
-            @keyframes pulse {{{{
-                0%, 100% {{{{ transform: scale(1); }}}}
-                50% {{{{ transform: scale(1.1); }}}}
-            }}}}
+            @keyframes pulse {{
+                0%, 100% {{ transform: scale(1); }}
+                50% {{ transform: scale(1.1); }}
+            }}
 
-            .node text {{{{
+            .node text {{
                 font-size: 12px;
                 font-weight: 500;
                 fill: #fafafa;  /* White text for all labels */
                 opacity: 0.4;
                 transition: opacity 0.3s ease;
-            }}}}
+            }}
 
-            .node text.active {{{{
+            .node text.active {{
                 opacity: 1;
                 font-weight: 700;
                 fill: #fafafa;
-            }}}}
+            }}
 
             /* Hover highlighting for text */
-            .node text.hover-active {{{{
+            .node text.hover-active {{
                 opacity: 0.85;
                 fill: #ffd700;  /* Gold color for hover */
-            }}}}
+            }}
 
-            .link {{{{
+            .link {{
                 fill: none;
                 stroke: #666;
                 stroke-linecap: round;
                 stroke-opacity: 0.6;
                 transition: all 0.3s ease;
-            }}}}
+            }}
 
-            .link.active {{{{
+            .link.active {{
                 opacity: 1;
-            }}}}
+            }}
 
-            .link.active.survived {{{{
+            .link.active.survived {{
                 stroke: #52b788;
-            }}}}
+            }}
 
-            .link.active.died {{{{
+            .link.active.died {{
                 stroke: #e76f51;
-            }}}}
+            }}
 
             /* Hover highlighting for links */
-            .link.hover-active {{{{
+            .link.hover-active {{
                 stroke: #ffd700;  /* Gold color for hover */
                 opacity: 0.8;
-            }}}}
+            }}
 
-            .edge-label {{{{
+            .edge-label {{
                 font-size: 11px;
                 fill: #fafafa;  /* White text for edge labels */
                 font-weight: 600;
                 opacity: 0.4;
                 transition: all 0.3s ease;
-            }}}}
+            }}
 
-            .edge-label.active {{{{
+            .edge-label.active {{
                 opacity: 1;
                 font-weight: 700;
-            }}}}
+            }}
 
-            .edge-label.hover-active {{{{
+            .edge-label.hover-active {{
                 opacity: 0.85;
                 fill: #ffd700;  /* Gold color for hover */
                 transform: translateY(-16px);  /* Move up on hover for better readability */
-            }}}}
+            }}
 
-            .tooltip {{{{
+            .tooltip {{
                 position: absolute;
                 padding: 12px;
                 background: rgba(0, 0, 0, 0.9);
@@ -186,7 +186,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                 box-shadow: 0 4px 6px rgba(0,0,0,0.3);
                 opacity: 0;
                 transition: opacity 0.2s;
-            }}}}
+            }}
         </style>
     </head>
     <body>
@@ -204,88 +204,88 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
 
             let d3Tree = null;
 
-            function tracePath(node, inputValues) {{{{
+            function tracePath(node, inputValues) {{
                 const path = [];
                 let current = node;
 
-                while (current) {{{{
+                while (current) {{
                     path.push(current.id);
 
-                    if (current.is_leaf) {{{{
+                    if (current.is_leaf) {{
                         break;
-                    }}}}
+                    }}
 
                     const feature = current.feature;
                     const threshold = current.threshold;
 
-                    if (inputValues[feature] <= threshold) {{{{
+                    if (inputValues[feature] <= threshold) {{
                         current = current.children ? current.children[0] : null;
-                    }}}} else {{{{
+                    }} else {{
                         current = current.children ? current.children[1] : null;
-                    }}}}
-                }}}}
+                    }}
+                }}
 
                 return path;
-            }}}}
+            }}
 
             // Get path from root to a specific node (for hover highlighting)
-            function getPathToNode(targetNode) {{{{
+            function getPathToNode(targetNode) {{
                 const path = [];
                 let current = targetNode;
 
                 // Walk up the tree from target to root
-                while (current) {{{{
+                while (current) {{
                     path.unshift(current.data.id);  // Add to beginning of array
                     current = current.parent;
-                }}}}
+                }}
 
                 return path;
-            }}}}
+            }}
 
-            function updateTreeHighlight(path) {{{{
+            function updateTreeHighlight(path) {{
                 const finalNodeId = path[path.length - 1];
 
                 // Update pie chart highlighting (select the .pie-chart groups)
                 d3.selectAll('.pie-chart')
-                    .classed('active', function() {{{{
+                    .classed('active', function() {{
                         const nodeData = d3.select(this.parentNode).datum();
                         return path.includes(nodeData.data.id);
-                    }}}})
-                    .classed('final', function() {{{{
+                    }})
+                    .classed('final', function() {{
                         const nodeData = d3.select(this.parentNode).datum();
                         return nodeData.data.id === finalNodeId;
-                    }}}});
+                    }});
 
                 d3.selectAll('.node text')
                     .classed('active', d => path.includes(d.data.id));
 
                 d3.selectAll('.link')
                     .classed('active', d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
-                    .classed('survived', d => {{{{
-                        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {{{{
+                    .classed('survived', d => {{
+                        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {{
                             const finalNode = d3Tree.descendants().find(n => n.data.id === finalNodeId);
                             return finalNode && finalNode.data.predicted_class === 1;
-                        }}}}
+                        }}
                         return false;
-                    }}}})
-                    .classed('died', d => {{{{
-                        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {{{{
+                    }})
+                    .classed('died', d => {{
+                        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {{
                             const finalNode = d3Tree.descendants().find(n => n.data.id === finalNodeId);
                             return finalNode && finalNode.data.predicted_class === 0;
-                        }}}}
+                        }}
                         return false;
-                    }}}});
+                    }});
 
                 // Update edge labels to match link highlighting
                 d3.selectAll('.edge-label')
                     .classed('active', d => path.includes(d.source.data.id) && path.includes(d.target.data.id));
-            }}}}
+            }}
 
-            function initTree() {{{{
+            function initTree() {{
                 const container = document.getElementById('tree-viz');
                 const width = container.offsetWidth;
                 const height = 700;
-                const margin = {{{{top: 20, right: 150, bottom: 20, left: 80}}}};  // Increased right margin for labels
+                const margin = {{top: 20, right: 150, bottom: 20, left: 80}};  // Increased right margin for labels
 
                 // Clear existing content to prevent duplicate renders
                 d3.select("#tree-viz").html("");
@@ -296,7 +296,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                     .attr("width", width)
                     .attr("height", height)
                     .append("g")
-                    .attr("transform", `translate(${{{{margin.left}}}},${{{{margin.top}}}})`);
+                    .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
 
                 const tree = d3.tree()
                     .size([height - margin.top - margin.bottom, width - margin.left - margin.right]);
@@ -335,14 +335,14 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                     .attr("x", d => (d.source.y + d.target.y) / 2 + 15)
                     .attr("y", d => (d.source.x + d.target.x) / 2)
                     .attr("text-anchor", "middle")
-                    .attr("dy", d => {{{{
+                    .attr("dy", d => {{
                         const isLeftChild = d.target.x < d.source.x;
                         return isLeftChild ? -5 : 12;
-                    }}}})
-                    .text(d => {{{{
+                    }})
+                    .text(d => {{
                         const isLeftChild = d.source.data.children && d.source.data.children[0] === d.target.data;
                         return isLeftChild ? (d.source.data.left_label || '') : (d.source.data.right_label || '');
-                    }}}});
+                    }});
                     // Removed inline .style("fill") so CSS styling applies
 
                 const nodes = svg.selectAll(".node")
@@ -350,7 +350,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                     .enter()
                     .append("g")
                     .attr("class", "node")
-                    .attr("transform", d => `translate(${{{{d.y}}}},${{{{d.x}}}})`);
+                    .attr("transform", d => `translate(${{d.y}},${{d.x}})`);
 
                 // PIE CHART NODES: Show class distribution as pie charts
                 // Create pie generator
@@ -359,7 +359,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                     .sort(null);
 
                 // Add pie chart to each node
-                nodes.each(function(d) {{{{
+                nodes.each(function(d) {{
                     const nodeGroup = d3.select(this);
                     const radius = Math.sqrt(d.data.samples) * 2;
 
@@ -370,8 +370,8 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
 
                     // Prepare data for pie chart: [died, survived]
                     const pieData = pie([
-                        {{{{ label: 'died', value: d.data.class_0, color: '#5b8db8' }}}},  // Blue for died
-                        {{{{ label: 'survived', value: d.data.class_1, color: '#52b788' }}}}  // Green for survived
+                        {{ label: 'died', value: d.data.class_0, color: '#5b8db8' }},  // Blue for died
+                        {{ label: 'survived', value: d.data.class_1, color: '#52b788' }}  // Green for survived
                     ]);
 
                     // Create a group for the pie chart
@@ -395,7 +395,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                         .attr("pointer-events", "all");
 
                     // Hover effects on the entire node
-                    hoverCircle.on("mouseover", function(event) {{{{
+                    hoverCircle.on("mouseover", function(event) {{
                         // Scale up the pie chart
                         pieGroup.transition()
                             .duration(200)
@@ -404,45 +404,45 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                         // Highlight the path from root to this node
                         const hoverPath = getPathToNode(d);
                         d3.selectAll('.pie-chart')
-                            .classed('hover-active', function() {{{{
+                            .classed('hover-active', function() {{
                                 const nodeData = d3.select(this.parentNode).datum();
                                 return hoverPath.includes(nodeData.data.id);
-                            }}}});
+                            }});
 
                         d3.selectAll('.node text')
-                            .classed('hover-active', function() {{{{
+                            .classed('hover-active', function() {{
                                 const nodeData = d3.select(this.parentNode).datum();
                                 return hoverPath.includes(nodeData.data.id);
-                            }}}});
+                            }});
 
                         d3.selectAll('.link')
-                            .classed('hover-active', function() {{{{
+                            .classed('hover-active', function() {{
                                 const linkData = d3.select(this).datum();
                                 return hoverPath.includes(linkData.source.data.id) &&
                                        hoverPath.includes(linkData.target.data.id);
-                            }}}});
+                            }});
 
                         d3.selectAll('.edge-label')
-                            .classed('hover-active', function() {{{{
+                            .classed('hover-active', function() {{
                                 const linkData = d3.select(this).datum();
                                 return hoverPath.includes(linkData.source.data.id) &&
                                        hoverPath.includes(linkData.target.data.id);
-                            }}}});
+                            }});
 
                         const survivalRate = (d.data.probability * 100).toFixed(1);
                         tooltip.transition()
                             .duration(200)
                             .style("opacity", 1);
                         tooltip.html(`
-                            <strong>${{{{d.data.split_rule}}}}</strong><br/>
-                            Samples: ${{{{d.data.samples}}}}<br/>
-                            Died: ${{{{d.data.class_0}}}} | Survived: ${{{{d.data.class_1}}}}<br/>
-                            Survival Rate: ${{{{survivalRate}}}}%
+                            <strong>${{d.data.split_rule}}</strong><br/>
+                            Samples: ${{d.data.samples}}<br/>
+                            Died: ${{d.data.class_0}} | Survived: ${{d.data.class_1}}<br/>
+                            Survival Rate: ${{survivalRate}}%
                         `)
                             .style("left", (event.pageX + 15) + "px")
                             .style("top", (event.pageY - 28) + "px");
-                    }}}})
-                    .on("mouseout", function(event) {{{{
+                    }})
+                    .on("mouseout", function(event) {{
                         // Scale back to normal
                         pieGroup.transition()
                             .duration(200)
@@ -457,58 +457,58 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                         tooltip.transition()
                             .duration(500)
                             .style("opacity", 0);
-                    }}}});
-                }}}});
+                    }});
+                }});
 
                 // Labels: leaf nodes on right, internal nodes below
                 nodes.append("text")
-                    .attr("dy", d => {{{{
+                    .attr("dy", d => {{
                         const radius = Math.sqrt(d.data.samples) * 2;
                         // Leaf nodes: center vertically, Internal nodes: below circle
                         return d.data.is_leaf ? 5 : radius + 15;
-                    }}}})
-                    .attr("x", d => {{{{
+                    }})
+                    .attr("x", d => {{
                         const radius = Math.sqrt(d.data.samples) * 2;
                         // Leaf nodes: to the right, Internal nodes: centered
                         return d.data.is_leaf ? radius + 10 : 0;
-                    }}}})
+                    }})
                     .attr("text-anchor", d => d.data.is_leaf ? "start" : "middle")
-                    .text(d => {{{{
-                        if (d.data.is_leaf) {{{{
+                    .text(d => {{
+                        if (d.data.is_leaf) {{
                             return d.data.predicted_class === 1 ? "✓ Survived" : "✗ Died";
-                        }}}} else {{{{
+                        }} else {{
                             return d.data.feature || "";
-                        }}}}
-                    }}}})
+                        }}
+                    }})
                     .style("fill", "#fafafa");  // White text for all labels
 
                 // Initial highlight only if presetValues exists
-                if (presetValues) {{{{
+                if (presetValues) {{
                     const initialPath = tracePath(treeData, presetValues);
                     updateTreeHighlight(initialPath);
-                }}}}
-            }}}}
+                }}
+            }}
 
             // Initialize tree with retry logic for tab switching
-            function tryInitTree(attempts = 0) {{{{
+            function tryInitTree(attempts = 0) {{
                 const container = document.getElementById('tree-viz');
-                if (container && container.offsetWidth > 0) {{{{
+                if (container && container.offsetWidth > 0) {{
                     // Container is visible and has dimensions, safe to initialize
                     initTree();
-                }}}} else if (attempts < 10) {{{{
+                }} else if (attempts < 10) {{
                     // Container not ready, retry after a short delay
                     setTimeout(() => tryInitTree(attempts + 1), 100);
-                }}}} else {{{{
+                }} else {{
                     console.error('Failed to initialize tree after 10 attempts');
-                }}}}
-            }}}}
+                }}
+            }}
 
             // Start initialization
-            if (document.readyState === 'loading') {{{{
+            if (document.readyState === 'loading') {{
                 document.addEventListener('DOMContentLoaded', () => tryInitTree());
-            }}}} else {{{{
+            }} else {{
                 tryInitTree();
-            }}}}
+            }}
         </script>
     </body>
     </html>
