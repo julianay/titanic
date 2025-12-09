@@ -118,6 +118,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 - **Human-readable labels** (decoded categorical features)
 - **Dark mode design** with cohesive theming and smooth CSS transitions
 - **Radio-style tabs** – eliminates visualization rendering bugs
+- **Modular code architecture** – reusable visualization components in `src/visualizations/` package
 
 ---
 
@@ -149,7 +150,11 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 titanic/
 ├── app.py                          # Main XAI Explorer application
 ├── src/
-│   └── tree_data.py                # Tree data extraction module (visualization-agnostic)
+│   ├── __init__.py                 # Source package initialization
+│   ├── tree_data.py                # Tree data extraction module (visualization-agnostic)
+│   └── visualizations/             # Modular visualization components
+│       ├── __init__.py             # Visualization package exports
+│       └── decision_tree_viz.py    # D3.js decision tree HTML generation
 ├── requirements.txt                # Python dependencies
 ├── Dockerfile                      # Docker config for Hugging Face Spaces
 ├── README.md                       # This file

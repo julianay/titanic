@@ -1,6 +1,6 @@
 # Titanic Explainable AI - Project Progress
 
-**Last Updated:** 2025-12-08
+**Last Updated:** 2025-12-09
 
 ---
 
@@ -58,6 +58,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 - ✅ Streamlit single-page application
 - ✅ Docker containerization for Hugging Face Spaces deployment
 - ✅ Clean modular codebase with separation of concerns
+- ✅ Modular visualization package (`src/visualizations/`) with reusable components
 
 ### Data Pipeline (`src/tree_data.py`)
 - ✅ Modular, visualization-agnostic tree extraction
@@ -99,6 +100,42 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ---
 
 ## 🚀 Recent Changes
+
+### 2025-12-09 (Session 9 - Code Refactoring: Modular Visualizations)
+- **CREATED VISUALIZATION MODULE STRUCTURE**
+  - **New package**: `src/visualizations/` with proper `__init__.py` structure
+  - **Extracted decision tree visualization** (~460 lines) from `app.py` into `src/visualizations/decision_tree_viz.py`
+  - **New module function**: `get_decision_tree_html(tree_json, preset_values_js, preset_hash, passenger_desc)`
+    - Generates complete HTML document with embedded D3.js code
+    - Takes tree data and preset values as parameters
+    - Returns HTML string ready for `components.html()`
+    - Includes comprehensive docstring with usage examples
+  - **Package exports**: Clean imports via `from src.visualizations import get_decision_tree_html`
+- **CODE ORGANIZATION IMPROVEMENTS**
+  - **app.py reduction**: Reduced by ~460 lines (from ~1900 to ~1450 lines)
+  - **Separation of concerns**: Visualization logic now isolated from application logic
+  - **Reusability**: Decision tree HTML generation can be reused in other contexts
+  - **Maintainability**: Easier to update visualization without touching app logic
+  - **Testability**: Visualization function can be unit tested independently
+- **BUG FIX: JavaScript escaping error**
+  - **Problem**: Used `{{{{` (producing `{{` in output) instead of `{{` (producing `{` in output)
+  - **Error**: "Uncaught SyntaxError: Unexpected token '{'" at line 244 in generated HTML
+  - **Root cause**: Python f-string escaping rules: `{{` → `{`, not `{{{{` → `{`
+  - **Solution**: Changed all `{{{{` to `{{` and `}}}}` to `}}` throughout JavaScript sections
+  - **Fixed areas**:
+    - CSS selectors and rule blocks
+    - JavaScript function bodies (tracePath, getPathToNode, updateTreeHighlight, initTree, tryInitTree)
+    - Template literals like `` `translate(${margin.left},${margin.top})` ``
+    - Object literals like `{top: 20, right: 150, bottom: 20, left: 80}`
+    - Tooltip HTML with `${d.data.samples}`, `${d.data.split_rule}`, etc.
+  - **Verification**: Syntax checks pass, visualization works correctly in browser
+- **BENEFITS**
+  - ✅ More maintainable codebase with clear separation of concerns
+  - ✅ Visualization code can be reused across different applications
+  - ✅ Easier to test individual components
+  - ✅ Sets foundation for extracting other visualizations (XGBoost SHAP charts)
+  - ✅ Better code organization for portfolio showcase
+  - ✅ No functional changes - decision tree works exactly as before
 
 ### 2025-12-08 (Session 8 - Chat Refactor: Phase 2 Integration)
 - **COHORT MATCHING SYSTEM INTEGRATION** (`app.py`)
@@ -532,6 +569,9 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 |------|---------|
 | `app.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP |
 | `src/tree_data.py` | ML pipeline & tree extraction module |
+| `src/visualizations/decision_tree_viz.py` | Modular D3.js decision tree HTML generation |
+| `src/visualizations/__init__.py` | Visualization package exports |
+| `src/__init__.py` | Source package initialization |
 | `requirements.txt` | Python dependencies |
 | `Dockerfile` | Docker configuration for deployment |
 | `README.md` | Project documentation |
