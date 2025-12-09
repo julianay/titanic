@@ -14,7 +14,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## ✅ Completed Features
 
-### Interactive XAI Explorer (`app_pie_version.py`)
+### Interactive XAI Explorer (`app.py`)
 - ✅ Two-column layout (visualization 75%, chat 25%)
 - ✅ Tab-based interface with performance metrics in labels:
   - **Decision Tree tab**: 81% accuracy, 60% recall
@@ -101,7 +101,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ## 🚀 Recent Changes
 
 ### 2025-12-08 (Session 8 - Chat Refactor: Phase 2 Integration)
-- **COHORT MATCHING SYSTEM INTEGRATION** (`app_pie_version.py`)
+- **COHORT MATCHING SYSTEM INTEGRATION** (`app.py`)
   - **Unified state management** (MAJOR ARCHITECTURAL CHANGE):
     - Created `update_whatif_and_respond()` as single mechanism for all chat interactions
     - Replaces duplicated logic across preset buttons and chat input handlers
@@ -148,7 +148,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
     - ✅ Extensible: easy to add new cohort patterns without touching UI code
 
 ### 2025-12-08 (Session 7 - What-If UX Improvements)
-- **WHAT-IF CONTROLS ENHANCEMENTS** (`app_pie_version.py`)
+- **WHAT-IF CONTROLS ENHANCEMENTS** (`app.py`)
   - **Fixed widget initialization warning**:
     - Removed explicit `value` parameters from age and fare sliders
     - Eliminated "widget created with default value" warning on app load
@@ -178,7 +178,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ### 2025-12-08 (Session 6 - Project Cleanup)
 - **PROJECT SIMPLIFICATION: Removed unused files**
-  - **Context**: User is only using `app_pie_version.py` as the main application
+  - **Context**: User is only using `app.py` as the main application
   - **Deleted files**:
     - `app.py` - Alternative gradient node version (no longer needed)
     - `src/streamlit_app.py` - Standalone SHAP what-if demo (not used by main app)
@@ -186,7 +186,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
     - `src/pages/model_comparison.py` - Model comparison page (not used by main app)
     - `src/pages/` directory - Removed entirely (no longer needed)
   - **Remaining files**:
-    - `app_pie_version.py` - Main application with tree, XGBoost, and SHAP visualizations
+    - `app.py` - Main application with tree, XGBoost, and SHAP visualizations
     - `src/tree_data.py` - Supporting data module used by main app
   - **Result**: Streamlined codebase focused on single comprehensive application
   - **Benefits**:
@@ -223,7 +223,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
   - **Next approach to try**: Unknown - may need to rethink the entire what-if/chat integration approach
 
 ### 2025-12-08 (Session 5)
-- **MAJOR VISUAL ENHANCEMENTS: Proportional Edge Widths & What-If Controls** (`app_pie_version.py`)
+- **MAJOR VISUAL ENHANCEMENTS: Proportional Edge Widths & What-If Controls** (`app.py`)
   - **Proportional stroke widths for decision tree edges** (NEW):
     - Edge thickness now represents the number of passengers flowing through each split
     - **Scale implementation**: `d3.scaleSqrt()` with domain `[0, maxSamples]` and range `[1, 32]`
@@ -268,7 +268,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
     - Removed unused `highlighted_path` session state variable
 
 ### 2025-12-07 (Session 4)
-- **MAJOR IMPROVEMENTS: Alternative Waterfall Chart & Tab-Aware Chat** (`app_pie_version.py`)
+- **MAJOR IMPROVEMENTS: Alternative Waterfall Chart & Tab-Aware Chat** (`app.py`)
   - **Alternative waterfall chart visualization** (NEW):
     - Added floating bar waterfall chart alongside traditional horizontal bar chart
     - Shows cumulative SHAP impact progression from base value to final prediction
@@ -306,7 +306,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
     - Improved left margin (100px) on alternative waterfall for longer feature labels
 
 ### 2025-12-07 (Session 3)
-- **NEW EXPERIMENTAL VERSION: Pie Chart Nodes** (`app_pie_version.py`)
+- **NEW EXPERIMENTAL VERSION: Pie Chart Nodes** (`app.py`)
   - Created experimental version to test pie chart visualization vs gradient circles
   - **Pie chart implementation**:
     - Each node displays class distribution as a two-slice pie chart
@@ -457,7 +457,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ## 🔄 Current State
 
 ### Working Features
-- **Interactive XAI Explorer (app_pie_version.py)** - Single comprehensive application, fully functional
+- **Interactive XAI Explorer (app.py)** - Single comprehensive application, fully functional
 - All visualizations rendering correctly
   - Decision Tree with donut chart nodes and proportional edge widths
   - XGBoost with dual waterfall SHAP visualizations
@@ -483,7 +483,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ## 📝 Future Enhancement Ideas
 
 ### Potential Features
-- [x] ✅ **COMPLETED**: Add SHAP explanations for XGBoost (implemented in Tab 2 of app_pie_version.py)
+- [x] ✅ **COMPLETED**: Add SHAP explanations for XGBoost (implemented in Tab 2 of app.py)
 - [ ] Upgrade to LLM-based chat (OpenAI/Anthropic) for true conversational AI
 - [ ] Add more sophisticated pattern matching for natural language queries
 - [ ] Support compound queries ("show me wealthy women")
@@ -530,7 +530,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 | File | Purpose |
 |------|---------|
-| `app_pie_version.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP |
+| `app.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP |
 | `src/tree_data.py` | ML pipeline & tree extraction module |
 | `requirements.txt` | Python dependencies |
 | `Dockerfile` | Docker configuration for deployment |
@@ -559,7 +559,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ### Context Recovery
 If you lose session context, remember:
 1. This is a **portfolio demo**, not production code
-2. **Single application** (`app_pie_version.py`): Interactive XAI Explorer with tabs
+2. **Single application** (`app.py`): Interactive XAI Explorer with tabs
    - Tab 1: Decision Tree with D3.js donut chart node visualization
    - Tab 2: XGBoost with SHAP explanations (global + dual waterfall charts)
    - 75/25 two-column layout (visualization left, what-if controls + chat right)
@@ -577,7 +577,7 @@ If you lose session context, remember:
 source venv/bin/activate
 
 # Run the application
-streamlit run app_pie_version.py
+streamlit run app.py
 
 # Access app
 http://localhost:8501

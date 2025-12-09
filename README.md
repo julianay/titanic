@@ -14,7 +14,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 ## 🎯 Features
 
-### 💬 **Interactive XAI Explorer** (app_pie_version.py)
+### 💬 **Interactive XAI Explorer** (app.py)
 - **Two-column layout** – visualization on left (75%), interactive controls + chat on right (25%)
 - **Tab-based model comparison** – switch between Decision Tree and XGBoost visualizations
   - **Decision Tree tab**: Interactive D3.js tree with donut chart nodes showing class distribution (81% accuracy, 60% recall)
@@ -60,7 +60,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 ## 🔍 What this app shows
 
-### Interactive XAI Explorer (app_pie_version.py)
+### Interactive XAI Explorer (app.py)
 
 **Left Column (75%)**: Tab-based visualization in dark mode
 - **Decision Tree tab**: Interactive D3.js tree with donut chart nodes showing class distribution
@@ -147,7 +147,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 ```text
 titanic/
-├── app_pie_version.py              # Main XAI Explorer application
+├── app.py                          # Main XAI Explorer application
 ├── src/
 │   └── tree_data.py                # Tree data extraction module (visualization-agnostic)
 ├── requirements.txt                # Python dependencies
@@ -180,7 +180,7 @@ python3 -m pip install --upgrade pip
 python3 -m pip install -r requirements.txt
 
 # Run the application
-streamlit run app_pie_version.py
+streamlit run app.py
 ```
 
 **Access the app:**
@@ -210,7 +210,7 @@ streamlit run app_pie_version.py
 - Animation: Pulsing final node draws attention to prediction
 - Responsive feedback: Smooth transitions create polished UX
 
-**Donut Chart Nodes (app_pie_version.py - Default):**
+**Donut Chart Nodes (app.py - Default):**
 - **Chosen as default**: Donut chart visualization provides clearer class distribution with reduced visual clutter
 - **Key advantages**:
   - Immediate visual of class split at each node (e.g., 70% died / 30% survived)
