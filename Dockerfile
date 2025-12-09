@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
-COPY app.py ./
 COPY app_pie_version.py ./
 COPY src/ ./src/
 
