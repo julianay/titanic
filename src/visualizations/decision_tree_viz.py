@@ -15,7 +15,7 @@ def get_base_styles():
         return f.read()
 
 
-def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passenger_desc=None):
+def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passenger_desc=None, tutorial_highlight_mode=None):
     """
     Generate HTML for interactive decision tree visualization with D3.js.
 
@@ -25,6 +25,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
     - Proportional edge widths representing passenger flow
     - Hover effects with gold highlighting showing paths from root to node
     - Dynamic path highlighting based on preset values
+    - Tutorial mode with gold path highlighting
 
     Args:
         tree_json (str): JSON string representation of the tree structure
@@ -32,6 +33,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                                 or "null" if no preset is selected
         preset_hash (str, optional): Hash string for uniqueness. If None, generates from preset_values_js
         passenger_desc (str, optional): Human-readable passenger description (reserved for future use)
+        tutorial_highlight_mode (str, optional): Tutorial highlighting mode ('first_split', 'full_path', or None)
 
     Returns:
         str: Complete HTML document as a string with embedded CSS and JavaScript
@@ -163,6 +165,30 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                 transform: translateY(-16px);  /* Move up on hover for better readability */
             }}
 
+            /* Tutorial highlighting styles - gold/yellow color */
+            .pie-chart.tutorial-highlight path {{
+                opacity: 1;
+                filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+            }}
+
+            .link.tutorial-highlight {{
+                stroke: #ffd700 !important;  /* Gold color */
+                stroke-width: 8px !important;
+                opacity: 1 !important;
+            }}
+
+            .node text.tutorial-highlight {{
+                opacity: 1;
+                font-weight: 700;
+                fill: #ffd700;  /* Gold color */
+            }}
+
+            .edge-label.tutorial-highlight {{
+                opacity: 1;
+                font-weight: 700;
+                fill: #ffd700;  /* Gold color */
+            }}
+
             .tooltip {{
                 position: absolute;
                 padding: 12px;
@@ -191,6 +217,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
         <script>
             const treeData = {tree_json};
             const presetValues = {preset_values_js};
+            const tutorialMode = "{tutorial_highlight_mode if tutorial_highlight_mode else ""}";
 
             let d3Tree = null;
 
@@ -269,6 +296,63 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                 // Update edge labels to match link highlighting
                 d3.selectAll('.edge-label')
                     .classed('active', d => path.includes(d.source.data.id) && path.includes(d.target.data.id));
+            }}
+
+            function applyTutorialHighlight() {{
+                if (!tutorialMode || tutorialMode === "") {{
+                    return;  // No tutorial mode active
+                }}
+
+                // Tutorial passenger is always: Female (sex=0), 1st class (pclass=1), age=30, fare=84
+                const tutorialValues = {{sex: 0, pclass: 1, age: 30, fare: 84}};
+                const fullPath = tracePath(treeData, tutorialValues);
+
+                if (tutorialMode === "first_split") {{
+                    // Highlight only root node and first edge (to female branch)
+                    const highlightPath = [fullPath[0], fullPath[1]];  // Root + first child
+
+                    // Highlight nodes
+                    d3.selectAll('.pie-chart')
+                        .classed('tutorial-highlight', function() {{
+                            const nodeData = d3.select(this.parentNode).datum();
+                            return highlightPath.includes(nodeData.data.id);
+                        }});
+
+                    d3.selectAll('.node text')
+                        .classed('tutorial-highlight', d => highlightPath.includes(d.data.id));
+
+                    // Highlight only the first edge
+                    d3.selectAll('.link')
+                        .classed('tutorial-highlight', d => {{
+                            return highlightPath.includes(d.source.data.id) && highlightPath.includes(d.target.data.id);
+                        }});
+
+                    d3.selectAll('.edge-label')
+                        .classed('tutorial-highlight', d => {{
+                            return highlightPath.includes(d.source.data.id) && highlightPath.includes(d.target.data.id);
+                        }});
+
+                }} else if (tutorialMode === "full_path") {{
+                    // Highlight complete path from root to final leaf
+                    d3.selectAll('.pie-chart')
+                        .classed('tutorial-highlight', function() {{
+                            const nodeData = d3.select(this.parentNode).datum();
+                            return fullPath.includes(nodeData.data.id);
+                        }});
+
+                    d3.selectAll('.node text')
+                        .classed('tutorial-highlight', d => fullPath.includes(d.data.id));
+
+                    d3.selectAll('.link')
+                        .classed('tutorial-highlight', d => {{
+                            return fullPath.includes(d.source.data.id) && fullPath.includes(d.target.data.id);
+                        }});
+
+                    d3.selectAll('.edge-label')
+                        .classed('tutorial-highlight', d => {{
+                            return fullPath.includes(d.source.data.id) && fullPath.includes(d.target.data.id);
+                        }});
+                }}
             }}
 
             function initTree() {{
@@ -472,8 +556,11 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
                     }})
                     .style("fill", "#fafafa");  // White text for all labels
 
-                // Initial highlight only if presetValues exists
-                if (presetValues) {{
+                // Tutorial highlighting takes priority over preset highlighting
+                if (tutorialMode && tutorialMode !== "") {{
+                    applyTutorialHighlight();
+                }} else if (presetValues) {{
+                    // Initial highlight only if presetValues exists and not in tutorial mode
                     const initialPath = tracePath(treeData, presetValues);
                     updateTreeHighlight(initialPath);
                 }}

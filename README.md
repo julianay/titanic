@@ -15,6 +15,11 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 ## 🎯 Features
 
 ### 💬 **Interactive XAI Explorer** (app.py)
+- **Guided Tutorial** – 3-step walkthrough for first-time users with gold path highlighting
+  - Auto-starts on first page load (one-time experience per session)
+  - Manual progression with "Next" button and "Skip Tutorial" option
+  - Demonstrates key features: decision tree splits, path tracing, and survival predictions
+  - Tutorial controls integrate seamlessly above chat interface
 - **Two-column layout** – visualization on left (75%), interactive controls + chat on right (25%)
 - **Tab-based model comparison** – switch between Decision Tree and XGBoost visualizations
   - **Decision Tree tab**: Interactive D3.js tree with donut chart nodes showing class distribution (81% accuracy, 60% recall)
@@ -102,6 +107,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 - Proper 80-20 train/test split
 
 **UX / Data Viz Highlights**
+- **Guided tutorial** – 3-step onboarding with gold path highlighting, auto-starts for first-time users, skip option available
 - **Proportional edge widths** – visual encoding of passenger flow through decision tree (1-32px range)
 - **Donut chart nodes** – cleaner visual showing class distribution with 50% center hole
 - **Smart What-If controls** – auto-updates fare to historical averages when class changes, shows contextual hints for unusual combinations
@@ -153,6 +159,7 @@ titanic/
 │   ├── __init__.py                 # Source package initialization
 │   ├── config.py                   # Configuration constants (presets, fare ranges, class averages)
 │   ├── tree_data.py                # Tree data extraction module (visualization-agnostic)
+│   ├── tutorial.py                 # Tutorial system - 3-step guided walkthrough
 │   ├── chat/                       # Modular chat system components
 │   │   ├── __init__.py             # Chat package initialization
 │   │   ├── cohort_patterns.py      # Cohort matching patterns and priorities
@@ -160,7 +167,7 @@ titanic/
 │   └── visualizations/             # Modular visualization components
 │       ├── __init__.py             # Visualization package exports
 │       ├── styles.css              # Shared dark mode styles for visualizations
-│       ├── decision_tree_viz.py    # D3.js decision tree HTML generation
+│       ├── decision_tree_viz.py    # D3.js decision tree HTML generation with tutorial support
 │       └── shap_viz.py             # D3.js SHAP visualization HTML generation (3 functions)
 ├── requirements.txt                # Python dependencies
 ├── Dockerfile                      # Docker config for Hugging Face Spaces
@@ -251,6 +258,9 @@ streamlit run app.py
 ## 📈 Future Enhancements
 
 **Potential Features:**
+- [x] ✅ **COMPLETED (Phase 1)**: Guided tutorial for first-time users with 3-step walkthrough
+- [ ] **Tutorial Phase 2**: Interactive tutorial with user interactions (click nodes, adjust controls)
+- [ ] **Tutorial Phase 3**: Personalized tutorial paths based on user interests (data scientist vs. manager)
 - [ ] Upgrade to LLM-based chat (OpenAI/Anthropic) for true conversational AI
 - [ ] Add more sophisticated pattern matching
 - [ ] Support compound queries ("show me wealthy women")

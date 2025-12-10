@@ -19,6 +19,13 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 - ✅ Tab-based interface with performance metrics in labels:
   - **Decision Tree tab**: 81% accuracy, 60% recall
   - **XGBoost tab**: 80% accuracy, 72% recall
+- ✅ **Guided Tutorial (Phase 1 MVP)**:
+  - 3-step walkthrough for first-time users
+  - Auto-starts on first page load, one-time experience per session
+  - Manual "Next" button progression with "Skip Tutorial" option
+  - Gold path highlighting in decision tree (first split → full path)
+  - Tutorial controls integrate seamlessly with chat interface
+  - Preset buttons hidden during tutorial mode
 - ✅ Natural language query interpretation with keyword matching
 - ✅ 4 preset exploration patterns:
   - Women's path (high survival)
@@ -100,6 +107,62 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ---
 
 ## 🚀 Recent Changes
+
+### 2025-12-10 (Session 12 - Tutorial Feature: Phase 1 MVP)
+- **TUTORIAL SYSTEM IMPLEMENTATION** (`src/tutorial.py`, `app.py`)
+  - **New module**: `src/tutorial.py` with complete tutorial state management
+    - **Tutorial step definitions**: 3-step guided walkthrough with messages, highlighting modes, and UI controls
+    - **Tutorial passenger**: 30-year-old woman in 1st class (sex=0, pclass=1, age=30, fare=£84)
+    - **Core functions**:
+      - `initialize_tutorial_state()` - Sets up tutorial session state variables
+      - `should_auto_start_tutorial()` - Checks if this is user's first visit
+      - `start_tutorial()` - Initiates tutorial from step 0 with welcome message
+      - `skip_tutorial()` - Allows users to dismiss tutorial at any time
+      - `advance_tutorial()` - Progresses through tutorial steps
+      - `get_tutorial_highlight_mode()` - Returns current highlight mode for decision tree
+      - `render_tutorial_controls()` - Displays tutorial UI (Next/Skip/Finish buttons)
+  - **Tutorial flow (3 steps)**:
+    - **Step 0 - Welcome**: Introduces app and sets tutorial passenger values
+      - Chat: "👋 Welcome to the Explainable AI Explorer! Let me show you how these models make predictions..."
+      - What-If controls: Set to Female, 1st class, age 30, fare £84
+      - Tree: Normal view (no highlighting yet)
+      - UI: Shows "Next" and "Skip Tutorial" buttons
+    - **Step 1 - First Split**: Highlights root node and left edge (female path)
+      - Chat: "First, the decision tree splits on sex. Women had a 74% survival rate..."
+      - Tree: Gold highlighting on root node + left edge to female branch
+      - UI: Shows "Step 2 of 3" with "Next" and "Skip" buttons
+    - **Step 2 - Final Prediction**: Highlights complete path to leaf node
+      - Chat: "Following this path leads to a 78% survival probability..."
+      - Tree: Gold highlighting on full path from root to final leaf
+      - UI: Shows "Step 3 of 3" with "Finish Tutorial" button
+  - **App integration** (`app.py`):
+    - **Auto-start**: Tutorial automatically triggers on first page load
+    - **Session state**: Tracks `tutorial_active`, `tutorial_step`, `has_seen_tutorial`
+    - **One-time experience**: Only shows on first visit per session
+    - **Tutorial controls**: Rendered in right column above chat interface
+    - **Preset buttons hidden**: During tutorial, only tutorial controls visible
+    - **What-If sync**: Tutorial automatically sets controls to tutorial passenger
+  - **Decision tree visualization updates** (`src/visualizations/decision_tree_viz.py`):
+    - **New CSS styles**: Gold/yellow tutorial highlighting with glow effect
+      - `.tutorial-highlight` class for nodes, links, text, and edge labels
+      - Gold color (#ffd700) with drop-shadow for emphasis
+      - Higher z-index to override normal highlighting
+    - **New JavaScript function**: `applyTutorialHighlight()`
+      - Supports two modes: `first_split` (root + first edge) and `full_path` (complete path)
+      - Tutorial passenger hardcoded: {sex: 0, pclass: 1, age: 30, fare: 84}
+      - Uses `tracePath()` to compute path through decision tree
+      - Applies `.tutorial-highlight` class to relevant elements
+    - **Function signature update**: Added `tutorial_highlight_mode` parameter
+    - **Priority logic**: Tutorial highlighting takes precedence over preset highlighting
+    - **JavaScript variable**: `tutorialMode` passed from Python to JavaScript
+  - **Benefits**:
+    - ✅ Guided onboarding for first-time users
+    - ✅ Clear visual feedback with gold path highlighting
+    - ✅ Progressive disclosure (3 steps, manual advancement)
+    - ✅ User control (skip at any time)
+    - ✅ Clean integration with existing chat interface
+    - ✅ Non-intrusive (only shows once per session)
+    - ✅ Educational walkthrough demonstrates core app features
 
 ### 2025-12-10 (Session 11 - Code Refactoring: Configuration & Styles Modules)
 - **CREATED CONFIGURATION MODULE**
@@ -630,6 +693,9 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ### Potential Features
 - [x] ✅ **COMPLETED**: Add SHAP explanations for XGBoost (implemented in Tab 2 of app.py)
+- [x] ✅ **COMPLETED (Phase 1)**: Guided tutorial for first-time users with 3-step walkthrough
+- [ ] **Tutorial Phase 2**: Interactive tutorial with user interactions (click nodes, adjust controls)
+- [ ] **Tutorial Phase 3**: Personalized tutorial paths based on user interests (data scientist vs. manager)
 - [ ] Upgrade to LLM-based chat (OpenAI/Anthropic) for true conversational AI
 - [ ] Add more sophisticated pattern matching for natural language queries
 - [ ] Support compound queries ("show me wealthy women")
@@ -649,7 +715,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 - [ ] Mobile-responsive improvements
 - [ ] Animation speed controls
 - [ ] Export visualizations as PNG/SVG
-- [ ] Guided tour / onboarding for first-time users
+- [x] ✅ **COMPLETED (Phase 1)**: Guided tour / onboarding for first-time users
 - [ ] A/B test different color schemes for accessibility
 
 ### Performance Optimizations
@@ -679,11 +745,12 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 | `app.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP (625 lines) |
 | `src/config.py` | Configuration constants (PRESETS, CLASS_AVG_FARES, FARE_RANGES) |
 | `src/tree_data.py` | ML pipeline & tree extraction module |
+| `src/tutorial.py` | Tutorial system - 3-step guided walkthrough with state management and UI controls |
 | `src/chat/cohort_patterns.py` | Cohort matching patterns with priorities and response templates |
 | `src/chat/response_generator.py` | Natural language parsing and chat response generation (4 functions) |
 | `src/chat/__init__.py` | Chat package initialization |
 | `src/visualizations/styles.css` | Shared dark mode CSS styles for all visualizations |
-| `src/visualizations/decision_tree_viz.py` | Modular D3.js decision tree HTML generation with get_base_styles() |
+| `src/visualizations/decision_tree_viz.py` | Modular D3.js decision tree HTML generation with tutorial highlighting support |
 | `src/visualizations/shap_viz.py` | Modular D3.js SHAP visualization HTML generation (3 functions, get_base_styles()) |
 | `src/visualizations/__init__.py` | Visualization package exports |
 | `src/__init__.py` | Source package initialization |

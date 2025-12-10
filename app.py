@@ -29,6 +29,13 @@ from src.chat.response_generator import (
     match_to_cohort
 )
 from src.config import PRESETS, FARE_RANGES, CLASS_AVG_FARES
+from src.tutorial import (
+    initialize_tutorial_state,
+    should_auto_start_tutorial,
+    start_tutorial,
+    get_tutorial_highlight_mode,
+    render_tutorial_controls
+)
 
 # Page configuration
 st.set_page_config(
@@ -96,6 +103,13 @@ if 'whatif_fare' not in st.session_state:
 # Pending updates for what-if controls (set when preset is selected via chat)
 if 'whatif_updates' not in st.session_state:
     st.session_state.whatif_updates = None
+
+# Initialize tutorial state
+initialize_tutorial_state()
+
+# Auto-start tutorial on first visit
+if should_auto_start_tutorial():
+    start_tutorial()
 
 # =============================================================================
 # Load Data and Models
@@ -210,11 +224,15 @@ with col1:
     import hashlib
     preset_hash = hashlib.md5(str(current_preset_key).encode()).hexdigest()[:8]
 
+    # Get tutorial highlight mode if active
+    tutorial_highlight_mode = get_tutorial_highlight_mode()
+
     # Call visualization module to generate HTML
     html_code = get_decision_tree_html(
         tree_json=tree_json,
         preset_values_js=preset_values_js,
-        preset_hash=preset_hash
+        preset_hash=preset_hash,
+        tutorial_highlight_mode=tutorial_highlight_mode
     )
 
     # Render content based on selected tab
@@ -536,24 +554,29 @@ with col2:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    st.markdown("**Or try one of these to get started**")
+    # Tutorial controls (if tutorial is active)
+    render_tutorial_controls()
 
-    # Suggestion buttons - now use unified update mechanism
-    for preset_key, preset_info in PRESETS.items():
-        if st.button(preset_info["label"], key=f"btn_{preset_key}", use_container_width=True):
-            # Extract values from preset
-            preset_values = preset_info["values"]
+    # Only show preset buttons if tutorial is not active
+    if not st.session_state.tutorial_active:
+        st.markdown("**Or try one of these to get started**")
 
-            # Use unified update function
-            update_whatif_and_respond(
-                sex=preset_values['sex'],
-                pclass=preset_values['pclass'],
-                age=preset_values['age'],
-                fare=preset_values['fare'],
-                user_message=preset_info["label"]
-            )
+        # Suggestion buttons - now use unified update mechanism
+        for preset_key, preset_info in PRESETS.items():
+            if st.button(preset_info["label"], key=f"btn_{preset_key}", use_container_width=True):
+                # Extract values from preset
+                preset_values = preset_info["values"]
 
-            st.rerun()
+                # Use unified update function
+                update_whatif_and_respond(
+                    sex=preset_values['sex'],
+                    pclass=preset_values['pclass'],
+                    age=preset_values['age'],
+                    fare=preset_values['fare'],
+                    user_message=preset_info["label"]
+                )
+
+                st.rerun()
 
     # Chat input at the bottom
     user_input = st.chat_input("What would you like to know?", key="chat_input")
