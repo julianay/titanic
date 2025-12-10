@@ -1,6 +1,6 @@
 # Titanic Explainable AI - Project Progress
 
-**Last Updated:** 2025-12-09
+**Last Updated:** 2025-12-10
 
 ---
 
@@ -100,6 +100,43 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ---
 
 ## 🚀 Recent Changes
+
+### 2025-12-10 (Session 10 - Code Refactoring: Modular Chat System)
+- **CREATED CHAT MODULE STRUCTURE**
+  - **New package**: `src/chat/` with proper module organization
+  - **Extracted cohort patterns** (~52 lines) from `app.py` into `src/chat/cohort_patterns.py`
+    - **Exported constant**: `COHORT_PATTERNS` dictionary with 6 cohort patterns
+    - Contains match criteria (sex, pclass, age_range), priorities, and response templates
+    - Includes Decision Tree responses and XGBoost-specific SHAP responses
+  - **Extracted chat functions** (~192 lines) from `app.py` into `src/chat/response_generator.py`
+    - **Four module functions**:
+      1. `parse_passenger_query(query_text)` - Parse natural language into passenger parameters
+      2. `match_to_cohort(sex, pclass, age, fare)` - Match parameters to best cohort pattern with priority-based logic
+      3. `format_passenger_description(sex, pclass, age, fare)` - Format parameters into human-readable description
+      4. `update_whatif_and_respond(sex, pclass, age, fare, user_message)` - Unified state update and response generation
+    - All functions include comprehensive docstrings with parameter descriptions and usage examples
+    - Imports streamlit for session state access and regex for query parsing
+- **CODE ORGANIZATION IMPROVEMENTS**
+  - **app.py reduction**: Reduced by ~244 lines (from ~869 to ~625 lines)
+    - COHORT_PATTERNS dictionary: ~52 lines removed
+    - Chat functions: ~192 lines removed
+  - **Separation of concerns**: Chat logic isolated from application UI
+  - **Reusability**: Chat functions can be reused in other contexts or tested independently
+  - **Maintainability**: Easier to update chat patterns without touching visualization code
+  - **Clean imports**: Added `from src.chat.response_generator import parse_passenger_query, update_whatif_and_respond, match_to_cohort`
+- **TESTING**
+  - ✅ App starts successfully on `http://localhost:8502`
+  - ✅ No import errors or module loading issues
+  - ✅ All chat functionality works identically to before refactoring
+  - ✅ Preset buttons trigger responses correctly
+  - ✅ Natural language queries parse and update state correctly
+- **BENEFITS**
+  - ✅ More maintainable codebase with clear separation of concerns
+  - ✅ Chat system code can be reused or tested independently
+  - ✅ Easier to add new cohort patterns (just update cohort_patterns.py)
+  - ✅ Better code organization for portfolio showcase
+  - ✅ No functional changes - all chat features work exactly as before
+  - ✅ **Final result**: app.py reduced from ~869 lines to 625 lines (28% reduction)
 
 ### 2025-12-09 (Session 9 - Code Refactoring: Modular Visualizations)
 - **CREATED VISUALIZATION MODULE STRUCTURE**
@@ -578,8 +615,11 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 | File | Purpose |
 |------|---------|
-| `app.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP (869 lines) |
+| `app.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP (625 lines) |
 | `src/tree_data.py` | ML pipeline & tree extraction module |
+| `src/chat/cohort_patterns.py` | Cohort matching patterns with priorities and response templates |
+| `src/chat/response_generator.py` | Natural language parsing and chat response generation (4 functions) |
+| `src/chat/__init__.py` | Chat package initialization |
 | `src/visualizations/decision_tree_viz.py` | Modular D3.js decision tree HTML generation |
 | `src/visualizations/shap_viz.py` | Modular D3.js SHAP visualization HTML generation (3 functions) |
 | `src/visualizations/__init__.py` | Visualization package exports |
@@ -618,7 +658,10 @@ If you lose session context, remember:
    - Dark mode UI throughout
    - What-If controls for real-time exploration
    - Tab-aware chat with context-specific responses
-3. **Supporting module** (`src/tree_data.py`): ML pipeline and tree extraction
+3. **Supporting modules**:
+   - `src/tree_data.py`: ML pipeline and tree extraction
+   - `src/visualizations/`: Decision tree and SHAP visualization HTML generators
+   - `src/chat/`: Cohort patterns and natural language chat response system
 4. Features reduced to 4 for performance (sex, pclass, age, fare)
 5. Custom D3 visualizations are the key portfolio showcase
 6. Deployed live on HuggingFace Spaces
@@ -648,6 +691,7 @@ git push huggingface main  # Deploy to HF Spaces
 
 ### Architecture Principles
 - Keep data pipeline visualization-agnostic (`tree_data.py`)
+- Modular code organization: separate packages for visualizations and chat logic
 - Cache models and data with `@st.cache_resource`
 - Use human-readable labels (decode categorical variables)
 - Prioritize UX polish (animations, colors, tooltips)

@@ -118,7 +118,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 - **Human-readable labels** (decoded categorical features)
 - **Dark mode design** with cohesive theming and smooth CSS transitions
 - **Radio-style tabs** – eliminates visualization rendering bugs
-- **Modular code architecture** – reusable visualization components in `src/visualizations/` package
+- **Modular code architecture** – reusable components in `src/visualizations/` and `src/chat/` packages
 
 ---
 
@@ -148,10 +148,14 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 ```text
 titanic/
-├── app.py                          # Main XAI Explorer application (869 lines)
+├── app.py                          # Main XAI Explorer application (625 lines)
 ├── src/
 │   ├── __init__.py                 # Source package initialization
 │   ├── tree_data.py                # Tree data extraction module (visualization-agnostic)
+│   ├── chat/                       # Modular chat system components
+│   │   ├── __init__.py             # Chat package initialization
+│   │   ├── cohort_patterns.py      # Cohort matching patterns and priorities
+│   │   └── response_generator.py   # Natural language parsing and response generation
 │   └── visualizations/             # Modular visualization components
 │       ├── __init__.py             # Visualization package exports
 │       ├── decision_tree_viz.py    # D3.js decision tree HTML generation
