@@ -15,10 +15,13 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 ## 🎯 Features
 
 ### 💬 **Interactive XAI Explorer** (app.py)
-- **Guided Tutorial** – 3-step walkthrough for first-time users with gold path highlighting
+- **Guided Tutorial** – 3-step tab-aware walkthrough for first-time users with gold highlighting
   - Auto-starts on first page load (one-time experience per session)
   - Manual progression with "Next" button and "Skip Tutorial" option
-  - Demonstrates key features: decision tree splits, path tracing, and survival predictions
+  - **Tab-aware messages**: Different explanations for Decision Tree vs XGBoost tabs
+  - **Decision Tree tab**: Gold path highlighting (root split → full path)
+  - **XGBoost tab**: Gold feature highlighting in waterfall chart (sex → sex + pclass)
+  - What-If controls update immediately to show tutorial passenger (30yo woman, 1st class)
   - Tutorial controls integrate seamlessly above chat interface
 - **Two-column layout** – visualization on left (75%), interactive controls + chat on right (25%)
 - **Tab-based model comparison** – switch between Decision Tree and XGBoost visualizations
@@ -82,6 +85,11 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
   - All charts display typical passenger characteristics being analyzed
 
 **Right Column (25%)**: What-If controls and interactive chat
+- **Tab-aware guided tutorial** (auto-starts on first visit):
+  - 3-step walkthrough with different messages for each tab
+  - Decision Tree: Explains path splits and highlights route in gold
+  - XGBoost: Explains SHAP values and highlights features in gold
+  - Manual progression with "Next" and "Skip Tutorial" buttons
 - **What-If Scenario**: Set Sex, Passenger Class, Age, Fare with inline controls
   - Smart fare updates: Auto-adjusts to historical average when class changes
   - Contextual hints: Warns about unusual fare/class combinations
@@ -107,7 +115,7 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 - Proper 80-20 train/test split
 
 **UX / Data Viz Highlights**
-- **Guided tutorial** – 3-step onboarding with gold path highlighting, auto-starts for first-time users, skip option available
+- **Tab-aware guided tutorial** – 3-step onboarding with contextual messages and gold highlighting on both Decision Tree and XGBoost tabs, auto-starts for first-time users, skip option available
 - **Proportional edge widths** – visual encoding of passenger flow through decision tree (1-32px range)
 - **Donut chart nodes** – cleaner visual showing class distribution with 50% center hole
 - **Smart What-If controls** – auto-updates fare to historical averages when class changes, shows contextual hints for unusual combinations
@@ -259,6 +267,7 @@ streamlit run app.py
 
 **Potential Features:**
 - [x] ✅ **COMPLETED (Phase 1)**: Guided tutorial for first-time users with 3-step walkthrough
+- [x] ✅ **COMPLETED (Phase 1.5)**: Tab-aware tutorial messages with XGBoost waterfall highlighting
 - [ ] **Tutorial Phase 2**: Interactive tutorial with user interactions (click nodes, adjust controls)
 - [ ] **Tutorial Phase 3**: Personalized tutorial paths based on user interests (data scientist vs. manager)
 - [ ] Upgrade to LLM-based chat (OpenAI/Anthropic) for true conversational AI

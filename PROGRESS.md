@@ -19,13 +19,16 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 - ✅ Tab-based interface with performance metrics in labels:
   - **Decision Tree tab**: 81% accuracy, 60% recall
   - **XGBoost tab**: 80% accuracy, 72% recall
-- ✅ **Guided Tutorial (Phase 1 MVP)**:
+- ✅ **Guided Tutorial (Phase 1 MVP + Tab-Aware Enhancement)**:
   - 3-step walkthrough for first-time users
   - Auto-starts on first page load, one-time experience per session
   - Manual "Next" button progression with "Skip Tutorial" option
-  - Gold path highlighting in decision tree (first split → full path)
+  - **Tab-aware messages**: Different explanations for Decision Tree vs XGBoost tabs
+  - **Decision Tree**: Gold path highlighting (first split → full path)
+  - **XGBoost**: Gold feature highlighting in waterfall chart (sex → sex + pclass)
   - Tutorial controls integrate seamlessly with chat interface
   - Preset buttons hidden during tutorial mode
+  - What-If controls update immediately to show tutorial passenger
 - ✅ Natural language query interpretation with keyword matching
 - ✅ 4 preset exploration patterns:
   - Women's path (high survival)
@@ -107,6 +110,38 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ---
 
 ## 🚀 Recent Changes
+
+### 2025-12-10 (Session 13 - Tutorial Enhancement: Tab-Aware Messages & XGBoost Highlighting)
+- **TAB-AWARE TUTORIAL SYSTEM** (`src/tutorial.py`, `src/visualizations/shap_viz.py`, `app.py`)
+  - **Problem fixed**: Tutorial was showing tree-specific messages on XGBoost tab and not updating What-If controls properly
+  - **Dual-message system**: Each tutorial step now has both `tree_message` and `xgb_message`
+    - Decision Tree messages explain path splits and survival rates
+    - XGBoost messages explain SHAP values and feature contributions
+  - **Helper functions**:
+    - `get_current_tab_type()` - Detects which tab is selected ('tree' or 'xgb')
+    - `get_tutorial_message(step_num)` - Returns appropriate message for current tab
+    - `get_tutorial_highlight_features()` - Returns features to highlight in waterfall chart
+  - **What-If controls fix**: Tutorial now sets session state values directly
+    - Fixed: Controls now update immediately when tutorial starts
+    - Previously: Required rerun before charts showed tutorial passenger
+    - Now sets both `whatif_updates` AND direct state variables (whatif_sex, whatif_pclass, etc.)
+  - **XGBoost waterfall chart highlighting** (NEW):
+    - Step 1: Highlights `sex` feature with gold glow
+    - Step 2: Highlights `sex` and `pclass` features with gold glow
+    - New CSS class: `.bar-tutorial-highlight` with gold stroke and drop-shadow
+    - Feature labels also highlighted in gold when tutorial is active
+  - **Visualization updates** (`src/visualizations/shap_viz.py`):
+    - `get_alternative_waterfall_html()` now accepts `highlight_features` parameter
+    - JavaScript applies `bar-tutorial-highlight` class to matching features
+    - Y-axis labels get `tutorial-highlight` class for gold text
+    - Matches Decision Tree gold color (#ffd700) for consistency
+  - **Benefits**:
+    - ✅ Tutorial works seamlessly on both tabs
+    - ✅ Messages automatically adapt to current tab
+    - ✅ Users can switch tabs mid-tutorial and get contextual guidance
+    - ✅ Visual highlighting on both tree and SHAP visualizations
+    - ✅ What-If controls update immediately on tutorial start
+    - ✅ Consistent gold highlighting across all visualizations
 
 ### 2025-12-10 (Session 12 - Tutorial Feature: Phase 1 MVP)
 - **TUTORIAL SYSTEM IMPLEMENTATION** (`src/tutorial.py`, `app.py`)
@@ -694,6 +729,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 ### Potential Features
 - [x] ✅ **COMPLETED**: Add SHAP explanations for XGBoost (implemented in Tab 2 of app.py)
 - [x] ✅ **COMPLETED (Phase 1)**: Guided tutorial for first-time users with 3-step walkthrough
+- [x] ✅ **COMPLETED (Phase 1.5)**: Tab-aware tutorial messages with XGBoost waterfall highlighting
 - [ ] **Tutorial Phase 2**: Interactive tutorial with user interactions (click nodes, adjust controls)
 - [ ] **Tutorial Phase 3**: Personalized tutorial paths based on user interests (data scientist vs. manager)
 - [ ] Upgrade to LLM-based chat (OpenAI/Anthropic) for true conversational AI
@@ -716,6 +752,7 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 - [ ] Animation speed controls
 - [ ] Export visualizations as PNG/SVG
 - [x] ✅ **COMPLETED (Phase 1)**: Guided tour / onboarding for first-time users
+- [x] ✅ **COMPLETED (Phase 1.5)**: Tab-aware tutorial with contextual highlighting
 - [ ] A/B test different color schemes for accessibility
 
 ### Performance Optimizations

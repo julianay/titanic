@@ -8,6 +8,7 @@ Generates D3.js-based SHAP explanation visualizations including:
 """
 
 import os
+import json
 
 
 def get_base_styles():
@@ -139,7 +140,7 @@ def get_feature_importance_html(feature_importance_json):
     return html_code
 
 
-def get_alternative_waterfall_html(waterfall_data_json, base_value, final_prediction):
+def get_alternative_waterfall_html(waterfall_data_json, base_value, final_prediction, highlight_features=None):
     """
     Generate HTML for alternative waterfall chart with floating bars.
 
@@ -159,6 +160,7 @@ def get_alternative_waterfall_html(waterfall_data_json, base_value, final_predic
                                    ]
         base_value (float): The baseline prediction value before feature contributions
         final_prediction (float): The final prediction after all feature contributions
+        highlight_features (list, optional): List of feature names to highlight (e.g., ['sex', 'pclass'])
 
     Returns:
         str: Complete HTML document as a string with embedded CSS and JavaScript
@@ -170,6 +172,8 @@ def get_alternative_waterfall_html(waterfall_data_json, base_value, final_predic
         >>> html = get_alternative_waterfall_html(json.dumps(data), -0.5, 0.2)
         >>> # Use with streamlit: components.html(html, height=400)
     """
+    # Convert highlight_features to JSON
+    highlight_features_json = "null" if highlight_features is None else json.dumps(highlight_features)
     html_code = f"""
     <!DOCTYPE html>
     <html>
@@ -210,6 +214,17 @@ def get_alternative_waterfall_html(waterfall_data_json, base_value, final_predic
                 font-size: 9px;
                 font-weight: bold;
             }}
+            /* Tutorial highlighting styles */
+            .bar-tutorial-highlight {{
+                stroke: #ffd700 !important;
+                stroke-width: 3px !important;
+                filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+            }}
+            .axis text.tutorial-highlight {{
+                fill: #ffd700 !important;
+                font-weight: bold !important;
+                font-size: 11px !important;
+            }}
         </style>
     </head>
     <body>
@@ -218,6 +233,7 @@ def get_alternative_waterfall_html(waterfall_data_json, base_value, final_predic
             const data = {waterfall_data_json};
             const baseValue = {base_value};
             const finalValue = {final_prediction};
+            const highlightFeatures = {highlight_features_json};
 
             const margin = {{top: 20, right: 60, bottom: 50, left: 100}};
             const width = 650 - margin.left - margin.right;
@@ -287,8 +303,18 @@ def get_alternative_waterfall_html(waterfall_data_json, base_value, final_predic
                 .enter()
                 .append("rect")
                 .attr("class", (d, i) => {{
-                    if (i === 0) return "bar-base";
-                    return d.value >= 0 ? "bar-positive" : "bar-negative";
+                    let baseClass;
+                    if (i === 0) {{
+                        baseClass = "bar-base";
+                    }} else {{
+                        baseClass = d.value >= 0 ? "bar-positive" : "bar-negative";
+                    }}
+
+                    // Add tutorial highlight class if feature is in highlight list
+                    if (highlightFeatures && highlightFeatures.includes(d.feature)) {{
+                        return baseClass + " bar-tutorial-highlight";
+                    }}
+                    return baseClass;
                 }})
                 .attr("y", (d, i) => y(i))
                 .attr("x", d => x(Math.min(d.start, d.end)))
@@ -317,6 +343,15 @@ def get_alternative_waterfall_html(waterfall_data_json, base_value, final_predic
                     if (i === 0) return "Base";
                     return item.feature_value !== "" ? `${{item.feature}}=${{item.feature_value}}` : item.feature;
                 }}));
+
+            // Highlight feature labels if in tutorial mode
+            if (highlightFeatures) {{
+                svg.selectAll(".axis text")
+                    .classed("tutorial-highlight", function(d, i) {{
+                        const item = data[i];
+                        return highlightFeatures.includes(item.feature);
+                    }});
+            }}
         </script>
     </body>
     </html>

@@ -34,6 +34,7 @@ from src.tutorial import (
     should_auto_start_tutorial,
     start_tutorial,
     get_tutorial_highlight_mode,
+    get_tutorial_highlight_features,
     render_tutorial_controls
 )
 
@@ -366,11 +367,15 @@ with col1:
 
             alternative_waterfall_json_demo = json.dumps(alternative_waterfall_data_demo)
 
+            # Get tutorial highlight features if active
+            tutorial_highlight_features = get_tutorial_highlight_features()
+
             # D3 Alternative Waterfall Chart with Floating Bars (Horizontal)
             alternative_waterfall_html_demo = get_alternative_waterfall_html(
                 alternative_waterfall_json_demo,
                 base_value_demo,
-                final_prediction_demo
+                final_prediction_demo,
+                highlight_features=tutorial_highlight_features
             )
             components.html(alternative_waterfall_html_demo, height=400, scrolling=False)
 
