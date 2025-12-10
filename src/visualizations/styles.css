@@ -1,0 +1,21 @@
+/* Shared dark mode styles for visualizations */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0e1117;
+    color: #fafafa;
+    padding: 20px;
+}
+
+h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #fafafa;
+}

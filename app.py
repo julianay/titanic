@@ -28,6 +28,7 @@ from src.chat.response_generator import (
     update_whatif_and_respond,
     match_to_cohort
 )
+from src.config import PRESETS, FARE_RANGES, CLASS_AVG_FARES
 
 # Page configuration
 st.set_page_config(
@@ -145,25 +146,6 @@ xgb_recall = 0.72  # Placeholder
 # Prepare tree data as JSON
 tree_json = json.dumps(tree_data['tree'])
 
-# Preset scenarios
-presets = {
-    "woman_path": {
-        "label": "Women's path (high survival)",
-        "values": {'sex': 0, 'pclass': 2, 'age': 30, 'fare': 20.0}
-    },
-    "man_path": {
-        "label": "Men's path (low survival)",
-        "values": {'sex': 1, 'pclass': 3, 'age': 30, 'fare': 13.0}
-    },
-    "first_class_child": {
-        "label": "1st class child (best odds)",
-        "values": {'sex': 0, 'pclass': 1, 'age': 5, 'fare': 84.0}
-    },
-    "third_class_male": {
-        "label": "3rd class male (worst odds)",
-        "values": {'sex': 1, 'pclass': 3, 'age': 40, 'fare': 8.0}
-    }
-}
 
 # =============================================================================
 # Apply pending what-if updates BEFORE rendering columns
@@ -471,13 +453,7 @@ with col2:
     def update_fare_for_class():
         """Update fare to average for selected class."""
         selected_pclass = st.session_state.whatif_pclass[1]
-        # Average fares by class (historical Titanic data)
-        class_avg_fares = {
-            1: 84.0,   # 1st class average
-            2: 20.0,   # 2nd class average
-            3: 13.0    # 3rd class average
-        }
-        st.session_state.whatif_fare = class_avg_fares[selected_pclass]
+        st.session_state.whatif_fare = CLASS_AVG_FARES[selected_pclass]
 
     # What-If Scenario Controls - Inline layout with columns
     st.markdown("### 🔮 What-If Scenario")
@@ -543,13 +519,7 @@ with col2:
     selected_fare = st.session_state.whatif_fare
 
     # Typical fare ranges by class (historical Titanic data)
-    fare_ranges = {
-        1: (30, 500, "1st class"),
-        2: (10, 30, "2nd class"),
-        3: (0, 15, "3rd class")
-    }
-
-    min_fare, max_fare, class_name = fare_ranges[selected_pclass]
+    min_fare, max_fare, class_name = FARE_RANGES[selected_pclass]
 
     if selected_fare < min_fare or selected_fare > max_fare:
         if selected_fare > max_fare:
@@ -569,7 +539,7 @@ with col2:
     st.markdown("**Or try one of these to get started**")
 
     # Suggestion buttons - now use unified update mechanism
-    for preset_key, preset_info in presets.items():
+    for preset_key, preset_info in PRESETS.items():
         if st.button(preset_info["label"], key=f"btn_{preset_key}", use_container_width=True):
             # Extract values from preset
             preset_values = preset_info["values"]

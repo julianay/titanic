@@ -101,6 +101,67 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-10 (Session 11 - Code Refactoring: Configuration & Styles Modules)
+- **CREATED CONFIGURATION MODULE**
+  - **New file**: `src/config.py` with centralized application constants
+  - **Extracted constants** from `app.py`:
+    - **PRESETS** dictionary (~18 lines) - Preset scenarios for quick exploration
+      - woman_path, man_path, first_class_child, third_class_male
+      - Contains label and values (sex, pclass, age, fare) for each preset
+    - **CLASS_AVG_FARES** dictionary (3 lines) - Average fares by passenger class
+      - 1st class: £84, 2nd class: £20, 3rd class: £13
+    - **FARE_RANGES** dictionary (3 lines) - Typical fare ranges by class
+      - Format: (min, max, class_name) for validation and warnings
+  - **Updated app.py imports**: `from src.config import PRESETS, FARE_RANGES, CLASS_AVG_FARES`
+  - **Updated all references**: Changed lowercase variable names to UPPERCASE constants
+    - presets → PRESETS (in preset button loop)
+    - fare_ranges → FARE_RANGES (in fare validation logic)
+    - class_avg_fares → CLASS_AVG_FARES (in update_fare_for_class callback)
+  - **Removed duplicate definitions**: Deleted all old constant dictionaries from app.py
+  - **Benefits**:
+    - ✅ Single source of truth for application configuration
+    - ✅ Easier to update presets and fare data without touching UI code
+    - ✅ Follows Python naming conventions (UPPERCASE for module-level constants)
+    - ✅ Cleaner app.py with separated concerns
+
+- **CREATED SHARED STYLES MODULE**
+  - **New file**: `src/visualizations/styles.css` with shared dark mode styles
+  - **Extracted common CSS** from visualization functions:
+    - Reset styles (margin, padding, box-sizing)
+    - Body styles (font-family, background #0e1117, color, padding)
+    - Heading styles (h3 with size, weight, margin, color)
+  - **Added helper function** to both visualization modules:
+    - **get_base_styles()** in `decision_tree_viz.py`
+    - **get_base_styles()** in `shap_viz.py`
+    - Loads styles.css from same directory using os.path
+  - **Updated all visualization functions** to inject shared styles:
+    - ✅ `get_decision_tree_html()` in decision_tree_viz.py
+    - ✅ `get_feature_importance_html()` in shap_viz.py
+    - ✅ `get_alternative_waterfall_html()` in shap_viz.py
+    - ✅ `get_standard_waterfall_html()` in shap_viz.py
+  - **Replaced duplicate CSS**: Changed inline style blocks from:
+    ```css
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #0e1117;
+        color: #fafafa;
+        padding: 20px;
+    }
+    ```
+    To: `{get_base_styles()}`
+  - **Benefits**:
+    - ✅ Single source of truth for visualization dark mode styles
+    - ✅ Eliminated ~20 lines of duplicate CSS per visualization (4 functions × ~20 lines = 80 lines)
+    - ✅ Easier to update styling across all visualizations
+    - ✅ Maintains visualization-specific styles in their respective functions
+    - ✅ Cleaner separation between shared and custom styles
+
+- **CODE ORGANIZATION IMPROVEMENTS**
+  - **Modular architecture**: Configuration and styles now properly separated
+  - **Maintainability**: Single place to update constants and styles
+  - **Consistency**: All visualizations use identical base styling
+  - **Project structure updated**: README.md now reflects new files
+
 ### 2025-12-10 (Session 10 - Code Refactoring: Modular Chat System)
 - **CREATED CHAT MODULE STRUCTURE**
   - **New package**: `src/chat/` with proper module organization
@@ -616,12 +677,14 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 | File | Purpose |
 |------|---------|
 | `app.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP (625 lines) |
+| `src/config.py` | Configuration constants (PRESETS, CLASS_AVG_FARES, FARE_RANGES) |
 | `src/tree_data.py` | ML pipeline & tree extraction module |
 | `src/chat/cohort_patterns.py` | Cohort matching patterns with priorities and response templates |
 | `src/chat/response_generator.py` | Natural language parsing and chat response generation (4 functions) |
 | `src/chat/__init__.py` | Chat package initialization |
-| `src/visualizations/decision_tree_viz.py` | Modular D3.js decision tree HTML generation |
-| `src/visualizations/shap_viz.py` | Modular D3.js SHAP visualization HTML generation (3 functions) |
+| `src/visualizations/styles.css` | Shared dark mode CSS styles for all visualizations |
+| `src/visualizations/decision_tree_viz.py` | Modular D3.js decision tree HTML generation with get_base_styles() |
+| `src/visualizations/shap_viz.py` | Modular D3.js SHAP visualization HTML generation (3 functions, get_base_styles()) |
 | `src/visualizations/__init__.py` | Visualization package exports |
 | `src/__init__.py` | Source package initialization |
 | `requirements.txt` | Python dependencies |
@@ -659,8 +722,9 @@ If you lose session context, remember:
    - What-If controls for real-time exploration
    - Tab-aware chat with context-specific responses
 3. **Supporting modules**:
+   - `src/config.py`: Application configuration constants (presets, fare ranges)
    - `src/tree_data.py`: ML pipeline and tree extraction
-   - `src/visualizations/`: Decision tree and SHAP visualization HTML generators
+   - `src/visualizations/`: Decision tree and SHAP visualization HTML generators (with shared styles.css)
    - `src/chat/`: Cohort patterns and natural language chat response system
 4. Features reduced to 4 for performance (sex, pclass, age, fare)
 5. Custom D3 visualizations are the key portfolio showcase
@@ -691,7 +755,9 @@ git push huggingface main  # Deploy to HF Spaces
 
 ### Architecture Principles
 - Keep data pipeline visualization-agnostic (`tree_data.py`)
-- Modular code organization: separate packages for visualizations and chat logic
+- Modular code organization: separate packages for visualizations, chat logic, and configuration
+- Centralized configuration: All constants in `src/config.py` for easy maintenance
+- Shared styling: Common CSS in `src/visualizations/styles.css` to eliminate duplication
 - Cache models and data with `@st.cache_resource`
 - Use human-readable labels (decode categorical variables)
 - Prioritize UX polish (animations, colors, tooltips)

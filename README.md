@@ -151,6 +151,7 @@ titanic/
 ├── app.py                          # Main XAI Explorer application (625 lines)
 ├── src/
 │   ├── __init__.py                 # Source package initialization
+│   ├── config.py                   # Configuration constants (presets, fare ranges, class averages)
 │   ├── tree_data.py                # Tree data extraction module (visualization-agnostic)
 │   ├── chat/                       # Modular chat system components
 │   │   ├── __init__.py             # Chat package initialization
@@ -158,6 +159,7 @@ titanic/
 │   │   └── response_generator.py   # Natural language parsing and response generation
 │   └── visualizations/             # Modular visualization components
 │       ├── __init__.py             # Visualization package exports
+│       ├── styles.css              # Shared dark mode styles for visualizations
 │       ├── decision_tree_viz.py    # D3.js decision tree HTML generation
 │       └── shap_viz.py             # D3.js SHAP visualization HTML generation (3 functions)
 ├── requirements.txt                # Python dependencies

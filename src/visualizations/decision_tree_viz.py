@@ -5,6 +5,14 @@ Generates D3.js-based interactive decision tree visualizations with donut chart 
 """
 
 import hashlib
+import os
+
+
+def get_base_styles():
+    """Load shared CSS styles for visualizations."""
+    styles_path = os.path.join(os.path.dirname(__file__), 'styles.css')
+    with open(styles_path, 'r') as f:
+        return f.read()
 
 
 def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passenger_desc=None):
@@ -50,25 +58,7 @@ def get_decision_tree_html(tree_json, preset_values_js, preset_hash=None, passen
         <meta name="preset-hash" content="{preset_hash}">
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
-            * {{
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }}
-
-            body {{
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                padding: 20px;
-                background: #0e1117;
-                color: #fafafa;
-            }}
-
-            h3 {{
-                font-size: 20px;
-                font-weight: 600;
-                margin-bottom: 20px;
-                color: #fafafa;
-            }}
+            {get_base_styles()}
 
             #tree-viz {{
                 width: 100%;

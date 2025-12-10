@@ -7,6 +7,15 @@ Generates D3.js-based SHAP explanation visualizations including:
 - Standard waterfall charts
 """
 
+import os
+
+
+def get_base_styles():
+    """Load shared CSS styles for visualizations."""
+    styles_path = os.path.join(os.path.dirname(__file__), 'styles.css')
+    with open(styles_path, 'r') as f:
+        return f.read()
+
 
 def get_feature_importance_html(feature_importance_json):
     """
@@ -35,12 +44,8 @@ def get_feature_importance_html(feature_importance_json):
     <head>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
-            body {{
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                background: #0e1117;
-                color: #fafafa;
-                padding: 20px;
-            }}
+            {get_base_styles()}
+
             .bar {{
                 fill: #52b788;
                 opacity: 0.8;
@@ -171,12 +176,8 @@ def get_alternative_waterfall_html(waterfall_data_json, base_value, final_predic
     <head>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
-            body {{
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                background: #0e1117;
-                color: #fafafa;
-                padding: 20px;
-            }}
+            {get_base_styles()}
+
             .bar-positive {{
                 fill: #52b788;
                 stroke: #6fcf97;
@@ -361,12 +362,8 @@ def get_standard_waterfall_html(waterfall_data_json, base_value, final_predictio
     <head>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
-            body {{
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                background: #0e1117;
-                color: #fafafa;
-                padding: 20px;
-            }}
+            {get_base_styles()}
+
             .bar-positive {{
                 fill: #52b788;
             }}
