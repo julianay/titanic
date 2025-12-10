@@ -18,6 +18,11 @@ import matplotlib.pyplot as plt
 from xgboost import XGBClassifier
 from src.tree_data import get_tree_for_visualization
 from src.visualizations.decision_tree_viz import get_decision_tree_html
+from src.visualizations.shap_viz import (
+    get_feature_importance_html,
+    get_alternative_waterfall_html,
+    get_standard_waterfall_html
+)
 
 # Page configuration
 st.set_page_config(
@@ -516,108 +521,7 @@ with col1:
             st.caption("Which features matter most across all predictions")
 
             # D3 Global Feature Importance Chart
-            waterfall_html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <script src="https://d3js.org/d3.v7.min.js"></script>
-                <style>
-                    body {{
-                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                        background: #0e1117;
-                        color: #fafafa;
-                        padding: 20px;
-                    }}
-                    .bar {{
-                        fill: #52b788;
-                        opacity: 0.8;
-                    }}
-                    .bar:hover {{
-                        opacity: 1;
-                    }}
-                    .axis text {{
-                        fill: #fafafa;
-                        font-size: 12px;
-                    }}
-                    .axis line, .axis path {{
-                        stroke: #666;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div id="waterfall"></div>
-                <script>
-                    const data = {shap_json};
-
-                    const margin = {{top: 20, right: 30, bottom: 60, left: 80}};
-                    const width = 280 - margin.left - margin.right;
-                    const height = 300 - margin.top - margin.bottom;
-
-                    const svg = d3.select("#waterfall")
-                        .append("svg")
-                        .attr("width", width + margin.left + margin.right)
-                        .attr("height", height + margin.top + margin.bottom)
-                        .append("g")
-                        .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
-
-                    // Create scales
-                    const y = d3.scaleBand()
-                        .domain(data.map(d => d.feature))
-                        .range([0, height])
-                        .padding(0.2);
-
-                    const x = d3.scaleLinear()
-                        .domain([0, d3.max(data, d => d.value)])
-                        .range([0, width]);
-
-                    // Add bars
-                    svg.selectAll(".bar")
-                        .data(data)
-                        .enter()
-                        .append("rect")
-                        .attr("class", "bar")
-                        .attr("y", d => y(d.feature))
-                        .attr("x", 0)
-                        .attr("height", y.bandwidth())
-                        .attr("width", d => x(d.value));
-
-                    // Add value labels
-                    svg.selectAll(".label")
-                        .data(data)
-                        .enter()
-                        .append("text")
-                        .attr("class", "label")
-                        .attr("y", d => y(d.feature) + y.bandwidth() / 2)
-                        .attr("x", d => x(d.value) + 5)
-                        .attr("dy", "0.35em")
-                        .attr("fill", "#fafafa")
-                        .attr("font-size", "11px")
-                        .text(d => d.value.toFixed(3));
-
-                    // Add Y axis
-                    svg.append("g")
-                        .attr("class", "axis")
-                        .call(d3.axisLeft(y));
-
-                    // Add X axis
-                    svg.append("g")
-                        .attr("class", "axis")
-                        .attr("transform", `translate(0,${{height}})`)
-                        .call(d3.axisBottom(x).ticks(5));
-
-                    // Add X axis label
-                    svg.append("text")
-                        .attr("x", width / 2)
-                        .attr("y", height + 40)
-                        .attr("fill", "#fafafa")
-                        .attr("text-anchor", "middle")
-                        .attr("font-size", "11px")
-                        .text("Mean |SHAP value|");
-                </script>
-            </body>
-            </html>
-            """
-
+            waterfall_html = get_feature_importance_html(shap_json)
             components.html(waterfall_html, height=400, scrolling=False)
 
         with col_global_right:
@@ -716,162 +620,11 @@ with col1:
             alternative_waterfall_json_demo = json.dumps(alternative_waterfall_data_demo)
 
             # D3 Alternative Waterfall Chart with Floating Bars (Horizontal)
-            alternative_waterfall_html_demo = f"""
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <script src="https://d3js.org/d3.v7.min.js"></script>
-                    <style>
-                        body {{
-                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                            background: #0e1117;
-                            color: #fafafa;
-                            padding: 20px;
-                        }}
-                        .bar-positive {{
-                            fill: #52b788;
-                            stroke: #6fcf97;
-                            stroke-width: 1.5;
-                        }}
-                        .bar-negative {{
-                            fill: #e76f51;
-                            stroke: #f4a261;
-                            stroke-width: 1.5;
-                        }}
-                        .bar-base {{
-                            fill: #666;
-                            stroke: #888;
-                            stroke-width: 1.5;
-                        }}
-                        .connector-line {{
-                            stroke: #888;
-                            stroke-width: 1.5;
-                            stroke-dasharray: 3,3;
-                        }}
-                        .axis text {{
-                            fill: #fafafa;
-                            font-size: 10px;
-                        }}
-                        .axis line, .axis path {{
-                            stroke: #666;
-                        }}
-                        .value-label {{
-                            fill: #fafafa;
-                            font-size: 9px;
-                            font-weight: bold;
-                        }}
-                    </style>
-                </head>
-                <body>
-                    <div id="alternative-waterfall-global"></div>
-                    <script>
-                        const data = {alternative_waterfall_json_demo};
-                        const baseValue = {base_value_demo};
-                        const finalValue = {final_prediction_demo};
-
-                        const margin = {{top: 20, right: 60, bottom: 50, left: 100}};
-                        const width = 650 - margin.left - margin.right;
-                        const height = 300 - margin.top - margin.bottom;
-
-                        const svg = d3.select("#alternative-waterfall-global")
-                            .append("svg")
-                            .attr("width", width + margin.left + margin.right)
-                            .attr("height", height + margin.top + margin.bottom)
-                            .append("g")
-                            .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
-
-                        // Title with base value and final prediction
-                        svg.append("text")
-                            .attr("x", width / 2)
-                            .attr("y", -5)
-                            .attr("text-anchor", "middle")
-                            .attr("fill", "#fafafa")
-                            .attr("font-size", "11px")
-                            .attr("font-weight", "bold")
-                            .text(`Base Value: ${{baseValue.toFixed(3)}} → Final Prediction: ${{finalValue.toFixed(3)}}`);
-
-                        // Create scales - HORIZONTAL orientation
-                        const y = d3.scaleBand()
-                            .domain(data.map((d, i) => i))
-                            .range([0, height])
-                            .padding(0.3);
-
-                        const allValues = data.flatMap(d => [d.start, d.end]);
-                        const xExtent = d3.extent(allValues);
-                        const x = d3.scaleLinear()
-                            .domain(xExtent)
-                            .range([0, width])
-                            .nice();
-
-                        // Add X axis
-                        svg.append("g")
-                            .attr("class", "axis")
-                            .attr("transform", `translate(0,${{height}})`)
-                            .call(d3.axisBottom(x).ticks(5));
-
-                        // Add X axis label
-                        svg.append("text")
-                            .attr("x", width / 2)
-                            .attr("y", height + 38)
-                            .attr("fill", "#fafafa")
-                            .attr("text-anchor", "middle")
-                            .attr("font-size", "11px")
-                            .text("Cumulative SHAP");
-
-                        // Draw connector lines between bars (horizontal)
-                        for (let i = 0; i < data.length - 1; i++) {{
-                            const current = data[i];
-                            const next = data[i + 1];
-
-                            svg.append("line")
-                                .attr("class", "connector-line")
-                                .attr("x1", x(current.end))
-                                .attr("y1", y(i) + y.bandwidth())
-                                .attr("x2", x(next.start))
-                                .attr("y2", y(i + 1));
-                        }}
-
-                        // Draw floating bars (horizontal)
-                        svg.selectAll(".bar")
-                            .data(data)
-                            .enter()
-                            .append("rect")
-                            .attr("class", (d, i) => {{
-                                if (i === 0) return "bar-base";
-                                return d.value >= 0 ? "bar-positive" : "bar-negative";
-                            }})
-                            .attr("y", (d, i) => y(i))
-                            .attr("x", d => x(Math.min(d.start, d.end)))
-                            .attr("height", y.bandwidth())
-                            .attr("width", d => Math.abs(x(d.start) - x(d.end)) || 3)
-                            .attr("rx", 2);
-
-                        // Add value labels on bars (skip base value, smaller font)
-                        svg.selectAll(".value-label")
-                            .data(data.filter((d, i) => i > 0))
-                            .enter()
-                            .append("text")
-                            .attr("class", "value-label")
-                            .attr("y", (d, i) => y(i + 1) + y.bandwidth() / 2)
-                            .attr("x", d => x(d.end) + (d.value >= 0 ? 5 : -5))
-                            .attr("dy", "0.35em")
-                            .attr("text-anchor", d => d.value >= 0 ? "start" : "end")
-                            .attr("fill", d => d.value >= 0 ? "#52b788" : "#e76f51")
-                            .text(d => (d.value >= 0 ? "+" : "") + d.value.toFixed(2));
-
-                        // Add Y axis with feature labels
-                        svg.append("g")
-                            .attr("class", "axis")
-                            .call(d3.axisLeft(y).tickFormat((d, i) => {{
-                                const item = data[i];
-                                if (i === 0) return "Base";
-                                return item.feature_value !== "" ? `${{item.feature}}=${{item.feature_value}}` : item.feature;
-                            }}));
-                    </script>
-                </body>
-                </html>
-            """
-
+            alternative_waterfall_html_demo = get_alternative_waterfall_html(
+                alternative_waterfall_json_demo,
+                base_value_demo,
+                final_prediction_demo
+            )
             components.html(alternative_waterfall_html_demo, height=400, scrolling=False)
 
         st.markdown("---")
@@ -945,137 +698,11 @@ with col1:
         waterfall_json_individual = json.dumps(waterfall_data_sorted)
 
         # D3 Waterfall Chart for Individual
-        individual_waterfall_html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <script src="https://d3js.org/d3.v7.min.js"></script>
-                <style>
-                    body {{
-                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                        background: #0e1117;
-                        color: #fafafa;
-                        padding: 20px;
-                    }}
-                    .bar-positive {{
-                        fill: #52b788;
-                    }}
-                    .bar-negative {{
-                        fill: #e76f51;
-                    }}
-                    .axis text {{
-                        fill: #fafafa;
-                        font-size: 12px;
-                    }}
-                    .axis line, .axis path {{
-                        stroke: #666;
-                    }}
-                    .baseline {{
-                        stroke: #666;
-                        stroke-width: 2;
-                        stroke-dasharray: 5,5;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div id="individual-waterfall"></div>
-                <script>
-                    const data = {waterfall_json_individual};
-                    const baseValue = {base_value};
-                    const finalValue = {final_prediction};
-
-                    const margin = {{top: 40, right: 30, bottom: 60, left: 120}};
-                    const width = 700 - margin.left - margin.right;
-                    const height = 350 - margin.top - margin.bottom;
-
-                    const svg = d3.select("#individual-waterfall")
-                        .append("svg")
-                        .attr("width", width + margin.left + margin.right)
-                        .attr("height", height + margin.top + margin.bottom)
-                        .append("g")
-                        .attr("transform", `translate(${{margin.left}},${{margin.top}})`);
-
-                    // Title
-                    svg.append("text")
-                        .attr("x", width / 2)
-                        .attr("y", -20)
-                        .attr("text-anchor", "middle")
-                        .attr("fill", "#fafafa")
-                        .attr("font-size", "14px")
-                        .attr("font-weight", "bold")
-                        .text(`Base Value: ${{baseValue.toFixed(3)}} → Final Prediction: ${{finalValue.toFixed(3)}}`);
-
-                    // Create scales
-                    const y = d3.scaleBand()
-                        .domain(data.map(d => d.feature))
-                        .range([0, height])
-                        .padding(0.2);
-
-                    const allValues = data.flatMap(d => [d.start, d.end]);
-                    const xExtent = d3.extent(allValues);
-                    const x = d3.scaleLinear()
-                        .domain(xExtent)
-                        .range([0, width]);
-
-                    // Add baseline at x=0
-                    svg.append("line")
-                        .attr("class", "baseline")
-                        .attr("x1", x(0))
-                        .attr("x2", x(0))
-                        .attr("y1", 0)
-                        .attr("y2", height);
-
-                    // Add bars
-                    svg.selectAll(".bar")
-                        .data(data)
-                        .enter()
-                        .append("rect")
-                        .attr("class", d => d.value >= 0 ? "bar-positive" : "bar-negative")
-                        .attr("y", d => y(d.feature))
-                        .attr("x", d => x(Math.min(d.start, d.end)))
-                        .attr("height", y.bandwidth())
-                        .attr("width", d => Math.abs(x(d.end) - x(d.start)));
-
-                    // Add value labels
-                    svg.selectAll(".label")
-                        .data(data)
-                        .enter()
-                        .append("text")
-                        .attr("y", d => y(d.feature) + y.bandwidth() / 2)
-                        .attr("x", d => x(d.end) + (d.value >= 0 ? 5 : -5))
-                        .attr("dy", "0.35em")
-                        .attr("fill", "#fafafa")
-                        .attr("font-size", "11px")
-                        .attr("text-anchor", d => d.value >= 0 ? "start" : "end")
-                        .text(d => d.value.toFixed(3));
-
-                    // Add Y axis with feature labels
-                    svg.append("g")
-                        .attr("class", "axis")
-                        .call(d3.axisLeft(y).tickFormat(d => {{
-                            const item = data.find(x => x.feature === d);
-                            return `${{d}} = ${{item.feature_value}}`;
-                        }}));
-
-                    // Add X axis
-                    svg.append("g")
-                        .attr("class", "axis")
-                        .attr("transform", `translate(0,${{height}})`)
-                        .call(d3.axisBottom(x).ticks(5));
-
-                    // Add X axis label
-                    svg.append("text")
-                        .attr("x", width / 2)
-                        .attr("y", height + 45)
-                        .attr("fill", "#fafafa")
-                        .attr("text-anchor", "middle")
-                        .attr("font-size", "12px")
-                        .text("SHAP Value (Impact on Prediction)");
-                </script>
-            </body>
-            </html>
-        """
-
+        individual_waterfall_html = get_standard_waterfall_html(
+            waterfall_json_individual,
+            base_value,
+            final_prediction
+        )
         components.html(individual_waterfall_html, height=500, scrolling=False)
 
         # Explanation

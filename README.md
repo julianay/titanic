@@ -148,13 +148,14 @@ Interactive Streamlit app showcasing **explainable AI techniques** for Titanic p
 
 ```text
 titanic/
-├── app.py                          # Main XAI Explorer application
+├── app.py                          # Main XAI Explorer application (869 lines)
 ├── src/
 │   ├── __init__.py                 # Source package initialization
 │   ├── tree_data.py                # Tree data extraction module (visualization-agnostic)
 │   └── visualizations/             # Modular visualization components
 │       ├── __init__.py             # Visualization package exports
-│       └── decision_tree_viz.py    # D3.js decision tree HTML generation
+│       ├── decision_tree_viz.py    # D3.js decision tree HTML generation
+│       └── shap_viz.py             # D3.js SHAP visualization HTML generation (3 functions)
 ├── requirements.txt                # Python dependencies
 ├── Dockerfile                      # Docker config for Hugging Face Spaces
 ├── README.md                       # This file

@@ -105,19 +105,30 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 - **CREATED VISUALIZATION MODULE STRUCTURE**
   - **New package**: `src/visualizations/` with proper `__init__.py` structure
   - **Extracted decision tree visualization** (~460 lines) from `app.py` into `src/visualizations/decision_tree_viz.py`
-  - **New module function**: `get_decision_tree_html(tree_json, preset_values_js, preset_hash, passenger_desc)`
+    - **New module function**: `get_decision_tree_html(tree_json, preset_values_js, preset_hash, passenger_desc)`
     - Generates complete HTML document with embedded D3.js code
     - Takes tree data and preset values as parameters
     - Returns HTML string ready for `components.html()`
     - Includes comprehensive docstring with usage examples
-  - **Package exports**: Clean imports via `from src.visualizations import get_decision_tree_html`
+  - **Extracted SHAP visualizations** (~385 lines) from `app.py` into `src/visualizations/shap_viz.py`
+    - **Three module functions**:
+      1. `get_feature_importance_html(feature_importance_json)` - Global feature importance bar chart
+      2. `get_alternative_waterfall_html(waterfall_data_json, base_value, final_prediction)` - Floating bar waterfall
+      3. `get_standard_waterfall_html(waterfall_data_json, base_value, final_prediction)` - Traditional waterfall chart
+    - All functions properly escape JavaScript curly braces using `{{` (not `{{{{`)
+    - Comprehensive docstrings with parameter descriptions and usage examples
+    - Dark mode styling matching app theme
+  - **Package exports**: Clean imports via `from src.visualizations import ...`
 - **CODE ORGANIZATION IMPROVEMENTS**
-  - **app.py reduction**: Reduced by ~460 lines (from ~1900 to ~1450 lines)
-  - **Separation of concerns**: Visualization logic now isolated from application logic
-  - **Reusability**: Decision tree HTML generation can be reused in other contexts
-  - **Maintainability**: Easier to update visualization without touching app logic
-  - **Testability**: Visualization function can be unit tested independently
-- **BUG FIX: JavaScript escaping error**
+  - **app.py reduction**: Reduced by ~845 lines total (from ~1900 to ~869 lines)
+    - Decision tree extraction: ~460 lines removed
+    - SHAP visualizations extraction: ~385 lines removed
+  - **Separation of concerns**: All visualization logic now isolated from application logic
+  - **Reusability**: Visualization functions can be reused in other contexts
+  - **Maintainability**: Easier to update visualizations without touching app logic
+  - **Testability**: Visualization functions can be unit tested independently
+  - **Consistent pattern**: Both decision tree and SHAP visualizations follow same modular approach
+- **BUG FIX: JavaScript escaping error (Decision Tree)**
   - **Problem**: Used `{{{{` (producing `{{` in output) instead of `{{` (producing `{` in output)
   - **Error**: "Uncaught SyntaxError: Unexpected token '{'" at line 244 in generated HTML
   - **Root cause**: Python f-string escaping rules: `{{` → `{`, not `{{{{` → `{`
@@ -133,9 +144,9 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
   - ✅ More maintainable codebase with clear separation of concerns
   - ✅ Visualization code can be reused across different applications
   - ✅ Easier to test individual components
-  - ✅ Sets foundation for extracting other visualizations (XGBoost SHAP charts)
   - ✅ Better code organization for portfolio showcase
-  - ✅ No functional changes - decision tree works exactly as before
+  - ✅ No functional changes - all visualizations work exactly as before
+  - ✅ **Final result**: app.py reduced from ~1,900 lines to 869 lines (54% reduction)
 
 ### 2025-12-08 (Session 8 - Chat Refactor: Phase 2 Integration)
 - **COHORT MATCHING SYSTEM INTEGRATION** (`app.py`)
@@ -567,9 +578,10 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 | File | Purpose |
 |------|---------|
-| `app.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP |
+| `app.py` | Main application - Interactive XAI Explorer with Decision Tree & XGBoost SHAP (869 lines) |
 | `src/tree_data.py` | ML pipeline & tree extraction module |
 | `src/visualizations/decision_tree_viz.py` | Modular D3.js decision tree HTML generation |
+| `src/visualizations/shap_viz.py` | Modular D3.js SHAP visualization HTML generation (3 functions) |
 | `src/visualizations/__init__.py` | Visualization package exports |
 | `src/__init__.py` | Source package initialization |
 | `requirements.txt` | Python dependencies |
