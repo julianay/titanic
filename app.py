@@ -319,7 +319,12 @@ with col1:
 
             # Get SHAP values for this passenger
             shap_values_demo = shap_explainer.shap_values(x_input_demo)[0]
-            base_value_demo = shap_explainer.expected_value
+            expected_val_demo = shap_explainer.expected_value
+            # Handle different SHAP explainer types (array or scalar)
+            if hasattr(expected_val_demo, '__len__'):
+                base_value_demo = float(expected_val_demo[0])  # type: ignore
+            else:
+                base_value_demo = float(expected_val_demo)  # type: ignore
             final_prediction_demo = float(base_value_demo + np.sum(shap_values_demo))
 
             # Prepare waterfall data
@@ -428,7 +433,12 @@ with col1:
         # Get SHAP values for this passenger
         import numpy as np
         shap_values_individual = shap_explainer.shap_values(x_input)[0]
-        base_value = shap_explainer.expected_value
+        expected_val = shap_explainer.expected_value
+        # Handle different SHAP explainer types (array or scalar)
+        if hasattr(expected_val, '__len__'):
+            base_value = float(expected_val[0])  # type: ignore
+        else:
+            base_value = float(expected_val)  # type: ignore
         final_prediction = float(base_value + np.sum(shap_values_individual))
 
         # Prepare waterfall data

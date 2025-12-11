@@ -111,6 +111,14 @@ This is a **UX portfolio demo** showcasing explainable AI techniques for the Tit
 
 ## 🚀 Recent Changes
 
+### 2025-12-10 (Session 14 - Styling: Accent Color & Streamlit Theme)
+- **Accent color update**: Standardized interactive accents to `#218FCE` across the app.
+  - **Streamlit theme**: Added `.streamlit/config.toml` with `primaryColor = "#218FCE"` and dark-theme values so native widgets (radios, sliders, buttons) adopt the blue accent in supported Streamlit versions.
+  - **Visualization styles**: Updated `src/visualizations/styles.css` to centralize accent variables and shared dark-mode styling for D3 visualizations.
+  - **Removed manual injection**: Deleted previous CSS/JS injection from `app.py` in favor of the supported theme file and scoped CSS in visualizations to avoid fragile DOM hacks.
+  - **Result**: Buttons and many native widgets use the configured blue accent; visualizations continue to load shared styles via `get_base_styles()`.
+  - **Notes**: If a widget still shows the old color due to browser/Streamlit variations, a hard reload and Streamlit restart will pick up the theme; if issues persist we can add minimal, well-scoped fallbacks.
+
 ### 2025-12-10 (Session 13 - Tutorial Enhancement: Tab-Aware Messages & XGBoost Highlighting)
 - **TAB-AWARE TUTORIAL SYSTEM** (`src/tutorial.py`, `src/visualizations/shap_viz.py`, `app.py`)
   - **Problem fixed**: Tutorial was showing tree-specific messages on XGBoost tab and not updating What-If controls properly
