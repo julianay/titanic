@@ -1,11 +1,15 @@
 """
 FastAPI Backend for Titanic XAI Demo
 Provides REST API endpoints for model predictions and explanations.
+Serves React frontend from static files.
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
+from pathlib import Path
 import uvicorn
 
 from routes import predict, tree
@@ -39,15 +43,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Configure CORS
+# Configure CORS (allow all origins for HF deployment)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Vite default
-        "http://localhost:3000",  # Alternative React dev server
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=["*"],  # Allow all origins for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,16 +68,40 @@ app.include_router(predict.router, prefix="/api", tags=["predictions"])
 app.include_router(tree.router, prefix="/api", tags=["tree"])
 
 
-# Root endpoint
-@app.get("/")
-async def root():
-    """Root endpoint with API information."""
-    return {
-        "message": "Titanic XAI API",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "health": "/health"
-    }
+# Determine static files path (production vs development)
+# In production (Docker), frontend build is copied to /app/static
+# In development, it's at ../frontend/dist
+STATIC_DIR = Path("/app/static") if Path("/app/static").exists() else Path(__file__).parent.parent / "frontend" / "dist"
+
+# Mount static files (only if build exists)
+if STATIC_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+
+    # Serve index.html for root and all non-API routes (SPA routing)
+    @app.get("/{full_path:path}")
+    async def serve_react(full_path: str):
+        """Serve React app for all non-API routes."""
+        # Don't intercept API, docs, or health routes
+        if full_path.startswith(("api/", "docs", "redoc", "openapi.json", "health")):
+            return {"error": "Not found"}
+
+        # Serve index.html for all other routes (React Router handles routing)
+        index_file = STATIC_DIR / "index.html"
+        if index_file.exists():
+            return FileResponse(index_file)
+        return {"error": "React build not found. Run 'npm run build' in frontend/"}
+else:
+    # Fallback API info endpoint when React build doesn't exist
+    @app.get("/")
+    async def root():
+        """Root endpoint with API information."""
+        return {
+            "message": "Titanic XAI API",
+            "version": "1.0.0",
+            "docs": "/docs",
+            "health": "/health",
+            "note": "React frontend not built. Run 'cd frontend && npm run build'"
+        }
 
 
 if __name__ == "__main__":

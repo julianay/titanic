@@ -1,12 +1,41 @@
+---
+title: Titanic XAI - Explainable AI Explorer
+emoji: 🚢
+colorFrom: blue
+colorTo: cyan
+sdk: docker
+pinned: false
+app_port: 7860
+---
+
 # Titanic Survival – Explainable AI Demo 🚢
 
-Interactive web applications showcasing **explainable AI techniques** for Titanic passenger survival prediction. This project features two complementary interfaces: a production Streamlit app and a modern React frontend.
+Interactive web application showcasing **explainable AI techniques** for Titanic passenger survival prediction. Built with **React** frontend and **FastAPI** backend, featuring real-time predictions with debouncing, color-coded results, and smart fare suggestions.
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: React Frontend (Modern UI)
+### Production Deployment (Hugging Face)
+Visit the live demo: https://huggingface.co/spaces/bigpixel/titanic
+
+### Local Development
+
+**Option 1: Production Mode (React + FastAPI together)**
+```bash
+# Build React frontend
+cd frontend
+npm install && npm run build
+
+# Start FastAPI (serves both API and React)
+cd ../backend
+source ../venv/bin/activate
+uvicorn main:app --host 0.0.0.0 --port 7860
+
+# Open http://localhost:7860
+```
+
+**Option 2: Development Mode (React + FastAPI separately)**
 ```bash
 # Terminal 1: Start backend
 cd backend
@@ -20,7 +49,7 @@ npm run dev
 # Open http://localhost:5173
 ```
 
-### Option 2: Streamlit App (Production)
+**Option 3: Streamlit App (Legacy)**
 ```bash
 source venv/bin/activate
 streamlit run app.py

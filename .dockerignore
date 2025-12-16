@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend build (will be rebuilt in Docker)
+frontend/dist/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+
+# Tests
+**/test_*.py
+**/*_test.py
+tests/
+
+# Environment files
+.env
+.env.local
+
+# Streamlit (not needed for React deployment)
+app.py
+src/
+.streamlit/
+
+# Development files
+*.log

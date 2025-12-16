@@ -95,7 +95,8 @@ function usePredict(params) {
     setError(null)
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      // Use VITE_API_URL if set, otherwise use current origin (for production)
+      const apiUrl = import.meta.env.VITE_API_URL || window.location.origin
 
       const response = await fetch(`${apiUrl}/api/predict`, {
         method: 'POST',
