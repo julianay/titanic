@@ -10,8 +10,9 @@
 ### Current State
 - ✅ **React + FastAPI stack** deployed to Hugging Face (production)
 - ✅ **Streamlit app** still exists (local development only)
-- ✅ React frontend has basic prediction UI with presets and color-coded results
-- 🔲 **Missing features**: SHAP charts, decision tree viz, chat, tutorial (to be ported from Streamlit)
+- ✅ **D3.js visualizations** now working in React (Decision Tree + SHAP) - See `IMPLEMENTATION_PROGRESS.md`
+- ⚠️ **In Progress**: Porting remaining Streamlit features (prediction cards, comparison summary, polish)
+- 🔲 **Not Started**: Chat interface, tutorial system
 
 ### Live URLs
 - **Production**: https://huggingface.co/spaces/bigpixel/titanic
@@ -107,6 +108,7 @@ docs/
 
 AI_CONTEXT.md                       # Full project context
 PROGRESS.md                         # Development history
+IMPLEMENTATION_PROGRESS.md          # ⭐ CURRENT WORK: React viz implementation status
 ```
 
 ---
@@ -178,23 +180,35 @@ GET  /                              # React frontend (SPA)
 
 ---
 
-## 📋 Next Steps (Features to Port from Streamlit)
+## 📋 Current Implementation Status
 
-Current React stack has:
-- ✅ Basic prediction UI
-- ✅ Passenger input controls
-- ✅ 4 quick presets
-- ✅ Color-coded results
-- ✅ Smart fare suggestions
+**⚠️ IMPORTANT: See `IMPLEMENTATION_PROGRESS.md` for detailed current state**
 
-Missing from Streamlit:
-- 🔲 SHAP waterfall charts (D3.js visualizations)
-- 🔲 Decision tree visualization (donut chart nodes)
-- 🔲 Conversational chat (cohort exploration)
-- 🔲 Model comparison (XGBoost vs Decision Tree tabs)
+### ✅ Completed (Dec 16, 2024)
+- ✅ D3.js integration (v7.9.0)
+- ✅ Decision tree visualization with donut chart nodes
+- ✅ SHAP waterfall chart (floating bars style)
+- ✅ Global feature importance bar chart
+- ✅ Real-time path highlighting on tree
+- ✅ Interactive hover effects with tooltips
+- ✅ 4 custom React hooks (useFetchTree, usePredictBoth, useSHAPExplanation, useGlobalImportance)
+- ✅ Basic ModelComparisonView integration
+
+### 🚧 In Progress (~5-6 hours remaining)
+- 🔲 PredictionCard component (show survival %)
+- 🔲 ComparisonSummary component (model agreement)
+- 🔲 Error boundaries for graceful failures
+- 🔲 Loading skeletons (better than spinners)
+- 🔲 Accessibility features (ARIA, keyboard nav)
+- 🔲 Polish responsive design
+- 🔲 Performance optimization
+
+### 📌 Not Started (Future Work)
+- 🔲 Chat interface for cohort exploration
 - 🔲 Interactive tutorial system
+- 🔲 Natural language query parsing
 
-These can be added incrementally - all code exists in Streamlit app (`app.py`, `src/visualizations/`).
+**Next Session: Start with Phase 4 in `IMPLEMENTATION_PROGRESS.md`**
 
 ---
 
@@ -224,7 +238,8 @@ These can be added incrementally - all code exists in Streamlit app (`app.py`, `
 
 ## 📞 Getting Help
 
-- **Full context**: Read `AI_CONTEXT.md` (420+ lines of detailed documentation)
+- **⭐ Current work status**: `IMPLEMENTATION_PROGRESS.md` (React visualization porting)
+- **Full context**: `AI_CONTEXT.md` (420+ lines of detailed documentation)
 - **Frontend docs**: `docs/FRONTEND.md`
 - **Backend docs**: `docs/BACKEND.md`
 - **API reference**: `docs/API.md`
