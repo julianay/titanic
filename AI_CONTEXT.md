@@ -2,10 +2,271 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 15, 2025
-**Live Demo:** https://huggingface.co/spaces/bigpixel/titanic
+**Last Updated:** December 16, 2025
+**Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
+**Status:** ✅ Production - React frontend deployed to Hugging Face
 
-## Quick Reference: Coding Conventions
+---
+
+## 🚀 Current Stack: React + FastAPI (Production)
+
+**Deployed:** December 16, 2025
+**Status:** ✅ Live on Hugging Face Spaces
+**Architecture:** React frontend + FastAPI backend (single Docker container)
+
+### Quick Start for New Sessions
+
+```bash
+# Development mode (separate servers)
+# Terminal 1: Backend
+cd backend && ./start_server.sh  # Port 8000
+
+# Terminal 2: Frontend
+cd frontend && npm run dev        # Port 5173
+
+# Production mode (together)
+cd frontend && npm run build
+cd ../backend && uvicorn main:app --host 0.0.0.0 --port 7860
+```
+
+### Tech Stack
+
+**Frontend**
+- **React 18** with Vite 7.3.0
+- **Tailwind CSS 3.4.0** (dark theme matching Streamlit)
+- **Custom hooks**: `usePredict` (debouncing, caching, retry logic)
+- **Features**: Real-time predictions, preset buttons, color-coded results
+
+**Backend**
+- **FastAPI 0.104.1** with Uvicorn
+- **Python 3.12** (NOT 3.13 - pandas incompatible)
+- **scikit-learn** (Decision Tree model)
+- **XGBoost + SHAP** (advanced model with explanations)
+- **Serves React static files** from `/app/static`
+
+**Deployment**
+- **Docker multi-stage build** (Node.js → Python)
+- **Hugging Face Spaces** (port 7860)
+- **Dual Git remotes**: GitHub + HuggingFace
+
+### File Structure (React + FastAPI)
+
+```
+titanic/
+├── frontend/                      # React app
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Layout.jsx         # Two-column responsive layout
+│   │   │   ├── ControlPanel.jsx   # Passenger inputs + presets
+│   │   │   └── LoadingSpinner.jsx # Loading indicator
+│   │   ├── hooks/
+│   │   │   └── usePredict.js      # API integration (500ms debounce)
+│   │   ├── App.jsx                # Main component
+│   │   └── index.css              # Tailwind + dark theme
+│   ├── .env                       # VITE_API_URL (empty for production)
+│   ├── package.json
+│   └── vite.config.js
+├── backend/                       # FastAPI server
+│   ├── main.py                    # App + static file serving
+│   ├── models/
+│   │   ├── decision_tree.py       # Decision tree + SHAP
+│   │   └── xgboost_model.py       # XGBoost + SHAP
+│   ├── routes/
+│   │   ├── predict.py             # POST /api/predict
+│   │   └── tree.py                # GET /api/tree
+│   ├── requirements.txt
+│   └── start_server.sh
+├── Dockerfile                     # Multi-stage: Node → Python
+├── .dockerignore                  # Excludes venv, node_modules, Streamlit
+├── app.py                         # Streamlit app (legacy, local only)
+└── docs/                          # Documentation
+    ├── FRONTEND.md                # React frontend guide
+    ├── BACKEND.md                 # FastAPI backend guide
+    └── API.md                     # API reference
+```
+
+### API Endpoints
+
+**Base URL (Production)**: `https://bigpixel-titanic.hf.space`
+**Base URL (Local)**: `http://localhost:7860` (production mode) or `http://localhost:8000` (dev)
+
+```http
+GET  /health                       # Health check
+POST /api/predict                  # Get prediction + probability
+GET  /api/tree                     # Get decision tree structure
+GET  /docs                         # Interactive API docs (Swagger)
+GET  /                             # React frontend (SPA)
+```
+
+**Example Request**:
+```bash
+curl -X POST http://localhost:7860/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{"sex": 0, "pclass": 1, "age": 30, "fare": 84}'
+
+# Response: {"prediction": 1, "probability": 1.0, "survival_rate": 100.0}
+```
+
+### React Components
+
+**Layout.jsx**
+- Two-column responsive design (75% left, 25% right)
+- Stacks vertically on mobile (<768px)
+- Dark theme (#0e1117 background, #fafafa text)
+
+**ControlPanel.jsx**
+- Passenger inputs: Sex (radio), Class (radio), Age (slider), Fare (slider)
+- **Smart fare suggestions**: Auto-adjust when class changes (1st: £84, 2nd: £20, 3rd: £13)
+- **Unusual fare badge**: Shows if fare >30% different from class average
+- **4 Quick presets**:
+  - 🎭 Women's path: Female, 2nd, age 30, £20 (~92% survival)
+  - 👨 Men's path: Male, 3rd, age 30, £13 (~14% survival)
+  - 👶 1st class child: Female, 1st, age 5, £84 (~98% survival)
+  - ⚓ 3rd class male: Male, 3rd, age 40, £8 (~7% survival)
+- **Active state detection**: Highlights currently active preset
+
+**usePredict Hook**
+- **500ms debouncing**: Waits for user to finish adjusting sliders
+- **Request cancellation**: Aborts in-flight requests on param change
+- **Retry logic**: Max 3 attempts with exponential backoff (1s, 2s delays)
+- **In-memory caching**: Max 100 entries, clears oldest 20 when full
+- **Auto-detects API URL**: Uses `VITE_API_URL` or `window.location.origin`
+
+### Deployment Architecture
+
+**Docker Multi-Stage Build**:
+1. **Stage 1 (Node.js)**: Build React frontend
+   - `npm ci` → `npm run build`
+   - Output: `frontend/dist/`
+2. **Stage 2 (Python 3.12)**: Setup FastAPI
+   - Install Python dependencies
+   - Copy backend source
+   - Copy React build to `/app/static`
+   - Run `uvicorn main:app --host 0.0.0.0 --port 7860`
+
+**FastAPI Static File Serving**:
+```python
+# In production (Docker): /app/static
+# In development: ../frontend/dist
+STATIC_DIR = Path("/app/static") if Path("/app/static").exists() else Path(__file__).parent.parent / "frontend" / "dist"
+
+# Mount assets directory
+app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"))
+
+# Serve index.html for all non-API routes (SPA routing)
+@app.get("/{full_path:path}")
+async def serve_react(full_path: str):
+    if full_path.startswith(("api/", "docs", "health")):
+        return {"error": "Not found"}
+    return FileResponse(STATIC_DIR / "index.html")
+```
+
+### Development Workflow
+
+**Local Development (Separate Servers)**:
+```bash
+# Backend (port 8000)
+cd backend
+./start_server.sh
+
+# Frontend (port 5173)
+cd frontend
+npm run dev
+
+# Frontend makes API calls to http://localhost:8000
+```
+
+**Production Testing (Single Server)**:
+```bash
+# Build React
+cd frontend
+npm run build
+
+# Start FastAPI (serves both API + React)
+cd ../backend
+uvicorn main:app --host 0.0.0.0 --port 7860
+
+# Test at http://localhost:7860
+```
+
+**Deploy to Hugging Face**:
+```bash
+git add -A
+git commit -m "Your changes"
+git push origin main        # GitHub
+git push huggingface main   # Triggers HF rebuild
+```
+
+### Environment Variables
+
+**Frontend (.env)**:
+```env
+# Leave empty for production (uses window.location.origin)
+# Set for development with separate backend
+VITE_API_URL=
+```
+
+**Backend**: No environment variables required (defaults work for both dev + production)
+
+### Color-Coded Prediction Results
+
+React displays predictions with intuitive colors:
+- **Green** (>70%): High survival chance - green background and text
+- **Yellow** (40-70%): Medium survival chance - yellow background and text
+- **Red** (<40%): Low survival chance - red background and text
+
+### Common Issues & Solutions
+
+**Issue**: Frontend can't connect to backend
+- **Dev mode**: Check `VITE_API_URL` is empty or points to `http://localhost:8000`
+- **Production mode**: Ensure React build exists and backend is serving from `/app/static`
+
+**Issue**: Docker build fails with pandas errors
+- **Solution**: Use Python 3.12 (NOT 3.13) - pandas 2.1.3 incompatible with 3.13
+
+**Issue**: Hugging Face metadata validation error
+- **Solution**: Only use allowed colors in README.md frontmatter:
+  - Valid: `red, yellow, green, blue, indigo, purple, pink, gray`
+  - Invalid: `cyan, orange, etc.`
+
+**Issue**: React build not updating
+- **Solution**: Delete `frontend/dist/` and run `npm run build` again
+
+### Git Remotes
+
+```bash
+# Check configured remotes
+git remote -v
+
+# Should show:
+# origin       https://github.com/julianay/titanic.git
+# huggingface  https://huggingface.co/spaces/bigpixel/titanic
+
+# Push to both
+git push origin main
+git push huggingface main
+```
+
+### Next Steps: Porting Streamlit Features
+
+**Current React Stack**: Basic prediction interface
+**Missing from Streamlit**:
+- 🔲 SHAP waterfall charts
+- 🔲 Decision tree D3.js visualization (donut charts)
+- 🔲 Conversational chat for cohort exploration
+- 🔲 Model comparison (XGBoost vs Decision Tree)
+- 🔲 Interactive tutorial/guidance system
+
+These can be added incrementally after React stack is stable.
+
+---
+
+## 📊 Legacy Stack: Streamlit (Local Development Only)
+
+**Status**: Local development only (replaced by React on HuggingFace)
+**Use case**: Quick prototyping and testing ML models locally
+
+### Quick Reference: Coding Conventions
 
 ### Data Encodings
 - `sex`: `0` = Female, `1` = Male
