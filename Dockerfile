@@ -17,7 +17,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Python environment with FastAPI
-FROM python:3.13.5-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
