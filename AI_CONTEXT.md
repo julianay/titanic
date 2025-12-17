@@ -436,10 +436,18 @@ React displays predictions with intuitive colors:
 
 ### Feature Documentation
 
-- **COHORT_COMPARISON_FEATURE.md** - Natural language cohort comparisons ("women vs men")
+- **COHORT_COMPARISON_FEATURE.md** - Natural language cohort comparisons with dual path visualization
+  - Dynamic comparison parsing ("1st class women vs 3rd class men")
+  - Side-by-side prediction cards
+  - Dual path visualization on decision tree (blue vs orange paths)
+
+- **DECISION_TREE_FEATURES.md** - **CONSOLIDATED** decision tree visualization features
+  - Variable stroke widths (edge thickness based on passenger counts)
+  - Selective path highlighting (tutorial modes)
+  - Dual path visualization (comparison mode)
+  - Usage examples and technical implementation
+
 - **TUTORIAL_FEATURE.md** - Interactive tutorial system
-- **DECISION_TREE_HIGHLIGHT_MODES.md** - Selective tree highlighting
-- **STROKE_WIDTH_FIX.md** - Variable stroke width implementation
 
 ### Historical
 

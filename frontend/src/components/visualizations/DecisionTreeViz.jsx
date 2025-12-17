@@ -14,8 +14,9 @@ import * as d3 from 'd3'
  *   - null/"full": highlight full path (default)
  *   - "first_split": highlight only first split
  *   - number (1, 2, 3...): highlight first N levels
+ * @param {Object} comparisonData - Comparison data with cohortA and cohortB (optional)
  */
-function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highlightMode = null }) {
+function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highlightMode = null, comparisonData = null }) {
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -125,6 +126,71 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
     d3.selectAll('.edge-label')
       .classed(otherClass, false) // Clear other class
       .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
+  }
+
+  // Helper function: Update tree highlighting for TWO paths (comparison mode)
+  const updateDualPathHighlight = (pathA, pathB) => {
+    if (!pathA || pathA.length === 0 || !pathB || pathB.length === 0) return
+
+    // Clear all existing highlights first
+    d3.selectAll('.pie-chart')
+      .classed('active', false)
+      .classed('tutorial-highlight', false)
+      .classed('final', false)
+      .classed('path-a', false)
+      .classed('path-b', false)
+
+    d3.selectAll('.node text')
+      .classed('active', false)
+      .classed('tutorial-highlight', false)
+      .classed('path-a', false)
+      .classed('path-b', false)
+
+    d3.selectAll('.link')
+      .classed('active', false)
+      .classed('tutorial-highlight', false)
+      .classed('survived', false)
+      .classed('died', false)
+      .classed('path-a', false)
+      .classed('path-b', false)
+
+    d3.selectAll('.edge-label')
+      .classed('active', false)
+      .classed('tutorial-highlight', false)
+      .classed('path-a', false)
+      .classed('path-b', false)
+
+    // Highlight path A (blue)
+    d3.selectAll('.pie-chart')
+      .classed('path-a', function() {
+        const nodeData = d3.select(this.parentNode).datum()
+        return pathA.includes(nodeData.data.id)
+      })
+
+    d3.selectAll('.node text')
+      .classed('path-a', d => pathA.includes(d.data.id))
+
+    d3.selectAll('.link')
+      .classed('path-a', d => pathA.includes(d.source.data.id) && pathA.includes(d.target.data.id))
+
+    d3.selectAll('.edge-label')
+      .classed('path-a', d => pathA.includes(d.source.data.id) && pathA.includes(d.target.data.id))
+
+    // Highlight path B (orange)
+    d3.selectAll('.pie-chart')
+      .classed('path-b', function() {
+        const nodeData = d3.select(this.parentNode).datum()
+        return pathB.includes(nodeData.data.id)
+      })
+
+    d3.selectAll('.node text')
+      .classed('path-b', d => pathB.includes(d.data.id))
+
+    d3.selectAll('.link')
+      .classed('path-b', d => pathB.includes(d.source.data.id) && pathB.includes(d.target.data.id))
+
+    d3.selectAll('.edge-label')
+      .classed('path-b', d => pathB.includes(d.source.data.id) && pathB.includes(d.target.data.id))
   }
 
   // Initialize tree (runs once when treeData loads)
@@ -360,16 +426,27 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
     }
   }, [treeData, width, height])
 
-  // Update path highlighting when passengerValues or highlightMode change
+  // Update path highlighting when passengerValues, highlightMode, or comparisonData change
   useEffect(() => {
-    if (!passengerValues || !treeData || !d3TreeRef.current) return
+    if (!treeData || !d3TreeRef.current) return
+
+    // If comparison mode is active, highlight TWO paths
+    if (comparisonData && comparisonData.cohortA && comparisonData.cohortB) {
+      const pathA = tracePath(treeData, comparisonData.cohortA)
+      const pathB = tracePath(treeData, comparisonData.cohortB)
+      updateDualPathHighlight(pathA, pathB)
+      return
+    }
+
+    // Otherwise, highlight single path (normal mode)
+    if (!passengerValues) return
 
     const fullPath = tracePath(treeData, passengerValues)
     const limitedPath = getLimitedPath(fullPath)
     const isTutorialMode = highlightMode && highlightMode !== 'full'
 
     updateTreeHighlight(limitedPath, isTutorialMode)
-  }, [passengerValues, treeData, highlightMode])
+  }, [passengerValues, treeData, highlightMode, comparisonData])
 
   // Handle window resize
   useEffect(() => {
@@ -503,6 +580,52 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
           opacity: 1;
           font-weight: 700;
           fill: #ffd700;
+        }
+
+        /* Comparison mode - Path A (blue) */
+        .pie-chart.path-a path {
+          opacity: 1;
+          filter: drop-shadow(0 0 8px rgba(33, 143, 206, 0.8));
+        }
+
+        .link.path-a {
+          stroke: #218FCE !important;
+          opacity: 1 !important;
+        }
+
+        .node text.path-a {
+          opacity: 1;
+          font-weight: 700;
+          fill: #218FCE;
+        }
+
+        .edge-label.path-a {
+          opacity: 1;
+          font-weight: 700;
+          fill: #218FCE;
+        }
+
+        /* Comparison mode - Path B (orange) */
+        .pie-chart.path-b path {
+          opacity: 1;
+          filter: drop-shadow(0 0 8px rgba(255, 127, 80, 0.8));
+        }
+
+        .link.path-b {
+          stroke: #FF7F50 !important;
+          opacity: 1 !important;
+        }
+
+        .node text.path-b {
+          opacity: 1;
+          font-weight: 700;
+          fill: #FF7F50;
+        }
+
+        .edge-label.path-b {
+          opacity: 1;
+          font-weight: 700;
+          fill: #FF7F50;
         }
       `}</style>
 

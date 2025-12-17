@@ -16,8 +16,9 @@ import ErrorBoundary from './ErrorBoundary'
  * @param {Object} passengerData - Current passenger values
  * @param {string|number} highlightMode - Tutorial highlight mode for decision tree
  * @param {Array<string>} highlightFeatures - Tutorial features to highlight in SHAP
+ * @param {Object} activeComparison - Active comparison data (cohortA, cohortB) or null
  */
-function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null }) {
+function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null, activeComparison = null }) {
   const { data: treeData, loading: treeLoading } = useFetchTree()
   const { data: predictions, loading: predictionsLoading, error: predictionsError } = usePredictBoth(passengerData)
   const { data: shapData, loading: shapLoading } = useSHAPExplanation(passengerData)
@@ -50,6 +51,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
                 treeData={treeData.tree}
                 passengerValues={passengerData}
                 highlightMode={highlightMode}
+                comparisonData={activeComparison}
               />
             </div>
           ) : (

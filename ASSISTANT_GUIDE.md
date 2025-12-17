@@ -969,6 +969,41 @@ npm run build
 
 ---
 
+## Additional Documentation
+
+For more detailed information about specific features:
+
+### Feature Documentation
+
+- **DECISION_TREE_FEATURES.md** - Comprehensive decision tree visualization reference
+  - Variable stroke widths (edge thickness scales with passenger counts)
+  - Selective path highlighting (tutorial modes)
+  - Dual path visualization (comparison mode with blue/orange paths)
+  - Complete technical implementation and usage examples
+
+- **COHORT_COMPARISON_FEATURE.md** - Natural language comparison system
+  - Dynamic comparison parsing ("1st class women vs 3rd class men")
+  - Side-by-side prediction cards
+  - Integration with dual path visualization on decision tree
+
+- **TUTORIAL_FEATURE.md** - Interactive tutorial system
+  - Progressive path highlighting
+  - Educational step-by-step guidance
+
+- **FIXED_CHAT_LAYOUT.md** - Recent layout changes
+  - Fixed split-screen layout (70/30 split)
+  - Accordion controls ("What if?" panel)
+  - Preset suggestion chips
+
+### Core Documentation
+
+- **AI_CONTEXT.md** - Complete project reference
+  - Tech stack, deployment, git workflow
+  - All component documentation
+  - Development and troubleshooting guide
+
+---
+
 ## Conclusion
 
 This guide should help you handle most UI and simple logic changes. When in doubt:

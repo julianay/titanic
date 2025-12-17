@@ -2,27 +2,84 @@
 
 ## Overview
 
-Users can now compare survival rates between different passenger cohorts directly in the chat interface. The system detects comparison queries and displays side-by-side prediction cards showing survival probabilities for both groups.
+Users can now compare survival rates between different passenger cohorts directly in the chat interface. The system detects comparison queries and displays:
+1. **Side-by-side prediction cards** showing survival probabilities for both groups
+2. **Dual path visualization** in the decision tree showing where each cohort travels
+
+**UPDATES**:
+- **Dec 17, 2025 (AM)**: Added **dynamic comparisons** - compare ANY two cohorts!
+- **Dec 17, 2025 (PM)**: Added **dual path visualization** - see both paths on the decision tree!
 
 ## Features
 
-### Supported Comparisons
+### Dynamic Comparison System
 
-1. **Gender**: "compare women vs men" or "women versus men"
-2. **Class**:
-   - "1st class vs 3rd class"
-   - "first class vs second class"
-   - "2nd class vs 3rd class"
-3. **Age**: "children vs adults"
+The comparison system now intelligently parses natural language to extract ANY two cohorts for comparison. No need for hardcoded patterns!
+
+**Examples**:
+- "1st class women vs 3rd class men"
+- "compare children vs elderly women"
+- "rich men against poor women"
+- "young 1st class passengers vs old 3rd class passengers"
+- "2nd class children vs 3rd class adults"
+
+**How it works**:
+1. Detects comparison keywords (vs, versus, against)
+2. Splits query into two parts
+3. Parses each part using existing NLP system
+4. Generates descriptive labels automatically
+5. Displays side-by-side comparison cards
+
+### Fallback Patterns
+
+For very simple queries, hardcoded patterns provide cleaner labels:
+- "women vs men" → Clear labels without extra details
+- "children vs adults" → Standardized age comparison
+- "1st class vs 3rd class" → Class-only comparison
 
 ### Example Queries
 
-Users can ask in natural language:
+**Simple comparisons** (hardcoded fallback):
 - "compare women vs men"
-- "what's the difference between 1st class and 3rd class?"
-- "show me women versus men"
 - "children against adults"
-- "first class versus third class"
+- "1st class versus 3rd class"
+
+**Complex comparisons** (dynamic parsing):
+- "1st class women vs 3rd class men"
+- "compare elderly women vs young men"
+- "rich children against poor adults"
+- "2nd class women vs 1st class women"
+- "young 3rd class passengers vs elderly 1st class passengers"
+
+### Dual Path Visualization (NEW!)
+
+When comparing two cohorts, the decision tree now highlights **both paths simultaneously** in different colors:
+
+**Visual Design**:
+- **Path A** (first cohort): Blue (`#218FCE`) - matches app's primary color
+- **Path B** (second cohort): Orange (`#FF7F50`) - provides clear contrast
+- Both paths maintain variable stroke width based on passenger counts
+- Glowing shadows make paths easy to distinguish
+
+**How it works**:
+1. User enters comparison query (e.g., "1st class women vs 3rd class men")
+2. Chat displays comparison card with predictions
+3. Decision tree automatically highlights BOTH paths:
+   - Blue path traces where "1st class women" go through the tree
+   - Orange path traces where "3rd class men" go through the tree
+4. Users can visually see where the paths diverge and converge
+
+**Benefits**:
+- **Visual insight**: See exactly how the model treats each cohort differently
+- **Path divergence**: Identify which features cause different outcomes
+- **Educational**: Understand decision tree logic through visual comparison
+- **Interactive**: Works with any dynamic comparison query
+
+**Example**: "1st class women vs 3rd class men"
+- Both cohorts start at root (sex decision)
+- Paths diverge at the first split (sex <= 0.5)
+- Blue path (women) goes left, orange path (men) goes right
+- Paths continue through different branches showing different survival outcomes
 
 ## Implementation
 
@@ -48,24 +105,52 @@ React component that displays side-by-side survival predictions.
 ### Files Modified
 
 #### 2. `/frontend/src/utils/cohortPatterns.js`
-Added `detectComparison()` function that:
-- Detects comparison keywords (vs, versus, against, between, difference, compare)
-- Matches specific comparison patterns using regex
-- Returns cohort data for both groups with labels and description
-- Falls back to `{ isComparison: false }` if no pattern matches
 
-**Supported Patterns:**
+**NEW FUNCTIONS:**
+
+**`generateCohortLabel(params)`** - Generates descriptive labels from passenger parameters
+- Input: `{ sex: 0, pclass: 1, age: 30, fare: 84 }`
+- Output: `"1st class women"`
+- Adds age notes: `(children)`, `(elderly)`, `(young)`
+- Adds fare notes: `(high fare)`, `(low fare)` if significantly different from class average
+- Examples:
+  - `{ sex: 0, pclass: 1, age: 8, fare: 84 }` → `"1st class women (children)"`
+  - `{ sex: 1, pclass: 3, age: 65, fare: 13 }` → `"3rd class men (elderly)"`
+
+**`detectComparison(queryText)`** - Now uses **dynamic parsing**!
+1. **Primary approach** (new): Dynamic parsing
+   - Splits query on comparison keywords (vs, versus, against)
+   - Parses both sides using `parsePassengerQuery()`
+   - Generates labels automatically using `generateCohortLabel()`
+   - Works for ANY combination: "1st class women vs 3rd class men"
+
+2. **Fallback approach**: Hardcoded patterns for simple queries
+   - "women vs men" → Clean labels without extra qualifiers
+   - "children vs adults" → Standardized age comparison
+   - "1st class vs 3rd class" → Class-only comparison
+
+**Algorithm:**
 ```javascript
-// Women vs Men
-/wom[ae]n.*\b(vs|versus|against|and)\b.*m[ae]n/
+// 1. Check for comparison keywords
+if (!hasComparisonKeyword) return false
 
-// 1st class vs 3rd class
-/(1st|first).*\b(vs|versus|against|and)\b.*(3rd|third)/
+// 2. Try dynamic parsing
+const [leftText, rightText] = splitOnComparisonKeyword(query)
+const cohortA = parsePassengerQuery(leftText)
+const cohortB = parsePassengerQuery(rightText)
 
-// Children vs Adults
-/child.*\b(vs|versus|against|and)\b.*adult/
+if (cohortA && cohortB) {
+  return {
+    isComparison: true,
+    cohortA, cohortB,
+    labelA: generateCohortLabel(cohortA),
+    labelB: generateCohortLabel(cohortB),
+    description: `Comparing ${labelA} vs ${labelB}`
+  }
+}
 
-// And more...
+// 3. Fall back to hardcoded patterns if parsing fails
+return checkHardcodedPatterns(query)
 ```
 
 #### 3. `/frontend/src/App.jsx`
@@ -79,6 +164,45 @@ Added `detectComparison()` function that:
 - Updated message rendering to handle `type: 'comparison'` messages
 - Renders `ComparisonCard` for comparison messages
 - Updated suggestion button from "First class child" to "Compare women vs men"
+
+#### 5. `/frontend/src/App.jsx` (Dual Path Visualization)
+- Added `activeComparison` state to track current comparison
+- Updates `activeComparison` when user makes comparison query
+- Clears `activeComparison` when switching to regular queries
+- Passes `activeComparison` to `ModelComparisonView`
+
+#### 6. `/frontend/src/components/ModelComparisonView.jsx`
+- Added `activeComparison` prop
+- Passes comparison data to `DecisionTreeViz`
+
+#### 7. `/frontend/src/components/visualizations/DecisionTreeViz.jsx`
+- Added `comparisonData` prop
+- Added `updateDualPathHighlight(pathA, pathB)` function:
+  - Traces two paths simultaneously through the tree
+  - Applies `path-a` and `path-b` CSS classes
+  - Clears all other highlight states
+- Updated `useEffect` to detect comparison mode:
+  - If `comparisonData` exists, calls `updateDualPathHighlight()`
+  - Otherwise, calls `updateTreeHighlight()` for single path
+- Added CSS styles for dual path highlighting:
+  - `.path-a`: Blue styling (#218FCE) for first cohort
+  - `.path-b`: Orange styling (#FF7F50) for second cohort
+  - Applied to links, nodes, text, and edge labels
+
+**Technical Implementation**:
+```javascript
+// Detect comparison mode
+if (comparisonData && comparisonData.cohortA && comparisonData.cohortB) {
+  const pathA = tracePath(treeData, comparisonData.cohortA)
+  const pathB = tracePath(treeData, comparisonData.cohortB)
+  updateDualPathHighlight(pathA, pathB)
+  return
+}
+
+// Normal single path mode
+const fullPath = tracePath(treeData, passengerValues)
+updateTreeHighlight(fullPath, isTutorialMode)
+```
 
 ## User Experience
 
@@ -172,18 +296,36 @@ Uses XGBoost predictions (`dataA.xgboost`) for higher accuracy.
 
 ### Default Parameters
 
-Each comparison uses sensible defaults for unspecified attributes:
-- **Gender comparison**: 2nd class, age 30, fare £20
-- **Class comparison**: Female, age 30, class-appropriate fare
-- **Age comparison**: Female, 2nd class, fare £20
+**UPDATE**: With dynamic parsing, defaults are now determined by the NLP parser:
+- Unspecified sex defaults to female (sex: 0)
+- Unspecified class defaults to 2nd class (pclass: 2)
+- Unspecified age defaults to 30
+- Fare is automatically set based on class (1st=£84, 2nd=£20, 3rd=£13)
 
-This ensures fair comparisons by keeping other variables constant.
+The parser fills in missing attributes to create complete cohort definitions.
+
+## Benefits of Dynamic Comparison
+
+**Flexibility**:
+- Users can compare ANY two cohorts naturally
+- No need to add hardcoded patterns for every combination
+- Leverages existing NLP parsing system
+
+**Natural language**:
+- "1st class women vs 3rd class men" → Parsed automatically
+- "rich children against poor adults" → Works!
+- "elderly 1st class vs young 3rd class" → Works!
+
+**Automatic labeling**:
+- Labels are generated from parsed parameters
+- Includes relevant details (age notes, fare notes)
+- Example: "1st class women (children)" vs "3rd class men (elderly)"
 
 ## Future Enhancements
 
 Potential additions:
-1. **Custom comparisons**: "compare 1st class women vs 3rd class men"
-2. **More cohorts**: Elderly vs young, rich vs poor, etc.
+1. ~~**Custom comparisons**: "compare 1st class women vs 3rd class men"~~ ✅ **DONE** (Dec 17, 2025)
+2. ~~**More cohorts**: Elderly vs young, rich vs poor, etc.~~ ✅ **DONE** (Dec 17, 2025)
 3. **Multi-way comparison**: Compare 3+ cohorts at once
 4. **Visualization**: Add small charts or graphs to comparison cards
 5. **Historical context**: Add historical survival statistics from actual Titanic data
@@ -219,12 +361,29 @@ Potential additions:
 **Result:** Children ~82% survival, Adults ~38% survival
 **Insight:** 44% difference confirms children were prioritized
 
+### Scenario 4: Complex Multi-Attribute Comparison (NEW)
+**Query:** "1st class women vs 3rd class men"
+**Result:** 1st class women ~96% survival, 3rd class men ~14% survival
+**Insight:** 82% difference shows combined effect of gender, class, and location
+
+### Scenario 5: Age + Class Comparison (NEW)
+**Query:** "compare children in 1st class vs children in 3rd class"
+**Result:** 1st class children ~100% survival, 3rd class children ~34% survival
+**Insight:** Even children's survival depended heavily on class
+
+### Scenario 6: Age + Gender Comparison (NEW)
+**Query:** "elderly women against young men"
+**Result:** Elderly women ~75% survival, Young men ~12% survival
+**Insight:** Gender mattered more than age for survival
+
 ## Known Limitations
 
-1. **Single attribute comparisons only**: Can't yet compare "1st class women vs 3rd class men"
-2. **Fixed defaults**: Other attributes use preset defaults (can't customize)
+1. ~~**Single attribute comparisons only**: Can't yet compare "1st class women vs 3rd class men"~~ ✅ **FIXED** (Dec 17, 2025) - Now supports complex multi-attribute comparisons!
+2. ~~**Fixed defaults**: Other attributes use preset defaults (can't customize)~~ ✅ **FIXED** (Dec 17, 2025) - Dynamic parsing extracts all specified attributes
 3. **No trend analysis**: Doesn't show how probability changes across ranges
 4. **Main UI unchanged**: Comparison doesn't update the visualizations (by design)
+5. **Two cohorts only**: Currently limited to comparing two groups (not 3+)
+6. **Parsing limitations**: Very complex or ambiguous queries may not parse correctly
 
 ## Migration Notes
 

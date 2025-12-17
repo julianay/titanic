@@ -17,6 +17,9 @@ function App() {
 
   const [chatMessages, setChatMessages] = useState([])
 
+  // Track active comparison for visualization
+  const [activeComparison, setActiveComparison] = useState(null)
+
   // Tutorial hook
   const tutorial = useTutorial(
     setPassengerData,  // onPassengerChange
@@ -58,7 +61,9 @@ function App() {
     const comparisonResult = detectComparison(userMessage)
 
     if (comparisonResult.isComparison) {
-      // Handle comparison query
+      // Handle comparison query - set active comparison for visualization
+      setActiveComparison(comparisonResult)
+
       setChatMessages(prev => [
         ...prev,
         { role: 'user', content: userMessage },
@@ -71,7 +76,9 @@ function App() {
       return
     }
 
-    // Not a comparison - handle as regular passenger query
+    // Not a comparison - clear active comparison and handle as regular query
+    setActiveComparison(null)
+
     if (!parsedParams) {
       // Could not parse - show error
       setChatMessages(prev => [
@@ -108,6 +115,7 @@ function App() {
           passengerData={passengerData}
           highlightMode={tutorial.getHighlightMode()}
           highlightFeatures={tutorial.getHighlightFeatures()}
+          activeComparison={activeComparison}
         />
       }
       controlsContent={

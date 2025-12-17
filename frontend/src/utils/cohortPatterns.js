@@ -105,78 +105,136 @@ export function formatPassengerDescription(sex, pclass, age, fare) {
 }
 
 /**
+ * Generate a short label for a cohort based on its parameters
+ * Used for comparison cards
+ *
+ * @param {Object} params - Parsed passenger parameters
+ * @returns {string} Short label like "1st class women" or "3rd class men (age 8)"
+ */
+function generateCohortLabel(params) {
+  const { sex, pclass, age, fare } = params
+
+  // Determine primary identifiers
+  const sexLabel = sex === 0 ? 'women' : 'men'
+  const classLabels = { 1: '1st class', 2: '2nd class', 3: '3rd class' }
+  const classLabel = classLabels[pclass]
+
+  // Age category
+  let ageNote = ''
+  if (age <= 12) {
+    ageNote = ' (children)'
+  } else if (age >= 60) {
+    ageNote = ' (elderly)'
+  } else if (age <= 25) {
+    ageNote = ' (young)'
+  }
+
+  // Fare category (if notably different from class average)
+  const classAverageFares = { 1: 84, 2: 20, 3: 13 }
+  const avgFare = classAverageFares[pclass]
+  const fareRatio = fare / avgFare
+  let fareNote = ''
+  if (fareRatio > 1.5) {
+    fareNote = ' (high fare)'
+  } else if (fareRatio < 0.5) {
+    fareNote = ' (low fare)'
+  }
+
+  // Build label: "class sex ageNote fareNote"
+  return `${classLabel} ${sexLabel}${ageNote}${fareNote}`.trim()
+}
+
+/**
  * Detect if query is asking for a comparison between two cohorts
+ * Now supports dynamic parsing: "1st class women vs 3rd class men"
  * Returns: { isComparison: true, cohortA: {...}, cohortB: {...} } or { isComparison: false }
  */
 export function detectComparison(queryText) {
   const queryLower = queryText.toLowerCase()
 
   // Check for comparison keywords
-  if (!/\b(compar|vs|versus|against|versus|between|difference)\b/.test(queryLower)) {
+  if (!/\b(compar|vs|versus|against|between|difference)\b/.test(queryLower)) {
     return { isComparison: false }
   }
 
-  // Women vs Men
-  if (/wom[ae]n.*\b(vs|versus|against|and)\b.*m[ae]n|m[ae]n.*\b(vs|versus|against|and)\b.*wom[ae]n/i.test(queryLower)) {
+  // Try dynamic parsing first
+  // Split on comparison keywords: vs, versus, against
+  const splitRegex = /\b(vs\.?|versus|against)\b/i
+  const match = queryText.match(splitRegex)
+
+  if (match) {
+    const parts = queryText.split(splitRegex)
+
+    if (parts.length >= 2) {
+      // Extract the two cohort descriptions (parts[0] and parts[2], skipping the keyword in parts[1])
+      let leftText = parts[0].trim()
+      let rightText = parts.slice(2).join(' ').trim() // In case there are multiple split parts
+
+      // Remove common prefixes like "compare", "show me", etc.
+      leftText = leftText.replace(/^(compare|show me|what about|between)\s+/i, '').trim()
+      rightText = rightText.replace(/^(and|to)\s+/i, '').trim()
+
+      // Parse both sides
+      const cohortA = parsePassengerQuery(leftText)
+      const cohortB = parsePassengerQuery(rightText)
+
+      // If both parsed successfully, use dynamic comparison
+      if (cohortA && cohortB) {
+        return {
+          isComparison: true,
+          cohortA: cohortA,
+          cohortB: cohortB,
+          labelA: generateCohortLabel(cohortA),
+          labelB: generateCohortLabel(cohortB),
+          description: `Comparing ${generateCohortLabel(cohortA)} vs ${generateCohortLabel(cohortB)}`
+        }
+      }
+    }
+  }
+
+  // Fall back to hardcoded patterns for common queries that might not parse well
+  // These are kept for backwards compatibility and clearer labeling
+
+  // Women vs Men (simple, no other qualifiers)
+  if (/^(compare\s+)?wom[ae]n\s+(vs|versus|against)\s+m[ae]n$/i.test(queryLower.trim()) ||
+      /^(compare\s+)?m[ae]n\s+(vs|versus|against)\s+wom[ae]n$/i.test(queryLower.trim())) {
     return {
       isComparison: true,
       cohortA: { sex: 0, pclass: 2, age: 30, fare: 20 },
       cohortB: { sex: 1, pclass: 2, age: 30, fare: 20 },
       labelA: "Women",
       labelB: "Men",
-      description: "Comparing survival rates between women and men (2nd class, age 30)"
-    }
-  }
-
-  // 1st class vs 3rd class (or vice versa)
-  if (/(1st|first).*\b(vs|versus|against|and)\b.*(3rd|third)|(3rd|third).*\b(vs|versus|against|and)\b.*(1st|first)/i.test(queryLower)) {
-    return {
-      isComparison: true,
-      cohortA: { sex: 0, pclass: 1, age: 30, fare: 84 },
-      cohortB: { sex: 0, pclass: 3, age: 30, fare: 13 },
-      labelA: "1st Class",
-      labelB: "3rd Class",
-      description: "Comparing survival rates between 1st and 3rd class passengers (female, age 30)"
-    }
-  }
-
-  // 1st class vs 2nd class
-  if (/(1st|first).*\b(vs|versus|against|and)\b.*(2nd|second)|(2nd|second).*\b(vs|versus|against|and)\b.*(1st|first)/i.test(queryLower)) {
-    return {
-      isComparison: true,
-      cohortA: { sex: 0, pclass: 1, age: 30, fare: 84 },
-      cohortB: { sex: 0, pclass: 2, age: 30, fare: 20 },
-      labelA: "1st Class",
-      labelB: "2nd Class",
-      description: "Comparing survival rates between 1st and 2nd class passengers (female, age 30)"
-    }
-  }
-
-  // 2nd class vs 3rd class
-  if (/(2nd|second).*\b(vs|versus|against|and)\b.*(3rd|third)|(3rd|third).*\b(vs|versus|against|and)\b.*(2nd|second)/i.test(queryLower)) {
-    return {
-      isComparison: true,
-      cohortA: { sex: 0, pclass: 2, age: 30, fare: 20 },
-      cohortB: { sex: 0, pclass: 3, age: 30, fare: 13 },
-      labelA: "2nd Class",
-      labelB: "3rd Class",
-      description: "Comparing survival rates between 2nd and 3rd class passengers (female, age 30)"
+      description: "Comparing women vs men (2nd class, age 30)"
     }
   }
 
   // Children vs Adults
-  if (/child.*\b(vs|versus|against|and)\b.*adult|adult.*\b(vs|versus|against|and)\b.*child/i.test(queryLower)) {
+  if (/child(ren)?\s+(vs|versus|against)\s+adults?/i.test(queryLower) ||
+      /adults?\s+(vs|versus|against)\s+child(ren)?/i.test(queryLower)) {
     return {
       isComparison: true,
       cohortA: { sex: 0, pclass: 2, age: 8, fare: 20 },
       cohortB: { sex: 0, pclass: 2, age: 35, fare: 20 },
       labelA: "Children",
       labelB: "Adults",
-      description: "Comparing survival rates between children (age 8) and adults (age 35)"
+      description: "Comparing children (age 8) vs adults (age 35)"
     }
   }
 
-  // No specific comparison pattern matched
+  // 1st class vs 3rd class (simple)
+  if (/(1st|first)\s+class\s+(vs|versus|against)\s+(3rd|third)\s+class/i.test(queryLower) ||
+      /(3rd|third)\s+class\s+(vs|versus|against)\s+(1st|first)\s+class/i.test(queryLower)) {
+    return {
+      isComparison: true,
+      cohortA: { sex: 0, pclass: 1, age: 30, fare: 84 },
+      cohortB: { sex: 0, pclass: 3, age: 30, fare: 13 },
+      labelA: "1st Class",
+      labelB: "3rd Class",
+      description: "Comparing 1st class vs 3rd class (female, age 30)"
+    }
+  }
+
+  // No comparison pattern matched
   return { isComparison: false }
 }
 
