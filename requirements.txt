@@ -1,9 +1,0 @@
-streamlit==1.39.0
-pandas
-numpy
-scikit-learn
-shap
-matplotlib==3.8.4
-seaborn
-plotly
-xgboost

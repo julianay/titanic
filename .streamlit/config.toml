@@ -1,9 +1,0 @@
-[theme]
-primaryColor = "#218FCE"
-backgroundColor = "#0e1117"
-secondaryBackgroundColor = "#11131a"
-textColor = "#fafafa"
-font = "sans serif"
-
-# Optional: set to "dark" mode explicitly if your Streamlit version supports it
-# base = "dark"
