@@ -12,10 +12,11 @@ import * as d3 from 'd3'
  * @param {Array} waterfallData - Array of waterfall data objects
  * @param {number} baseValue - Baseline prediction value
  * @param {number} finalPrediction - Final prediction after all contributions
+ * @param {Array<string>} highlightFeatures - Tutorial: features to highlight (e.g., ['sex', 'pclass'])
  * @param {number} width - Chart width (default: 650)
  * @param {number} height - Chart height (default: 300)
  */
-function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, width = 650, height = 300 }) {
+function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFeatures = null, width = 650, height = 300 }) {
   const containerRef = useRef(null)
 
   useEffect(() => {
@@ -92,10 +93,19 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, width = 650,
       .enter()
       .append("rect")
       .attr("class", (d, i) => {
+        let className = ""
         if (i === 0) {
-          return "bar-base"
+          className = "bar-base"
+        } else {
+          className = d.value >= 0 ? "bar-positive" : "bar-negative"
         }
-        return d.value >= 0 ? "bar-positive" : "bar-negative"
+
+        // Add tutorial-highlight class if feature is in highlightFeatures
+        if (highlightFeatures && highlightFeatures.includes(d.feature)) {
+          className += " bar-tutorial-highlight"
+        }
+
+        return className
       })
       .attr("y", (d, i) => y(i))
       .attr("x", d => x(Math.min(d.start, d.end)))
@@ -125,7 +135,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, width = 650,
         return item.feature_value !== "" ? `${item.feature}=${item.feature_value}` : item.feature
       }))
 
-  }, [waterfallData, baseValue, finalPrediction, width, height])
+  }, [waterfallData, baseValue, finalPrediction, highlightFeatures, width, height])
 
   if (!waterfallData || waterfallData.length === 0) {
     return (
@@ -142,16 +152,27 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, width = 650,
           fill: #52b788;
           stroke: #6fcf97;
           stroke-width: 1.5;
+          opacity: 0.8;
+          transition: all 0.3s ease;
         }
         .bar-negative {
           fill: #e76f51;
           stroke: #f4a261;
           stroke-width: 1.5;
+          opacity: 0.8;
+          transition: all 0.3s ease;
         }
         .bar-base {
           fill: #666;
           stroke: #888;
           stroke-width: 1.5;
+        }
+        /* Tutorial highlight for SHAP bars */
+        .bar-tutorial-highlight {
+          stroke: #ffd700 !important;
+          stroke-width: 3 !important;
+          opacity: 1 !important;
+          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
         }
         .connector-line {
           stroke: #888;

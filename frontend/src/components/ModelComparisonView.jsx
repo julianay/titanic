@@ -12,8 +12,12 @@ import ErrorBoundary from './ErrorBoundary'
 
 /**
  * ModelComparisonView - Unified view showing both Decision Tree and XGBoost explanations
+ *
+ * @param {Object} passengerData - Current passenger values
+ * @param {string|number} highlightMode - Tutorial highlight mode for decision tree
+ * @param {Array<string>} highlightFeatures - Tutorial features to highlight in SHAP
  */
-function ModelComparisonView({ passengerData }) {
+function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null }) {
   const { data: treeData, loading: treeLoading } = useFetchTree()
   const { data: predictions, loading: predictionsLoading, error: predictionsError } = usePredictBoth(passengerData)
   const { data: shapData, loading: shapLoading } = useSHAPExplanation(passengerData)
@@ -45,6 +49,7 @@ function ModelComparisonView({ passengerData }) {
               <DecisionTreeViz
                 treeData={treeData.tree}
                 passengerValues={passengerData}
+                highlightMode={highlightMode}
               />
             </div>
           ) : (
@@ -81,6 +86,7 @@ function ModelComparisonView({ passengerData }) {
                   waterfallData={shapData.waterfall_data}
                   baseValue={shapData.base_value}
                   finalPrediction={shapData.final_prediction}
+                  highlightFeatures={highlightFeatures}
                 />
               ) : (
                 <LoadingSkeleton variant="chart" />

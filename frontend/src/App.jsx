@@ -3,6 +3,8 @@ import Layout from './components/Layout'
 import ControlPanel from './components/ControlPanel'
 import ModelComparisonView from './components/ModelComparisonView'
 import ChatPanel from './components/ChatPanel'
+import TutorialControls from './components/TutorialControls'
+import useTutorial from './hooks/useTutorial'
 import { matchToCohort, formatPassengerDescription } from './utils/cohortPatterns'
 
 function App() {
@@ -14,6 +16,12 @@ function App() {
   })
 
   const [chatMessages, setChatMessages] = useState([])
+
+  // Tutorial hook
+  const tutorial = useTutorial(
+    setPassengerData,  // onPassengerChange
+    (message) => setChatMessages(prev => [...prev, message])  // onAddChatMessage
+  )
 
   const handleChange = (field, value) => {
     setPassengerData(prev => ({
@@ -78,7 +86,11 @@ function App() {
       title="Explainable AI Explorer"
       subtitle="Interactively compare how two models reason about the same prediction task"
       leftContent={
-        <ModelComparisonView passengerData={passengerData} />
+        <ModelComparisonView
+          passengerData={passengerData}
+          highlightMode={tutorial.getHighlightMode()}
+          highlightFeatures={tutorial.getHighlightFeatures()}
+        />
       }
       rightContent={
         <div className="space-y-6">
@@ -90,6 +102,15 @@ function App() {
           />
           <div className="pt-6 border-t border-gray-800">
             <h3 className="text-sm font-medium mb-4">Explore by Question</h3>
+
+            {/* Tutorial Controls */}
+            <TutorialControls
+              tutorialActive={tutorial.tutorialActive}
+              tutorialStep={tutorial.tutorialStep}
+              onAdvance={tutorial.advanceTutorial}
+              onSkip={tutorial.skipTutorial}
+            />
+
             <ChatPanel
               messages={chatMessages}
               onSendMessage={handleSendMessage}

@@ -103,8 +103,7 @@ titanic/
 - **[Frontend Guide](docs/FRONTEND.md)** - React app setup, components, hooks
 - **[Backend Guide](docs/BACKEND.md)** - FastAPI server, models, development
 - **[API Reference](docs/API.md)** - Endpoint docs with examples
-- **[AI Context](AI_CONTEXT.md)** - Project architecture overview
-- **[Implementation Progress](IMPLEMENTATION_PROGRESS.md)** - Current development status
+- **[AI Context](AI_CONTEXT.md)** - Comprehensive project documentation for AI assistants
 
 ---
 

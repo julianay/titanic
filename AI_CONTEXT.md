@@ -355,7 +355,6 @@ git push huggingface main
 2. Use Tailwind CSS utilities
 3. Follow existing component patterns
 4. Test locally before deploying to HF
-5. Update IMPLEMENTATION_PROGRESS.md when completing major features
 
 ### When Debugging
 1. Check browser console for frontend errors
@@ -374,11 +373,10 @@ git push huggingface main
 
 ## 📚 Documentation References
 
-- **Current work status**: `IMPLEMENTATION_PROGRESS.md`
 - **Frontend guide**: `docs/FRONTEND.md`
 - **Backend guide**: `docs/BACKEND.md`
 - **API reference**: `docs/API.md`
-- **Quick start**: `NEW_SESSION_GUIDE.md`
+- **Historical progress**: `docs/archive/IMPLEMENTATION_PROGRESS.md`
 
 ---
 

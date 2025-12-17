@@ -10,8 +10,12 @@ import * as d3 from 'd3'
  * @param {Object} passengerValues - Current passenger input {sex, pclass, age, fare}
  * @param {number} width - Container width (default: auto)
  * @param {number} height - Visualization height (default: 700)
+ * @param {string|number} highlightMode - Controls path highlighting:
+ *   - null/"full": highlight full path (default)
+ *   - "first_split": highlight only first split
+ *   - number (1, 2, 3...): highlight first N levels
  */
-function DecisionTreeViz({ treeData, passengerValues, width, height = 700 }) {
+function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highlightMode = null }) {
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -56,37 +60,61 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700 }) {
     return path
   }
 
+  // Helper function: Limit path based on highlightMode
+  const getLimitedPath = (fullPath) => {
+    if (!highlightMode || highlightMode === 'full') {
+      return fullPath // Return full path (default behavior)
+    }
+
+    if (highlightMode === 'first_split') {
+      // Return only root and first child (first split only)
+      return fullPath.slice(0, 2)
+    }
+
+    if (typeof highlightMode === 'number') {
+      // Return first N+1 nodes (N levels means N+1 nodes including root)
+      return fullPath.slice(0, highlightMode + 1)
+    }
+
+    return fullPath // Fallback to full path
+  }
+
   // Helper function: Update tree highlighting based on path
-  const updateTreeHighlight = (path) => {
+  const updateTreeHighlight = (path, isTutorialMode = false) => {
     if (!path || path.length === 0) return
 
     const finalNodeId = path[path.length - 1]
+    const highlightClass = isTutorialMode ? 'tutorial-highlight' : 'active'
+    const otherClass = isTutorialMode ? 'active' : 'tutorial-highlight'
 
     // Update pie chart highlighting
     d3.selectAll('.pie-chart')
-      .classed('active', function() {
+      .classed(otherClass, false) // Clear other class
+      .classed(highlightClass, function() {
         const nodeData = d3.select(this.parentNode).datum()
         return path.includes(nodeData.data.id)
       })
       .classed('final', function() {
         const nodeData = d3.select(this.parentNode).datum()
-        return nodeData.data.id === finalNodeId
+        return !isTutorialMode && nodeData.data.id === finalNodeId
       })
 
     d3.selectAll('.node text')
-      .classed('active', d => path.includes(d.data.id))
+      .classed(otherClass, false) // Clear other class
+      .classed(highlightClass, d => path.includes(d.data.id))
 
     d3.selectAll('.link')
-      .classed('active', d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
+      .classed(otherClass, false) // Clear other class
+      .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
       .classed('survived', d => {
-        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
+        if (!isTutorialMode && path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
           const finalNode = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeId)
           return finalNode && finalNode.data.predicted_class === 1
         }
         return false
       })
       .classed('died', d => {
-        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
+        if (!isTutorialMode && path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
           const finalNode = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeId)
           return finalNode && finalNode.data.predicted_class === 0
         }
@@ -95,7 +123,8 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700 }) {
 
     // Update edge labels to match link highlighting
     d3.selectAll('.edge-label')
-      .classed('active', d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
+      .classed(otherClass, false) // Clear other class
+      .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
   }
 
   // Initialize tree (runs once when treeData loads)
@@ -125,10 +154,21 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700 }) {
     d3TreeRef.current = treeLayout
 
     // Add stroke width scale based on sample counts
-    const maxSamples = d3.max(treeLayout.descendants(), d => d.samples)
+    const maxSamples = d3.max(treeLayout.descendants(), d => d.data.samples)
     const strokeScale = d3.scaleSqrt()
       .domain([0, maxSamples])
-      .range([1, 32])
+      .range([2, 20])  // Adjusted range for better visibility
+
+    // Debug: Log stroke width range
+    console.log('Tree stroke widths:', {
+      maxSamples,
+      minWidth: strokeScale(0),
+      maxWidth: strokeScale(maxSamples),
+      sampleRange: treeLayout.links().map(d => ({
+        samples: d.target.data.samples,
+        width: strokeScale(d.target.data.samples)
+      }))
+    })
 
     const tooltip = d3.select("body")
       .append("div")
@@ -320,13 +360,16 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700 }) {
     }
   }, [treeData, width, height])
 
-  // Update path highlighting when passengerValues change
+  // Update path highlighting when passengerValues or highlightMode change
   useEffect(() => {
     if (!passengerValues || !treeData || !d3TreeRef.current) return
 
-    const path = tracePath(treeData, passengerValues)
-    updateTreeHighlight(path)
-  }, [passengerValues, treeData])
+    const fullPath = tracePath(treeData, passengerValues)
+    const limitedPath = getLimitedPath(fullPath)
+    const isTutorialMode = highlightMode && highlightMode !== 'full'
+
+    updateTreeHighlight(limitedPath, isTutorialMode)
+  }, [passengerValues, treeData, highlightMode])
 
   // Handle window resize
   useEffect(() => {
@@ -435,6 +478,30 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700 }) {
 
         .edge-label.hover-active {
           opacity: 0.85;
+          fill: #ffd700;
+        }
+
+        /* Tutorial/selective highlighting styles - gold/yellow color */
+        .pie-chart.tutorial-highlight path {
+          opacity: 1;
+          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+        }
+
+        .link.tutorial-highlight {
+          stroke: #ffd700 !important;
+          opacity: 1 !important;
+          /* Note: stroke-width is not overridden - preserves variable width based on passenger count */
+        }
+
+        .node text.tutorial-highlight {
+          opacity: 1;
+          font-weight: 700;
+          fill: #ffd700;
+        }
+
+        .edge-label.tutorial-highlight {
+          opacity: 1;
+          font-weight: 700;
           fill: #ffd700;
         }
       `}</style>
