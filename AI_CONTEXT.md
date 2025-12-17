@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 16, 2025
+**Last Updated:** December 17, 2025
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -28,6 +28,69 @@ cd frontend && npm run dev        # Port 5173
 cd frontend && npm run build
 cd ../backend && uvicorn main:app --host 0.0.0.0 --port 7860
 ```
+
+---
+
+## 🌐 Git Repositories & Deployment
+
+### Git Remotes (Dual Setup)
+
+This project uses **two git remotes**:
+
+1. **GitHub** (Source of Truth)
+   - Remote: `origin`
+   - URL: https://github.com/julianay/titanic
+   - Purpose: Code hosting, version control, collaboration
+
+2. **Hugging Face Spaces** (Production Deployment)
+   - Remote: `huggingface`
+   - URL: https://huggingface.co/spaces/bigpixel/titanic
+   - Purpose: Live demo, automatic Docker deployment
+
+### Verify Remotes
+
+```bash
+git remote -v
+
+# Should show:
+# origin        https://github.com/julianay/titanic.git (fetch)
+# origin        https://github.com/julianay/titanic.git (push)
+# huggingface   https://huggingface.co/spaces/bigpixel/titanic (fetch)
+# huggingface   https://huggingface.co/spaces/bigpixel/titanic (push)
+```
+
+### Deployment Workflow
+
+**Standard deployment (commit to both):**
+```bash
+git add -A
+git commit -m "Your changes"
+git push origin main         # Push to GitHub
+git push huggingface main    # Push to HF → triggers auto-rebuild
+```
+
+**What happens on Hugging Face:**
+1. Detects new commit on `main` branch
+2. Runs Docker multi-stage build:
+   - Stage 1: Builds React app with Node.js
+   - Stage 2: Copies build + runs FastAPI with Python 3.12
+3. Deploys to: https://huggingface.co/spaces/bigpixel/titanic
+4. Build takes ~2-3 minutes
+5. App runs on port 7860
+
+**Important Notes:**
+- ⚠️ **Always push to GitHub first** (source of truth)
+- ✅ HF Spaces auto-rebuilds on every push to `main`
+- ✅ No manual build steps needed on HF
+- ✅ Uses `Dockerfile` in root directory
+
+### Adding the HF Remote (if missing)
+
+```bash
+git remote add huggingface https://huggingface.co/spaces/bigpixel/titanic
+```
+
+---
 
 ### Tech Stack
 
@@ -220,13 +283,7 @@ uvicorn main:app --host 0.0.0.0 --port 7860
 # Test at http://localhost:7860
 ```
 
-**Deploy to Hugging Face**:
-```bash
-git add -A
-git commit -m "Your changes"
-git push origin main        # GitHub
-git push huggingface main   # Triggers HF rebuild
-```
+*For deployment, see the [Git Repositories & Deployment](#-git-repositories--deployment) section above.*
 
 ### Environment Variables
 
@@ -263,20 +320,8 @@ React displays predictions with intuitive colors:
 **Issue**: React build not updating
 - **Solution**: Delete `frontend/dist/` and run `npm run build` again
 
-### Git Remotes
-
-```bash
-# Check configured remotes
-git remote -v
-
-# Should show:
-# origin       https://github.com/julianay/titanic.git
-# huggingface  https://huggingface.co/spaces/bigpixel/titanic
-
-# Push to both
-git push origin main
-git push huggingface main
-```
+**Issue**: Need to check git remotes or deploy
+- **Solution**: See [Git Repositories & Deployment](#-git-repositories--deployment) section for complete workflow
 
 ---
 
@@ -380,5 +425,5 @@ git push huggingface main
 
 ---
 
-**Last Updated:** December 16, 2025
+**Last Updated:** December 17, 2025
 **Status:** Production-ready with all features complete
