@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-function ControlPanel({ values, onChange, onPresetSelect }) {
+function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
   const [showFareSuggestion, setShowFareSuggestion] = useState(false)
 
   // Preset configurations for quick testing
@@ -34,6 +34,10 @@ function ControlPanel({ values, onChange, onPresetSelect }) {
   const handlePresetClick = (preset) => {
     if (onPresetSelect) {
       onPresetSelect(preset.values)
+    }
+    // Also trigger chat message if callback provided
+    if (onPresetChat) {
+      onPresetChat(preset)
     }
   }
 
