@@ -418,9 +418,31 @@ React displays predictions with intuitive colors:
 
 ## 📚 Documentation References
 
+### For AI Assistants
+
+- **🤖 ASSISTANT_GUIDE.md** - **START HERE** for routine UI changes and simple tasks
+  - Step-by-step patterns for common tasks
+  - Styling guide with copy-paste examples
+  - What to change vs what to avoid
+  - Designed for GitHub Copilot, Cursor, and simpler assistants
+
+- **FIXED_CHAT_LAYOUT.md** - Recent layout changes (fixed split-screen, accordion controls)
+
+### Component Documentation
+
 - **Frontend guide**: `docs/FRONTEND.md`
 - **Backend guide**: `docs/BACKEND.md`
 - **API reference**: `docs/API.md`
+
+### Feature Documentation
+
+- **COHORT_COMPARISON_FEATURE.md** - Natural language cohort comparisons ("women vs men")
+- **TUTORIAL_FEATURE.md** - Interactive tutorial system
+- **DECISION_TREE_HIGHLIGHT_MODES.md** - Selective tree highlighting
+- **STROKE_WIDTH_FIX.md** - Variable stroke width implementation
+
+### Historical
+
 - **Historical progress**: `docs/archive/IMPLEMENTATION_PROGRESS.md`
 
 ---

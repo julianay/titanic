@@ -1,44 +1,45 @@
 import { useEffect, useState } from 'react'
 
+/**
+ * ControlPanel - Collapsible accordion with passenger parameter controls
+ *
+ * Displays sliders and radio buttons for adjusting passenger parameters.
+ * Defaults to closed state to maximize chat space.
+ *
+ * @param {Object} values - Current passenger parameter values
+ * @param {number} values.sex - 0=Female, 1=Male
+ * @param {number} values.pclass - 1=First class, 2=Second, 3=Third
+ * @param {number} values.age - Age in years (0-80)
+ * @param {number} values.fare - Ticket fare in pounds (0-100)
+ * @param {Function} onChange - Callback when control changes: (field, value) => void
+ * @param {Function} onPresetSelect - Callback when preset selected (updates controls)
+ * @param {Function} onPresetChat - Callback when preset selected (adds chat message)
+ *
+ * @example
+ * <ControlPanel
+ *   values={{ sex: 0, pclass: 2, age: 30, fare: 20 }}
+ *   onChange={(field, value) => setPassengerData(prev => ({ ...prev, [field]: value }))}
+ * />
+ *
+ * COMMON CHANGES:
+ * - Default state: Change useState(false) to useState(true) to open by default
+ * - Slider ranges: Modify min/max attributes on <input type="range">
+ * - Colors: Change bg-[#218FCE] to other colors
+ * - Title: Change "What if?" text in accordion header
+ *
+ * STATE:
+ * - isExpanded: Controls accordion open/closed (defaults false)
+ * - showFareSuggestion: Shows fare suggestion when class changes
+ */
 function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
   const [showFareSuggestion, setShowFareSuggestion] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false) // Default closed for max chat space
 
-  // Preset configurations for quick testing
-  const presets = [
-    { id: 'women', label: '🎭 Women\'s path', values: { sex: 0, pclass: 2, age: 30, fare: 20 } },
-    { id: 'men', label: '👨 Men\'s path', values: { sex: 1, pclass: 3, age: 30, fare: 13 } },
-    { id: 'child', label: '👶 1st class child', values: { sex: 0, pclass: 1, age: 5, fare: 84 } },
-    { id: 'third', label: '⚓ 3rd class male', values: { sex: 1, pclass: 3, age: 40, fare: 8 } }
-  ]
-
-  // Suggested fares for each class
+  // Suggested fares for each class (historical averages)
   const suggestedFares = {
-    1: 84,
-    2: 20,
-    3: 13
-  }
-
-  // Check if current values match any preset
-  const getActivePreset = () => {
-    return presets.find(preset =>
-      preset.values.sex === values.sex &&
-      preset.values.pclass === values.pclass &&
-      preset.values.age === values.age &&
-      preset.values.fare === values.fare
-    )
-  }
-
-  const activePreset = getActivePreset()
-
-  // Handle preset selection
-  const handlePresetClick = (preset) => {
-    if (onPresetSelect) {
-      onPresetSelect(preset.values)
-    }
-    // Also trigger chat message if callback provided
-    if (onPresetChat) {
-      onPresetChat(preset)
-    }
+    1: 84,  // First class
+    2: 20,  // Second class
+    3: 13   // Third class
   }
 
   // Check if fare is unusual for the class (more than 30% different from suggested)
@@ -80,58 +81,52 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
   const fareSuggestion = getFareSuggestion()
 
   return (
-    <div className="space-y-6">
-      {/* Preset Buttons */}
-      <div className="pb-4 border-b border-gray-800">
-        <p className="text-xs text-gray-400 mb-3">Quick Presets</p>
-        <div className="grid grid-cols-2 gap-2">
-          {presets.map((preset) => {
-            const isActive = activePreset?.id === preset.id
-            return (
-              <button
-                key={preset.id}
-                onClick={() => handlePresetClick(preset)}
-                className={`
-                  px-3 py-2 rounded text-xs font-medium transition-all
-                  ${isActive
-                    ? 'bg-[#218FCE] text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-[#218FCE] hover:bg-opacity-20 hover:text-[#218FCE]'
-                  }
-                `}
-              >
-                {preset.label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+    <div>
+      {/* Accordion Header */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between py-3 text-left hover:text-[#218FCE] transition-colors"
+      >
+        <span className="text-sm font-medium">What if?</span>
+        <svg
+          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-      {/* Sex */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Sex</label>
-        <div className="flex gap-4">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="sex"
-              checked={values.sex === 0}
-              onChange={() => onChange('sex', 0)}
-              className="w-4 h-4 accent-[#218FCE] cursor-pointer"
-            />
-            <span className="ml-2 text-sm">Female</span>
-          </label>
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="sex"
-              checked={values.sex === 1}
-              onChange={() => onChange('sex', 1)}
-              className="w-4 h-4 accent-[#218FCE] cursor-pointer"
-            />
-            <span className="ml-2 text-sm">Male</span>
-          </label>
-        </div>
-      </div>
+      {/* Accordion Content */}
+      {isExpanded && (
+        <div className="space-y-6 pt-3">
+          {/* Sex */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Sex</label>
+            <div className="flex gap-4">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="sex"
+                  checked={values.sex === 0}
+                  onChange={() => onChange('sex', 0)}
+                  className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                />
+                <span className="ml-2 text-sm">Female</span>
+              </label>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="sex"
+                  checked={values.sex === 1}
+                  onChange={() => onChange('sex', 1)}
+                  className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                />
+                <span className="ml-2 text-sm">Male</span>
+              </label>
+            </div>
+          </div>
 
       {/* Passenger Class */}
       <div>
@@ -233,12 +228,14 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
         )}
       </div>
 
-      {/* Passenger Description */}
-      <div className="mt-6 pt-6 border-t border-gray-800">
-        <p className="text-sm text-gray-400 leading-relaxed">
-          {getDescription()}
-        </p>
-      </div>
+          {/* Passenger Description */}
+          <div className="mt-6 pt-6 border-t border-gray-800">
+            <p className="text-sm text-gray-400 leading-relaxed">
+              {getDescription()}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
