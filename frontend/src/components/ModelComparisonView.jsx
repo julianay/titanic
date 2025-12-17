@@ -1,9 +1,12 @@
 import useFetchTree from '../hooks/useFetchTree'
+import usePredictBoth from '../hooks/usePredictBoth'
 import useSHAPExplanation from '../hooks/useSHAPExplanation'
 import useGlobalImportance from '../hooks/useGlobalImportance'
 import DecisionTreeViz from './visualizations/DecisionTreeViz'
 import SHAPWaterfall from './visualizations/SHAPWaterfall'
 import GlobalFeatureImportance from './visualizations/GlobalFeatureImportance'
+import PredictionCard from './PredictionCard'
+import ComparisonSummary from './ComparisonSummary'
 import LoadingSpinner from './LoadingSpinner'
 
 /**
@@ -11,6 +14,7 @@ import LoadingSpinner from './LoadingSpinner'
  */
 function ModelComparisonView({ passengerData }) {
   const { data: treeData, loading: treeLoading } = useFetchTree()
+  const { data: predictions, loading: predictionsLoading, error: predictionsError } = usePredictBoth(passengerData)
   const { data: shapData, loading: shapLoading } = useSHAPExplanation(passengerData)
   const { data: globalImportance, loading: globalLoading } = useGlobalImportance()
 
@@ -39,6 +43,16 @@ function ModelComparisonView({ passengerData }) {
         ) : (
           <div className="text-gray-400">Loading tree...</div>
         )}
+
+        {/* Decision Tree Prediction Card */}
+        <div className="mt-6">
+          <PredictionCard
+            prediction={predictions?.decision_tree}
+            loading={predictionsLoading}
+            error={predictionsError}
+            modelName="Decision Tree"
+          />
+        </div>
       </section>
 
       {/* XGBoost SHAP Section */}
@@ -80,6 +94,26 @@ function ModelComparisonView({ passengerData }) {
             )}
           </div>
         </div>
+
+        {/* XGBoost Prediction Card */}
+        <div className="mt-6">
+          <PredictionCard
+            prediction={predictions?.xgboost}
+            loading={predictionsLoading}
+            error={predictionsError}
+            modelName="XGBoost"
+          />
+        </div>
+      </section>
+
+      {/* Model Comparison Summary */}
+      <section className="bg-gray-800 rounded-lg p-6">
+        <ComparisonSummary
+          decisionTreePred={predictions?.decision_tree}
+          xgboostPred={predictions?.xgboost}
+          loading={predictionsLoading}
+          error={predictionsError}
+        />
       </section>
     </div>
   )
