@@ -10,7 +10,7 @@ app_port: 7860
 
 # Titanic Survival – Explainable AI Demo 🚢
 
-Interactive web application showcasing **explainable AI techniques** for Titanic passenger survival prediction. Built with **React** frontend and **FastAPI** backend, featuring real-time predictions with debouncing, color-coded results, and smart fare suggestions.
+Interactive web application showcasing **explainable AI techniques** for Titanic passenger survival prediction. Built with **React** frontend and **FastAPI** backend, featuring D3.js visualizations, real-time predictions, SHAP explanations, and natural language chat interface.
 
 ---
 
@@ -49,32 +49,23 @@ npm run dev
 # Open http://localhost:5173
 ```
 
-**Option 3: Streamlit App (Legacy)**
-```bash
-source venv/bin/activate
-streamlit run app.py
-
-# Open http://localhost:8501
-```
-
 ---
 
 ## 📁 Project Structure
 
 ```
 titanic/
-├── frontend/           # React frontend (NEW!)
+├── frontend/           # React frontend
 │   ├── src/
-│   │   ├── components/ # Layout, ControlPanel, LoadingSpinner
-│   │   ├── hooks/      # usePredict (API integration)
+│   │   ├── components/ # UI components
+│   │   ├── hooks/      # Custom React hooks
+│   │   ├── utils/      # Utilities (cohort patterns)
 │   │   └── App.jsx
 │   └── package.json
 ├── backend/            # FastAPI backend
 │   ├── models/         # Decision Tree & XGBoost
 │   ├── routes/         # API endpoints
 │   └── main.py
-├── app.py              # Streamlit production app
-├── src/                # Streamlit modules
 └── docs/               # Documentation
     ├── FRONTEND.md     # React frontend guide
     ├── BACKEND.md      # FastAPI backend guide
@@ -85,22 +76,17 @@ titanic/
 
 ## 🎯 Features
 
-### React Frontend (NEW)
+### React Frontend
+- **D3.js Visualizations** - Decision tree with donut charts, SHAP waterfall charts
 - **Real-time predictions** with 500ms debouncing
+- **Model Comparison** - Side-by-side Decision Tree vs XGBoost
 - **Color-coded results** (green/yellow/red based on survival probability)
 - **Smart fare suggestions** that auto-adjust by passenger class
+- **Chat interface** for natural language exploration
 - **Quick presets** for instant testing (4 passenger profiles)
 - **Responsive design** (two-column desktop, stacked mobile)
-- **In-memory caching** for instant repeat queries
-- **Dark theme** matching Streamlit app
-
-### Streamlit App (Production)
-- **Interactive tutorial** with tab-aware guidance
-- **Decision Tree visualization** with D3.js donut charts
-- **XGBoost SHAP** waterfall charts
-- **Conversational chat** for exploring cohorts
-- **What-If controls** for scenario testing
-- **Tab-based model comparison**
+- **Loading skeletons** and error boundaries
+- **Dark theme** with modern UI
 
 ### FastAPI Backend
 - **Decision Tree** model (simple, interpretable)
@@ -108,6 +94,7 @@ titanic/
 - **SHAP explanations** for predictions
 - **RESTful API** with interactive docs
 - **CORS enabled** for frontend access
+- **Static file serving** for React SPA
 
 ---
 
@@ -117,35 +104,35 @@ titanic/
 - **[Backend Guide](docs/BACKEND.md)** - FastAPI server, models, development
 - **[API Reference](docs/API.md)** - Endpoint docs with examples
 - **[AI Context](AI_CONTEXT.md)** - Project architecture overview
-- **[Progress Log](PROGRESS.md)** - Development history
+- **[Implementation Progress](IMPLEMENTATION_PROGRESS.md)** - Current development status
 
 ---
 
 ## 🌐 Live Demo
 
-**Streamlit Production App**: https://huggingface.co/spaces/bigpixel/titanic
+**Production App**: https://huggingface.co/spaces/bigpixel/titanic
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### React Frontend
-- React 18 + Vite
-- Tailwind CSS 3
+- React 18 + Vite 7.3.0
+- Tailwind CSS 3.4.0
+- D3.js 7.9.0 for interactive visualizations
 - Custom hooks (debouncing, caching, retry logic)
 
 ### FastAPI Backend
-- FastAPI + Uvicorn
+- FastAPI 0.104.1 + Uvicorn
+- Python 3.12 (pandas incompatible with 3.13!)
 - scikit-learn (Decision Tree)
 - XGBoost
 - SHAP for explainability
 - Pydantic for validation
 
-### Streamlit App
-- Streamlit
-- D3.js visualizations
-- Custom CSS styling
-- Session state management
+### Deployment
+- Docker multi-stage build (Node.js → Python)
+- Hugging Face Spaces
 
 ---
 
@@ -170,14 +157,6 @@ npm run dev
 # App runs at http://localhost:5173
 ```
 
-### Streamlit
-```bash
-source venv/bin/activate
-streamlit run app.py
-
-# App runs at http://localhost:8501
-```
-
 ---
 
 ## 🧪 Testing
@@ -194,6 +173,7 @@ pytest test_api.py -v
 3. Click preset buttons
 4. Adjust sliders
 5. Watch predictions update
+6. Test chat interface
 
 ---
 
@@ -221,11 +201,12 @@ The models reveal:
 ## 🤝 Contributing
 
 This is a portfolio project demonstrating:
-- Explainable AI techniques
-- Full-stack development
-- Modern React patterns
+- Explainable AI techniques (SHAP, decision trees)
+- Full-stack development (React + FastAPI)
+- Modern React patterns (custom hooks, error boundaries)
 - RESTful API design
-- Interactive data visualization
+- Interactive data visualization (D3.js)
+- Natural language interfaces
 
 ---
 
@@ -237,7 +218,7 @@ This project is for educational and portfolio purposes.
 
 ## 🔗 Links
 
-- **Live Streamlit Demo**: https://huggingface.co/spaces/bigpixel/titanic
+- **Live Demo**: https://huggingface.co/spaces/bigpixel/titanic
 - **Frontend Docs**: [docs/FRONTEND.md](docs/FRONTEND.md)
 - **Backend Docs**: [docs/BACKEND.md](docs/BACKEND.md)
 - **API Docs**: [docs/API.md](docs/API.md)
