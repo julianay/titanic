@@ -7,6 +7,7 @@ Users can now compare survival rates between different passenger cohorts directl
 2. **Dual path visualization** in the decision tree showing where each cohort travels
 
 **UPDATES**:
+- **Dec 19, 2025**: **Chat-centric predictions** - All predictions now appear in chat with both models shown!
 - **Dec 17, 2025 (AM)**: Added **dynamic comparisons** - compare ANY two cohorts!
 - **Dec 17, 2025 (PM)**: Added **dual path visualization** - see both paths on the decision tree!
 
@@ -81,18 +82,91 @@ When comparing two cohorts, the decision tree now highlights **both paths simult
 - Blue path (women) goes left, orange path (men) goes right
 - Paths continue through different branches showing different survival outcomes
 
+### Chat-Centric Predictions (Dec 19, 2025)
+
+All prediction results now appear **in the chat** as interactive cards, making the chat the primary interface for viewing results.
+
+**Single Passenger Queries**:
+- New `SinglePredictionCard` component shows both models side-by-side
+- Example query: "woman in 1st class"
+- Chat displays:
+  ```
+  ┌────────────────────────────────────────┐
+  │ 30-year-old female in 1st class, £84   │
+  │                                         │
+  │  ┌──────────────┐  ┌──────────────┐   │
+  │  │ Decision Tree│  │   XGBoost    │   │
+  │  │     92%      │  │     94%      │   │
+  │  │   Survived   │  │   Survived   │   │
+  │  └──────────────┘  └──────────────┘   │
+  └────────────────────────────────────────┘
+  ```
+
+**Comparison Queries**:
+- Enhanced `ComparisonCard` now shows **all 4 predictions** (2 models × 2 cohorts)
+- Example query: "women vs men"
+- Chat displays:
+  ```
+  ┌────────────────────────────────────────────────────────┐
+  │ Comparing 2nd class women vs 2nd class men             │
+  │                                                         │
+  │  Women                   Men                           │
+  │  ┌──────────────┐       ┌──────────────┐              │
+  │  │ Decision Tree│       │ Decision Tree│              │
+  │  │     74%      │       │     19%      │              │
+  │  │   Survived   │       │     Died     │              │
+  │  └──────────────┘       └──────────────┘              │
+  │  ┌──────────────┐       ┌──────────────┐              │
+  │  │   XGBoost    │       │   XGBoost    │              │
+  │  │     76%      │       │     21%      │              │
+  │  │   Survived   │       │     Died     │              │
+  │  └──────────────┘       └──────────────┘              │
+  │                                                         │
+  │  Women had a 55% higher survival rate (XGBoost)       │
+  └────────────────────────────────────────────────────────┘
+  ```
+
+**Empty State**:
+- On initial load, prediction cards are hidden
+- Left panel shows: "Make a query in the chat to see predictions"
+- Decision tree displays without highlighting
+- After first query, both chat and left panel update
+
+**Benefits**:
+- **Consistency**: Chat is now the single source of truth for results
+- **Comparison**: Easy to compare Decision Tree vs XGBoost predictions
+- **History**: All queries and results preserved in chat history
+- **Clean UI**: No duplicate information between chat and left panel
+
 ## Implementation
 
 ### Files Created
 
-#### 1. `/frontend/src/components/ComparisonCard.jsx`
-React component that displays side-by-side survival predictions.
+#### 1. `/frontend/src/components/SinglePredictionCard.jsx` (NEW - Dec 19, 2025)
+React component that displays both model predictions for a single passenger in chat.
 
 **Features:**
-- Fetches predictions for both cohorts in parallel
+- Fetches predictions from both models in parallel
+- Shows Decision Tree and XGBoost side-by-side
 - Color-coded cards (green/yellow/red based on survival probability)
-- Shows survival percentage and prediction outcome
-- Displays difference summary at bottom
+- Shows survival percentage and prediction outcome for each model
+- Whole number percentage formatting (e.g., 92% not 92.0%)
+- Loading states with skeleton placeholders
+
+**Props:**
+- `passengerData` - Passenger parameters {sex, pclass, age, fare}
+- `label` - Descriptive label (e.g., "30-year-old female in 1st class, £84")
+
+#### 2. `/frontend/src/components/ComparisonCard.jsx`
+React component that displays side-by-side survival predictions for comparisons.
+
+**Updated Features (Dec 19, 2025):**
+- Now shows **both models** for each cohort (4 predictions total)
+- Stacked layout: Decision Tree above XGBoost for each cohort
+- Whole number percentage formatting for consistency
+- Color-coded cards (green/yellow/red based on survival probability)
+- Shows survival percentage and prediction outcome for each model
+- Displays difference summary at bottom (using XGBoost)
 - Loading states with skeleton placeholders
 
 **Props:**
@@ -104,7 +178,48 @@ React component that displays side-by-side survival predictions.
 
 ### Files Modified
 
-#### 2. `/frontend/src/utils/cohortPatterns.js`
+#### 3. `/frontend/src/App.jsx` (Updated Dec 19, 2025)
+**Chat-Centric Changes:**
+- Added `hasQuery` state to track if user has made any queries
+- Updated `handleSendMessage()` to create `prediction`-type messages instead of text
+- Updated `handlePresetChat()` to create `prediction`-type messages
+- Sets `hasQuery = true` when user interacts with chat
+- Passes `hasQuery` to `ModelComparisonView` to control empty state
+- Removed `matchToCohort` usage (predictions now fetched by cards)
+
+**Message Structure:**
+```javascript
+// Regular query creates prediction message
+{
+  role: 'assistant',
+  type: 'prediction',
+  passengerData: { sex: 0, pclass: 1, age: 30, fare: 84 },
+  label: "30-year-old female in 1st class, £84"
+}
+
+// Comparison query creates comparison message
+{
+  role: 'assistant',
+  type: 'comparison',
+  comparison: { cohortA, cohortB, labelA, labelB, description }
+}
+```
+
+#### 4. `/frontend/src/components/ChatPanel.jsx` (Updated Dec 19, 2025)
+- Imported `SinglePredictionCard` component
+- Added rendering logic for `type: 'prediction'` messages
+- Renders `SinglePredictionCard` for regular queries
+- Renders `ComparisonCard` for comparison queries
+- Updated message type documentation in comments
+
+#### 5. `/frontend/src/components/ModelComparisonView.jsx` (Updated Dec 19, 2025)
+- Added `hasQuery` prop
+- Conditionally shows/hides prediction cards based on `hasQuery`
+- Shows placeholder text when `hasQuery = false`: "Make a query in the chat to see predictions"
+- Passes `null` to `DecisionTreeViz` for `passengerValues` and `comparisonData` when no query
+- Prevents API calls on initial load until user interacts
+
+#### 6. `/frontend/src/utils/cohortPatterns.js`
 
 **NEW FUNCTIONS:**
 
