@@ -153,13 +153,13 @@ export function detectComparison(queryText) {
   const queryLower = queryText.toLowerCase()
 
   // Check for comparison keywords
-  if (!/\b(compar|vs|versus|against|between|difference)\b/.test(queryLower)) {
+  if (!/\b(compar|vs|versus|against|between|difference|\band\b|\bor\b)\b/.test(queryLower)) {
     return { isComparison: false }
   }
 
   // Try dynamic parsing first
-  // Split on comparison keywords: vs, versus, against
-  const splitRegex = /\b(vs\.?|versus|against)\b/i
+  // Split on comparison keywords: vs, versus, against, and, or
+  const splitRegex = /\b(vs\.?|versus|against|\band\b|\bor\b)\b/i
   const match = queryText.match(splitRegex)
 
   if (match) {
@@ -196,8 +196,8 @@ export function detectComparison(queryText) {
   // These are kept for backwards compatibility and clearer labeling
 
   // Women vs Men (simple, no other qualifiers)
-  if (/^(compare\s+)?wom[ae]n\s+(vs|versus|against)\s+m[ae]n$/i.test(queryLower.trim()) ||
-      /^(compare\s+)?m[ae]n\s+(vs|versus|against)\s+wom[ae]n$/i.test(queryLower.trim())) {
+  if (/\bwom[ae]n\s+(vs\.?|versus|against|and|or)\s+m[ae]n\b/i.test(queryLower) ||
+      /\bm[ae]n\s+(vs\.?|versus|against|and|or)\s+wom[ae]n\b/i.test(queryLower)) {
     return {
       isComparison: true,
       cohortA: { sex: 0, pclass: 2, age: 30, fare: 20 },
@@ -209,8 +209,8 @@ export function detectComparison(queryText) {
   }
 
   // Children vs Adults
-  if (/child(ren)?\s+(vs|versus|against)\s+adults?/i.test(queryLower) ||
-      /adults?\s+(vs|versus|against)\s+child(ren)?/i.test(queryLower)) {
+  if (/\bchild(ren)?\s+(vs\.?|versus|against|and|or)\s+adults?\b/i.test(queryLower) ||
+      /\badults?\s+(vs\.?|versus|against|and|or)\s+child(ren)?\b/i.test(queryLower)) {
     return {
       isComparison: true,
       cohortA: { sex: 0, pclass: 2, age: 8, fare: 20 },
@@ -222,8 +222,8 @@ export function detectComparison(queryText) {
   }
 
   // 1st class vs 3rd class (simple)
-  if (/(1st|first)\s+class\s+(vs|versus|against)\s+(3rd|third)\s+class/i.test(queryLower) ||
-      /(3rd|third)\s+class\s+(vs|versus|against)\s+(1st|first)\s+class/i.test(queryLower)) {
+  if (/\b(1st|first)\s+class\s+(vs\.?|versus|against|and|or)\s+(3rd|third)\s+class\b/i.test(queryLower) ||
+      /\b(3rd|third)\s+class\s+(vs\.?|versus|against|and|or)\s+(1st|first)\s+class\b/i.test(queryLower)) {
     return {
       isComparison: true,
       cohortA: { sex: 0, pclass: 1, age: 30, fare: 84 },
@@ -293,8 +293,10 @@ export function parsePassengerQuery(queryText) {
     fare = 13
   }
 
-  // Must have at least sex or pclass to be valid
-  if (sex === null && pclass === null) {
+  // Must have at least one identifier to be valid (sex, pclass, or age)
+  // Age alone is valid for queries like "kids" or "elderly"
+  const hasAgeIdentifier = age !== null && (age <= 12 || age >= 60)
+  if (sex === null && pclass === null && !hasAgeIdentifier) {
     return null
   }
 

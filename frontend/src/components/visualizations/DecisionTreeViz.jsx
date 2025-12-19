@@ -17,9 +17,10 @@ import * as d3 from 'd3'
  * @param {Object} comparisonData - Comparison data with cohortA and cohortB (optional)
  */
 function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highlightMode = null, comparisonData = null }) {
-  const svgRef = useRef(null)
+  const svgRef = useRef(null) // Store SVG d3 selection for scoped highlighting
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
+  const [treeVersion, setTreeVersion] = useState(0) // Increment when tree is rebuilt
   const d3TreeRef = useRef(null) // Store D3 tree layout
 
   // Helper function: Trace path through tree based on input values
@@ -83,14 +84,19 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
   // Helper function: Update tree highlighting based on path
   const updateTreeHighlight = (path, isTutorialMode = false) => {
     if (!path || path.length === 0) return
+    if (!svgRef.current) return
 
+    const svg = svgRef.current
     const finalNodeId = path[path.length - 1]
     const highlightClass = isTutorialMode ? 'tutorial-highlight' : 'active'
     const otherClass = isTutorialMode ? 'active' : 'tutorial-highlight'
 
     // Update pie chart highlighting
-    d3.selectAll('.pie-chart')
+    svg.selectAll('.pie-chart')
       .classed(otherClass, false) // Clear other class
+      .classed('path-a', false)    // Clear comparison classes
+      .classed('path-b', false)
+      .classed('path-shared', false)
       .classed(highlightClass, function() {
         const nodeData = d3.select(this.parentNode).datum()
         return path.includes(nodeData.data.id)
@@ -100,12 +106,18 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         return !isTutorialMode && nodeData.data.id === finalNodeId
       })
 
-    d3.selectAll('.node text')
+    svg.selectAll('.node text')
       .classed(otherClass, false) // Clear other class
+      .classed('path-a', false)    // Clear comparison classes
+      .classed('path-b', false)
+      .classed('path-shared', false)
       .classed(highlightClass, d => path.includes(d.data.id))
 
-    d3.selectAll('.link')
+    svg.selectAll('.link')
       .classed(otherClass, false) // Clear other class
+      .classed('path-a', false)    // Clear comparison classes
+      .classed('path-b', false)
+      .classed('path-shared', false)
       .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
       .classed('survived', d => {
         if (!isTutorialMode && path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
@@ -123,74 +135,130 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       })
 
     // Update edge labels to match link highlighting
-    d3.selectAll('.edge-label')
+    svg.selectAll('.edge-label')
       .classed(otherClass, false) // Clear other class
+      .classed('path-a', false)    // Clear comparison classes
+      .classed('path-b', false)
+      .classed('path-shared', false)
       .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
   }
 
   // Helper function: Update tree highlighting for TWO paths (comparison mode)
   const updateDualPathHighlight = (pathA, pathB) => {
     if (!pathA || pathA.length === 0 || !pathB || pathB.length === 0) return
+    if (!svgRef.current) return
+
+    const svg = svgRef.current
+
+    // Identify shared nodes (in both paths) and unique nodes
+    const sharedNodes = pathA.filter(id => pathB.includes(id))
+    const uniqueA = pathA.filter(id => !pathB.includes(id))
+    const uniqueB = pathB.filter(id => !pathA.includes(id))
 
     // Clear all existing highlights first
-    d3.selectAll('.pie-chart')
+    svg.selectAll('.pie-chart')
       .classed('active', false)
       .classed('tutorial-highlight', false)
       .classed('final', false)
       .classed('path-a', false)
       .classed('path-b', false)
+      .classed('path-shared', false)
 
-    d3.selectAll('.node text')
+    svg.selectAll('.node text')
       .classed('active', false)
       .classed('tutorial-highlight', false)
       .classed('path-a', false)
       .classed('path-b', false)
+      .classed('path-shared', false)
 
-    d3.selectAll('.link')
+    svg.selectAll('.link')
       .classed('active', false)
       .classed('tutorial-highlight', false)
       .classed('survived', false)
       .classed('died', false)
       .classed('path-a', false)
       .classed('path-b', false)
+      .classed('path-shared', false)
 
-    d3.selectAll('.edge-label')
+    svg.selectAll('.edge-label')
       .classed('active', false)
       .classed('tutorial-highlight', false)
       .classed('path-a', false)
       .classed('path-b', false)
+      .classed('path-shared', false)
 
-    // Highlight path A (blue)
-    d3.selectAll('.pie-chart')
+    // Highlight shared nodes (white/purple) - nodes in both paths
+    svg.selectAll('.pie-chart')
+      .classed('path-shared', function() {
+        const nodeData = d3.select(this.parentNode).datum()
+        return sharedNodes.includes(nodeData.data.id)
+      })
+
+    svg.selectAll('.node text')
+      .classed('path-shared', d => sharedNodes.includes(d.data.id))
+
+    // Highlight shared links - both source AND target are shared
+    svg.selectAll('.link')
+      .classed('path-shared', d => sharedNodes.includes(d.source.data.id) && sharedNodes.includes(d.target.data.id))
+
+    svg.selectAll('.edge-label')
+      .classed('path-shared', d => sharedNodes.includes(d.source.data.id) && sharedNodes.includes(d.target.data.id))
+
+    // Highlight path A unique nodes (blue) - only in path A
+    svg.selectAll('.pie-chart')
       .classed('path-a', function() {
         const nodeData = d3.select(this.parentNode).datum()
-        return pathA.includes(nodeData.data.id)
+        return uniqueA.includes(nodeData.data.id)
       })
 
-    d3.selectAll('.node text')
-      .classed('path-a', d => pathA.includes(d.data.id))
+    svg.selectAll('.node text')
+      .classed('path-a', d => uniqueA.includes(d.data.id))
 
-    d3.selectAll('.link')
-      .classed('path-a', d => pathA.includes(d.source.data.id) && pathA.includes(d.target.data.id))
+    // Highlight path A links - either BOTH in uniqueA, OR source in shared and target in uniqueA
+    svg.selectAll('.link')
+      .classed('path-a', d => {
+        const sourceInPath = pathA.includes(d.source.data.id)
+        const targetInPath = pathA.includes(d.target.data.id)
+        const targetUnique = uniqueA.includes(d.target.data.id)
+        // Highlight if: both in path A AND target is unique to A (or both are unique to A)
+        return sourceInPath && targetInPath && targetUnique
+      })
 
-    d3.selectAll('.edge-label')
-      .classed('path-a', d => pathA.includes(d.source.data.id) && pathA.includes(d.target.data.id))
+    svg.selectAll('.edge-label')
+      .classed('path-a', d => {
+        const sourceInPath = pathA.includes(d.source.data.id)
+        const targetInPath = pathA.includes(d.target.data.id)
+        const targetUnique = uniqueA.includes(d.target.data.id)
+        return sourceInPath && targetInPath && targetUnique
+      })
 
-    // Highlight path B (orange)
-    d3.selectAll('.pie-chart')
+    // Highlight path B unique nodes (orange) - only in path B
+    svg.selectAll('.pie-chart')
       .classed('path-b', function() {
         const nodeData = d3.select(this.parentNode).datum()
-        return pathB.includes(nodeData.data.id)
+        return uniqueB.includes(nodeData.data.id)
       })
 
-    d3.selectAll('.node text')
-      .classed('path-b', d => pathB.includes(d.data.id))
+    svg.selectAll('.node text')
+      .classed('path-b', d => uniqueB.includes(d.data.id))
 
-    d3.selectAll('.link')
-      .classed('path-b', d => pathB.includes(d.source.data.id) && pathB.includes(d.target.data.id))
+    // Highlight path B links - either BOTH in uniqueB, OR source in shared and target in uniqueB
+    svg.selectAll('.link')
+      .classed('path-b', d => {
+        const sourceInPath = pathB.includes(d.source.data.id)
+        const targetInPath = pathB.includes(d.target.data.id)
+        const targetUnique = uniqueB.includes(d.target.data.id)
+        // Highlight if: both in path B AND target is unique to B (or both are unique to B)
+        return sourceInPath && targetInPath && targetUnique
+      })
 
-    d3.selectAll('.edge-label')
-      .classed('path-b', d => pathB.includes(d.source.data.id) && pathB.includes(d.target.data.id))
+    svg.selectAll('.edge-label')
+      .classed('path-b', d => {
+        const sourceInPath = pathB.includes(d.source.data.id)
+        const targetInPath = pathB.includes(d.target.data.id)
+        const targetUnique = uniqueB.includes(d.target.data.id)
+        return sourceInPath && targetInPath && targetUnique
+      })
   }
 
   // Initialize tree (runs once when treeData loads)
@@ -211,6 +279,10 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       .attr("height", height)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
+
+    // Store SVG reference for scoped highlighting
+    svgRef.current = svg
+    setTreeVersion(v => v + 1) // Increment version to trigger highlighting
 
     const tree = d3.tree()
       .size([height - margin.top - margin.bottom, actualWidth - margin.left - margin.right])
@@ -426,9 +498,9 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
     }
   }, [treeData, width, height])
 
-  // Update path highlighting when passengerValues, highlightMode, or comparisonData change
+  // Update path highlighting when passengerValues, highlightMode, comparisonData, or tree initialization changes
   useEffect(() => {
-    if (!treeData || !d3TreeRef.current) return
+    if (!treeData || !d3TreeRef.current || !svgRef.current || treeVersion === 0) return
 
     // If comparison mode is active, highlight TWO paths
     if (comparisonData && comparisonData.cohortA && comparisonData.cohortB) {
@@ -446,7 +518,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
     const isTutorialMode = highlightMode && highlightMode !== 'full'
 
     updateTreeHighlight(limitedPath, isTutorialMode)
-  }, [passengerValues, treeData, highlightMode, comparisonData])
+  }, [passengerValues, treeData, highlightMode, comparisonData, treeVersion])
 
   // Handle window resize
   useEffect(() => {
@@ -626,6 +698,29 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
           opacity: 1;
           font-weight: 700;
           fill: #FF7F50;
+        }
+
+        /* Comparison mode - Shared path (white/purple) - nodes in both paths */
+        .pie-chart.path-shared path {
+          opacity: 1;
+          filter: drop-shadow(0 0 8px rgba(200, 200, 255, 0.9));
+        }
+
+        .link.path-shared {
+          stroke: #c8c8ff !important;
+          opacity: 1 !important;
+        }
+
+        .node text.path-shared {
+          opacity: 1;
+          font-weight: 700;
+          fill: #c8c8ff;
+        }
+
+        .edge-label.path-shared {
+          opacity: 1;
+          font-weight: 700;
+          fill: #c8c8ff;
         }
       `}</style>
 
