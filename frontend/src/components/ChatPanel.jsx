@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { parsePassengerQuery } from '../utils/cohortPatterns'
 import ComparisonCard from './ComparisonCard'
+import SinglePredictionCard from './SinglePredictionCard'
 
 /**
  * ChatPanel - Natural language chat interface with preset chips
@@ -13,6 +14,7 @@ import ComparisonCard from './ComparisonCard'
  *   - { role: 'user', content: string } for user messages
  *   - { role: 'assistant', content: string } for text responses
  *   - { role: 'assistant', type: 'comparison', comparison: {...} } for comparison cards
+ *   - { role: 'assistant', type: 'prediction', passengerData: {...}, label: string } for prediction cards
  * @param {Function} onSendMessage - Callback when message sent: (text, parsedParams) => void
  * @param {Function} onPresetSelect - Callback when preset chip clicked (updates controls)
  * @param {Function} onPresetChat - Callback when preset chip clicked (adds chat message)
@@ -111,6 +113,12 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat }) {
                   labelA={msg.comparison.labelA}
                   labelB={msg.comparison.labelB}
                   description={msg.comparison.description}
+                />
+              ) : msg.type === 'prediction' ? (
+                // Render single prediction card
+                <SinglePredictionCard
+                  passengerData={msg.passengerData}
+                  label={msg.label}
                 />
               ) : (
                 // Regular text message

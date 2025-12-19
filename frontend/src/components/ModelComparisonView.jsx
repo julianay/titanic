@@ -17,8 +17,9 @@ import ErrorBoundary from './ErrorBoundary'
  * @param {string|number} highlightMode - Tutorial highlight mode for decision tree
  * @param {Array<string>} highlightFeatures - Tutorial features to highlight in SHAP
  * @param {Object} activeComparison - Active comparison data (cohortA, cohortB) or null
+ * @param {boolean} hasQuery - Whether user has made a query (hides predictions on first load)
  */
-function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null, activeComparison = null }) {
+function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null, activeComparison = null, hasQuery = false }) {
   const { data: treeData, loading: treeLoading } = useFetchTree()
   const { data: predictions, loading: predictionsLoading, error: predictionsError } = usePredictBoth(passengerData)
   const { data: shapData, loading: shapLoading } = useSHAPExplanation(passengerData)
@@ -49,9 +50,9 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             <div className="mb-6">
               <DecisionTreeViz
                 treeData={treeData.tree}
-                passengerValues={passengerData}
+                passengerValues={hasQuery ? passengerData : null}
                 highlightMode={highlightMode}
-                comparisonData={activeComparison}
+                comparisonData={hasQuery ? activeComparison : null}
               />
             </div>
           ) : (
@@ -60,12 +61,18 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
         </ErrorBoundary>
 
         {/* Decision Tree Prediction Card */}
-        <PredictionCard
-          prediction={predictions?.decision_tree}
-          loading={predictionsLoading}
-          error={predictionsError}
-          modelName="Decision Tree"
-        />
+        {hasQuery ? (
+          <PredictionCard
+            prediction={predictions?.decision_tree}
+            loading={predictionsLoading}
+            error={predictionsError}
+            modelName="Decision Tree"
+          />
+        ) : (
+          <div className="p-6 bg-gray-800 bg-opacity-30 border border-gray-700 rounded-lg text-center">
+            <p className="text-gray-400 text-sm">Make a query in the chat to see predictions</p>
+          </div>
+        )}
       </section>
 
       {/* XGBoost SHAP Section */}
@@ -116,12 +123,18 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
         </div>
 
         {/* XGBoost Prediction Card */}
-        <PredictionCard
-          prediction={predictions?.xgboost}
-          loading={predictionsLoading}
-          error={predictionsError}
-          modelName="XGBoost"
-        />
+        {hasQuery ? (
+          <PredictionCard
+            prediction={predictions?.xgboost}
+            loading={predictionsLoading}
+            error={predictionsError}
+            modelName="XGBoost"
+          />
+        ) : (
+          <div className="p-6 bg-gray-800 bg-opacity-30 border border-gray-700 rounded-lg text-center">
+            <p className="text-gray-400 text-sm">Make a query in the chat to see predictions</p>
+          </div>
+        )}
       </section>
 
       {/* Model Comparison Summary */}

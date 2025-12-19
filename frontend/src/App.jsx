@@ -5,7 +5,7 @@ import ModelComparisonView from './components/ModelComparisonView'
 import ChatPanel from './components/ChatPanel'
 import TutorialControls from './components/TutorialControls'
 import useTutorial from './hooks/useTutorial'
-import { matchToCohort, formatPassengerDescription, detectComparison } from './utils/cohortPatterns'
+import { formatPassengerDescription, detectComparison } from './utils/cohortPatterns'
 
 function App() {
   const [passengerData, setPassengerData] = useState({
@@ -16,6 +16,7 @@ function App() {
   })
 
   const [chatMessages, setChatMessages] = useState([])
+  const [hasQuery, setHasQuery] = useState(false) // Track if user has made a query
 
   // Track active comparison for visualization
   const [activeComparison, setActiveComparison] = useState(null)
@@ -36,22 +37,27 @@ function App() {
   // Handle preset selection - update all values at once
   const handlePresetSelect = (presetValues) => {
     setPassengerData(presetValues)
+    setHasQuery(true) // Mark that user has made a query
   }
 
   // Handle preset chat message
   const handlePresetChat = (preset) => {
     const { sex, pclass, age, fare } = preset.values
     const userMessage = preset.label.replace(/[🎭👨👶⚓]/g, '').trim() // Remove emoji
-
-    // Get cohort response
-    const { cohortInfo } = matchToCohort(sex, pclass, age, fare)
     const passengerDesc = formatPassengerDescription(sex, pclass, age, fare)
 
-    // Add messages to chat
+    setHasQuery(true) // Mark that user has made a query
+
+    // Add messages to chat with prediction card
     setChatMessages(prev => [
       ...prev,
       { role: 'user', content: userMessage },
-      { role: 'assistant', content: `${cohortInfo.response}\n\nShowing: ${passengerDesc}` }
+      {
+        role: 'assistant',
+        type: 'prediction',
+        passengerData: { sex, pclass, age, fare },
+        label: passengerDesc
+      }
     ])
   }
 
@@ -61,6 +67,7 @@ function App() {
     const comparisonResult = detectComparison(userMessage)
 
     if (comparisonResult.isComparison) {
+      setHasQuery(true) // Mark that user has made a query
       // Handle comparison query - set active comparison for visualization
       setActiveComparison(comparisonResult)
 
@@ -89,20 +96,25 @@ function App() {
       return
     }
 
+    setHasQuery(true) // Mark that user has made a query
+
     const { sex, pclass, age, fare } = parsedParams
 
     // Update passenger data
     setPassengerData({ sex, pclass, age, fare })
 
-    // Get cohort response
-    const { cohortInfo } = matchToCohort(sex, pclass, age, fare)
     const passengerDesc = formatPassengerDescription(sex, pclass, age, fare)
 
-    // Add messages to chat
+    // Add messages to chat with prediction card
     setChatMessages(prev => [
       ...prev,
       { role: 'user', content: userMessage },
-      { role: 'assistant', content: `${cohortInfo.response}\n\nShowing: ${passengerDesc}` }
+      {
+        role: 'assistant',
+        type: 'prediction',
+        passengerData: { sex, pclass, age, fare },
+        label: passengerDesc
+      }
     ])
   }
 
@@ -116,6 +128,7 @@ function App() {
           highlightMode={tutorial.getHighlightMode()}
           highlightFeatures={tutorial.getHighlightFeatures()}
           activeComparison={activeComparison}
+          hasQuery={hasQuery}
         />
       }
       controlsContent={
