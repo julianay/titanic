@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 20, 2025
+**Last Updated:** December 20, 2025 (PM)
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -213,10 +213,11 @@ curl -X POST http://localhost:7860/api/predict \
 - Side-by-side display of Decision Tree and XGBoost
 - Real-time prediction updates
 - Integrated visualizations
+- **Comparison mode**: Dual SHAP waterfall charts for side-by-side cohort explanations
 
 **D3 Visualizations**
 - DecisionTree.jsx - Interactive tree with donut chart nodes
-- SHAPWaterfall.jsx - SHAP value waterfall chart
+- SHAPWaterfall.jsx - SHAP value waterfall chart (fully responsive with ResizeObserver)
 - GlobalFeatureImportance.jsx - Feature importance bar chart
 
 **Custom Hooks**
@@ -440,7 +441,8 @@ React displays predictions with intuitive colors:
   - Dynamic comparison parsing ("1st class women vs 3rd class men")
   - Side-by-side prediction cards
   - Dual path visualization on decision tree (blue vs orange paths)
-  - **Dec 20, 2025**: Fixed bug where comparison paths persisted when switching to single path queries
+  - **Dec 20, 2025 (PM)**: Dual SHAP waterfall charts - side-by-side feature contribution explanations for both cohorts
+  - **Dec 20, 2025 (AM)**: Fixed bug where comparison paths persisted when switching to single path queries
 
 - **DECISION_TREE_FEATURES.md** - **CONSOLIDATED** decision tree visualization features
   - Variable stroke widths (edge thickness based on passenger counts)
@@ -456,5 +458,5 @@ React displays predictions with intuitive colors:
 
 ---
 
-**Last Updated:** December 20, 2025
+**Last Updated:** December 20, 2025 (PM)
 **Status:** Production-ready with all features complete

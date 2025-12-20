@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
 
 /**
@@ -13,11 +13,31 @@ import * as d3 from 'd3'
  * @param {number} baseValue - Baseline prediction value
  * @param {number} finalPrediction - Final prediction after all contributions
  * @param {Array<string>} highlightFeatures - Tutorial: features to highlight (e.g., ['sex', 'pclass'])
- * @param {number} width - Chart width (default: 650)
  * @param {number} height - Chart height (default: 300)
  */
-function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFeatures = null, width = 650, height = 300 }) {
+function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFeatures = null, height = 300 }) {
   const containerRef = useRef(null)
+  const [containerWidth, setContainerWidth] = useState(650)
+
+  // Observe container size changes
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width
+        if (width > 0) {
+          setContainerWidth(width)
+        }
+      }
+    })
+
+    resizeObserver.observe(containerRef.current)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   useEffect(() => {
     if (!waterfallData || waterfallData.length === 0 || !containerRef.current) return
@@ -26,12 +46,12 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     d3.select(containerRef.current).selectAll("*").remove()
 
     const margin = { top: 20, right: 60, bottom: 50, left: 100 }
-    const chartWidth = width - margin.left - margin.right
+    const chartWidth = containerWidth - margin.left - margin.right
     const chartHeight = height - margin.top - margin.bottom
 
     const svg = d3.select(containerRef.current)
       .append("svg")
-      .attr("width", width)
+      .attr("width", containerWidth)
       .attr("height", height)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
@@ -135,7 +155,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
         return item.feature_value !== "" ? `${item.feature}=${item.feature_value}` : item.feature
       }))
 
-  }, [waterfallData, baseValue, finalPrediction, highlightFeatures, width, height])
+  }, [waterfallData, baseValue, finalPrediction, highlightFeatures, containerWidth, height])
 
   if (!waterfallData || waterfallData.length === 0) {
     return (
@@ -193,9 +213,9 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
         }
       `}</style>
 
-      <div>
+      <div className="w-full">
         <h3 className="text-sm font-semibold mb-3 text-gray-200">SHAP Waterfall</h3>
-        <div ref={containerRef} />
+        <div ref={containerRef} className="w-full" />
       </div>
     </>
   )

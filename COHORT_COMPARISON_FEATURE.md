@@ -5,9 +5,11 @@
 Users can now compare survival rates between different passenger cohorts directly in the chat interface. The system detects comparison queries and displays:
 1. **Side-by-side prediction cards** showing survival probabilities for both groups
 2. **Dual path visualization** in the decision tree showing where each cohort travels
+3. **Dual SHAP waterfall charts** (NEW!) showing feature contributions for both cohorts side-by-side
 
 **UPDATES**:
-- **Dec 20, 2025**: **Fixed comparison mode clearing** - Comparison paths now properly clear when switching to single path queries
+- **Dec 20, 2025 (PM)**: **Dual SHAP waterfall charts** - Comparison mode now shows side-by-side SHAP explanations for both cohorts!
+- **Dec 20, 2025 (AM)**: **Fixed comparison mode clearing** - Comparison paths now properly clear when switching to single path queries
 - **Dec 19, 2025**: **Chat-centric predictions** - All predictions now appear in chat with both models shown!
 - **Dec 17, 2025 (AM)**: Added **dynamic comparisons** - compare ANY two cohorts!
 - **Dec 17, 2025 (PM)**: Added **dual path visualization** - see both paths on the decision tree!
@@ -82,6 +84,130 @@ When comparing two cohorts, the decision tree now highlights **both paths simult
 - Paths diverge at the first split (sex <= 0.5)
 - Blue path (women) goes left, orange path (men) goes right
 - Paths continue through different branches showing different survival outcomes
+
+### Dual SHAP Waterfall Charts (NEW! - Dec 20, 2025)
+
+When comparing two cohorts, the XGBoost SHAP section now displays **two waterfall charts side-by-side**, allowing users to visually compare how each feature contributes to the predictions for both cohorts.
+
+**Visual Design**:
+- **Cohort A** (left chart): Labeled with dynamic cohort name (e.g., "Women", "1st class women")
+- **Cohort B** (right chart): Labeled with dynamic cohort name (e.g., "Men", "3rd class men")
+- Charts use actual cohort labels (not "Cohort A" / "Cohort B")
+- Color coding matches decision tree (blue header for A, orange header for B)
+- Responsive layout: Charts automatically resize to fit container width
+
+**How it works**:
+1. User enters comparison query (e.g., "compare 1st class women vs 3rd class men")
+2. System fetches SHAP explanations for both cohorts in parallel
+3. Two waterfall charts display side-by-side showing feature contributions
+4. Global feature importance chart moves below the waterfalls (full width)
+5. Users can directly compare which features matter most for each cohort
+
+**Single Mode (No Comparison)**:
+- Shows one SHAP waterfall chart + global feature importance side-by-side
+- Original layout preserved for non-comparison queries
+
+**Benefits**:
+- **Direct comparison**: See how the same features affect different cohorts differently
+- **Visual insights**: Identify which features drive the survival gap between cohorts
+- **Educational**: Understand that model explanations are instance-specific
+- **Responsive**: Charts automatically adapt to screen size and container width
+
+**Example**: "1st class women vs 3rd class men"
+- **Left chart (1st class women)**:
+  - Sex contributes heavily to survival (+0.45)
+  - Pclass adds additional boost (+0.35)
+  - Age and fare have minor effects
+
+- **Right chart (3rd class men)**:
+  - Sex strongly decreases survival (-0.40)
+  - Pclass further decreases survival (-0.25)
+  - Age and fare have minimal impact
+
+**Key Insight**: The waterfall comparison visually demonstrates why the survival gap exists - both sex AND class push the predictions in opposite directions.
+
+**Technical Implementation**:
+
+**Files Modified**:
+- `/frontend/src/components/ModelComparisonView.jsx` (lines 27-33, 84-156)
+  - Added dual `useSHAPExplanation` hooks for cohortA and cohortB
+  - Conditional rendering based on `activeComparison` state
+  - Dynamic chart titles using `activeComparison.labelA` and `activeComparison.labelB`
+  - Layout switches between single and comparison modes
+
+- `/frontend/src/components/visualizations/SHAPWaterfall.jsx` (lines 1, 19-40, 158, 216-218)
+  - Added `ResizeObserver` to detect container width changes
+  - Removed hardcoded width parameter (now fully responsive)
+  - Uses `containerWidth` state that adapts to parent container
+  - Added `w-full` classes for proper container sizing
+
+**Responsive Behavior**:
+```javascript
+// Observe container size changes
+useEffect(() => {
+  const resizeObserver = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      const width = entry.contentRect.width
+      if (width > 0) {
+        setContainerWidth(width)
+      }
+    }
+  })
+  resizeObserver.observe(containerRef.current)
+  return () => resizeObserver.disconnect()
+}, [])
+```
+
+**Data Fetching**:
+```javascript
+// Fetch SHAP data for both cohorts when in comparison mode
+const { data: shapDataA, loading: shapLoadingA } = useSHAPExplanation(
+  activeComparison?.cohortA || passengerData
+)
+const { data: shapDataB, loading: shapLoadingB } = useSHAPExplanation(
+  activeComparison?.cohortB || passengerData
+)
+```
+
+**Layout Structure**:
+```jsx
+{activeComparison && hasQuery ? (
+  <>
+    {/* Two Waterfalls Side-by-Side */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div>
+        <h3>{activeComparison.labelA}</h3>
+        <SHAPWaterfall data={shapDataA} />
+      </div>
+      <div>
+        <h3>{activeComparison.labelB}</h3>
+        <SHAPWaterfall data={shapDataB} />
+      </div>
+    </div>
+    {/* Global Importance Below */}
+    <div className="mb-6">
+      <GlobalFeatureImportance />
+    </div>
+  </>
+) : (
+  /* Single Mode: One Waterfall + Importance Side-by-Side */
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <SHAPWaterfall data={shapData} />
+    <GlobalFeatureImportance />
+  </div>
+)}
+```
+
+**Caching & Performance**:
+- Each waterfall chart uses the existing `useSHAPExplanation` hook
+- Built-in LRU cache (max 100 entries) prevents redundant API calls
+- 500ms debouncing reduces server load
+- Parallel fetching for both cohorts (no sequential delays)
+
+**UI Improvements**:
+- Removed redundant prediction cards from left panel (predictions already in chat)
+- Cleaner visual hierarchy focusing on explanatory visualizations
+- More screen space for side-by-side comparisons
 
 ### Bug Fix: Comparison Mode Clearing (Dec 20, 2025)
 
