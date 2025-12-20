@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 20, 2025 (Evening)
+**Last Updated:** December 20, 2025 (Late Evening - Layout Changes)
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -188,7 +188,7 @@ curl -X POST http://localhost:7860/api/predict \
 ### React Components
 
 **Layout.jsx**
-- Two-column responsive design (75% left, 25% right)
+- Two-column responsive design (80% left, 20% right)
 - Stacks vertically on mobile (<768px)
 - Dark theme (#0e1117 background, #fafafa text)
 
@@ -210,10 +210,10 @@ curl -X POST http://localhost:7860/api/predict \
 - Scrollable message history
 
 **ModelComparisonView.jsx**
-- Side-by-side display of Decision Tree and XGBoost
+- **Layout**: Side-by-side display with Decision Tree (70%) and XGBoost (30%)
+- **XGBoost section**: Stacked vertically (waterfall on top, global importance below)
 - Real-time prediction updates
-- Integrated visualizations
-- **Comparison mode**: Dual SHAP waterfall charts for side-by-side cohort explanations
+- **Comparison mode**: Dual SHAP waterfall charts stacked vertically for cohort explanations
 
 **D3 Visualizations**
 - DecisionTree.jsx - Interactive tree with donut chart nodes
@@ -393,9 +393,12 @@ React displays predictions with intuitive colors:
 - H3: 20px medium
 
 ### Layout
-- Desktop: Two columns (75% viz / 25% controls)
+- **Main layout**: Two columns (80% left / 20% right)
+  - Left column (80%): Decision Tree (70%) + XGBoost (30%) side-by-side
+  - Right column (20%): Controls + Chat (fixed to viewport)
+- **XGBoost visualizations**: Stacked vertically (waterfall on top, global importance below)
 - Mobile: Single column, stacked vertically
-- Breakpoint: 768px (Tailwind `md:`)
+- Breakpoint: 768px (Tailwind `md:` and `lg:`)
 
 ---
 
@@ -464,5 +467,17 @@ React displays predictions with intuitive colors:
 
 ---
 
-**Last Updated:** December 20, 2025 (Evening)
+## 📝 Recent Changes
+
+### December 20, 2025 (Late Evening)
+**Layout Restructuring**:
+- Changed main layout from 70/30 to 80/20 split (visualizations get 80%, chat gets 20%)
+- Restructured left column to show Decision Tree (70%) and XGBoost (30%) side-by-side
+- XGBoost visualizations now stack vertically (waterfall on top, global importance below)
+- Updated comparison mode to stack dual waterfalls vertically instead of side-by-side
+- Files changed: `Layout.jsx`, `ModelComparisonView.jsx`
+
+---
+
+**Last Updated:** December 20, 2025 (Late Evening - Layout Changes)
 **Status:** Production-ready with all features complete

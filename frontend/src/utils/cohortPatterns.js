@@ -208,16 +208,19 @@ export function detectComparison(queryText) {
     }
   }
 
-  // Children vs Adults
-  if (/\bchild(ren)?\s+(vs\.?|versus|against|and|or)\s+adults?\b/i.test(queryLower) ||
-      /\badults?\s+(vs\.?|versus|against|and|or)\s+child(ren)?\b/i.test(queryLower)) {
+  // Children vs Adults (includes kids vs elderly)
+  if (/\b(child(ren)?|kids?)\s+(vs\.?|versus|against|and|or)\s+(adults?|elderly|seniors?)\b/i.test(queryLower) ||
+      /\b(adults?|elderly|seniors?)\s+(vs\.?|versus|against|and|or)\s+(child(ren)?|kids?)\b/i.test(queryLower)) {
+    // Determine if comparing to elderly specifically
+    const isElderlyComparison = /elderly|seniors?/i.test(queryLower)
+
     return {
       isComparison: true,
       cohortA: { sex: 0, pclass: 2, age: 8, fare: 20 },
-      cohortB: { sex: 0, pclass: 2, age: 35, fare: 20 },
-      labelA: "Children",
-      labelB: "Adults",
-      description: "Comparing children (age 8) vs adults (age 35)"
+      cohortB: { sex: 0, pclass: 2, age: isElderlyComparison ? 65 : 35, fare: 20 },
+      labelA: /kids?/i.test(queryLower) ? "Kids" : "Children",
+      labelB: isElderlyComparison ? "Elderly" : "Adults",
+      description: `Comparing ${/kids?/i.test(queryLower) ? "kids" : "children"} (age 8) vs ${isElderlyComparison ? "elderly (age 65)" : "adults (age 35)"}`
     }
   }
 

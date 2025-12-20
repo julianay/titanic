@@ -12,6 +12,11 @@ import ErrorBoundary from './ErrorBoundary'
 /**
  * ModelComparisonView - Unified view showing both Decision Tree and XGBoost explanations
  *
+ * Layout:
+ * - Side-by-side layout with Decision Tree (70%) and XGBoost (30%)
+ * - XGBoost visualizations stack vertically (waterfall on top, global importance below)
+ * - Comparison mode shows two waterfalls stacked vertically instead of side-by-side
+ *
  * @param {Object} passengerData - Current passenger values
  * @param {string|number} highlightMode - Tutorial highlight mode for decision tree
  * @param {Array<string>} highlightFeatures - Tutorial features to highlight in SHAP
@@ -44,33 +49,35 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
 
   return (
     <div className="space-y-6 w-full">
-      {/* Decision Tree Section */}
-      <section className="bg-gray-800 rounded-lg p-6 shadow-lg">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-100 mb-2">Decision Tree Explanation</h2>
-          <p className="text-sm text-gray-400">
-            Shows the decision path through the tree based on passenger characteristics
-          </p>
-        </div>
+      {/* Decision Tree (70%) and XGBoost (30%) Side by Side */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Decision Tree Section - 70% width */}
+        <section className="bg-gray-800 rounded-lg p-6 shadow-lg lg:w-[70%]">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-100 mb-2">Decision Tree Explanation</h2>
+            <p className="text-sm text-gray-400">
+              Shows the decision path through the tree based on passenger characteristics
+            </p>
+          </div>
 
-        <ErrorBoundary errorTitle="Decision Tree Visualization Error">
-          {treeData ? (
-            <div className="mb-6">
-              <DecisionTreeViz
-                treeData={treeData.tree}
-                passengerValues={hasQuery || highlightMode ? passengerData : null}
-                highlightMode={highlightMode}
-                comparisonData={hasQuery ? activeComparison : null}
-              />
-            </div>
-          ) : (
-            <LoadingSkeleton variant="tree" className="mb-6" />
-          )}
-        </ErrorBoundary>
-      </section>
+          <ErrorBoundary errorTitle="Decision Tree Visualization Error">
+            {treeData ? (
+              <div className="mb-6">
+                <DecisionTreeViz
+                  treeData={treeData.tree}
+                  passengerValues={hasQuery || highlightMode ? passengerData : null}
+                  highlightMode={highlightMode}
+                  comparisonData={hasQuery ? activeComparison : null}
+                />
+              </div>
+            ) : (
+              <LoadingSkeleton variant="tree" className="mb-6" />
+            )}
+          </ErrorBoundary>
+        </section>
 
-      {/* XGBoost SHAP Section */}
-      <section className="bg-gray-800 rounded-lg p-6 shadow-lg">
+        {/* XGBoost SHAP Section - 30% width, stacked vertically */}
+        <section className="bg-gray-800 rounded-lg p-6 shadow-lg lg:w-[30%]">
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-gray-100 mb-2">XGBoost (SHAP) Explanation</h2>
           <p className="text-sm text-gray-400">
@@ -78,10 +85,10 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
           </p>
         </div>
 
-        {/* Comparison Mode: Show 2 Waterfall Charts */}
+        {/* Comparison Mode: Show 2 Waterfall Charts stacked vertically */}
         {activeComparison && hasQuery ? (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="space-y-6 mb-6">
               {/* Cohort A Waterfall */}
               <div className="bg-gray-900 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-blue-400 mb-3">{activeComparison.labelA}</h3>
@@ -121,7 +128,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
               </div>
             </div>
 
-            {/* Global Feature Importance (below waterfalls in comparison mode) */}
+            {/* Global Feature Importance (stacked below waterfalls in comparison mode) */}
             <div className="bg-gray-900 rounded-lg p-4 mb-6">
               <h3 className="text-sm font-medium text-gray-300 mb-3">Global Feature Importance</h3>
               <ErrorBoundary errorTitle="Feature Importance Error">
@@ -141,8 +148,8 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             </div>
           </>
         ) : (
-          /* Single Mode: Show 1 Waterfall + Global Importance side-by-side */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          /* Single Mode: Show 1 Waterfall + Global Importance stacked vertically */
+          <div className="space-y-6 mb-6">
             {/* SHAP Waterfall */}
             <div className="bg-gray-900 rounded-lg p-4">
               <ErrorBoundary errorTitle="SHAP Waterfall Error">
@@ -180,7 +187,8 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             </div>
           </div>
         )}
-      </section>
+        </section>
+      </div>
 
       {/* Model Comparison Summary */}
       <section className="bg-gray-800 rounded-lg p-6 shadow-lg">
