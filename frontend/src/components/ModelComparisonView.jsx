@@ -58,7 +58,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             <div className="mb-6">
               <DecisionTreeViz
                 treeData={treeData.tree}
-                passengerValues={hasQuery ? passengerData : null}
+                passengerValues={hasQuery || highlightMode ? passengerData : null}
                 highlightMode={highlightMode}
                 comparisonData={hasQuery ? activeComparison : null}
               />

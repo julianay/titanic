@@ -77,12 +77,13 @@ titanic/
 ## 🎯 Features
 
 ### React Frontend
-- **D3.js Visualizations** - Decision tree with donut charts, SHAP waterfall charts
+- **Interactive Tutorial** - Guided walkthrough for first-time users with synchronized highlighting
+- **D3.js Visualizations** - Vertical decision tree with donut charts, SHAP waterfall charts
 - **Real-time predictions** with 500ms debouncing
-- **Model Comparison** - Side-by-side Decision Tree vs XGBoost
+- **Model Comparison** - Side-by-side Decision Tree vs XGBoost with dual-path highlighting
 - **Color-coded results** (green/yellow/red based on survival probability)
 - **Smart fare suggestions** that auto-adjust by passenger class
-- **Chat interface** for natural language exploration
+- **Chat interface** for natural language exploration and cohort comparison
 - **Quick presets** for instant testing (4 passenger profiles)
 - **Responsive design** (two-column desktop, stacked mobile)
 - **Loading skeletons** and error boundaries
@@ -104,6 +105,9 @@ titanic/
 - **[Backend Guide](docs/BACKEND.md)** - FastAPI server, models, development
 - **[API Reference](docs/API.md)** - Endpoint docs with examples
 - **[AI Context](AI_CONTEXT.md)** - Comprehensive project documentation for AI assistants
+- **[Tutorial Feature](TUTORIAL_FEATURE.md)** - Interactive tutorial system
+- **[Decision Tree Features](DECISION_TREE_FEATURES.md)** - Tree visualization enhancements
+- **[Changelog](CHANGELOG_DEC20_2025.md)** - Recent updates and bug fixes
 
 ---
 
@@ -194,6 +198,15 @@ The models reveal:
 - **Passenger class matters** (1st class: 63%, 2nd: 47%, 3rd: 24%)
 - **Age impacts survival** (children had higher survival rates)
 - **Fare correlates with class** (higher fares → better survival)
+
+### Recent Updates (Dec 20, 2025)
+
+✨ **New Features:**
+- Vertical tree layout (top-to-bottom) for improved readability
+
+🐛 **Bug Fixes:**
+- Tutorial highlighting now works correctly on decision tree
+- Sex feature now appears in SHAP waterfall chart (was hidden due to mislabeling)
 
 ---
 

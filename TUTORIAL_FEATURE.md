@@ -195,22 +195,45 @@ When tutorial starts or advances, passenger values are automatically set to the 
 
 ## Testing Checklist
 
-- [ ] Tutorial auto-starts on first visit (localStorage empty)
-- [ ] Tutorial does NOT auto-start on subsequent visits
-- [ ] Progress indicator updates correctly (1/3, 2/3, 3/3)
-- [ ] Messages appear in chat panel
-- [ ] Decision tree highlights correctly:
+- [x] Tutorial auto-starts on first visit (localStorage empty)
+- [x] Tutorial does NOT auto-start on subsequent visits
+- [x] Progress indicator updates correctly (1/3, 2/3, 3/3)
+- [x] Messages appear in chat panel
+- [x] Decision tree highlights correctly:
   - Step 0: No highlighting
   - Step 1: First split only (gold)
   - Step 2: Full path (gold)
-- [ ] SHAP waterfall highlights correctly:
+  - **Fixed Dec 20, 2025:** Tutorial cohort path now highlights correctly
+- [x] SHAP waterfall highlights correctly:
   - Step 0: No highlighting
   - Step 1: Sex bar highlighted (gold)
   - Step 2: Sex and pclass bars highlighted (gold)
-- [ ] Passenger controls update to tutorial passenger
-- [ ] Skip button works (exits tutorial, shows skip message)
-- [ ] Finish button works (completes tutorial)
-- [ ] Tutorial can be reset via localStorage.removeItem()
+  - **Fixed Dec 20, 2025:** Sex feature now appears in waterfall chart
+- [x] Passenger controls update to tutorial passenger
+- [x] Skip button works (exits tutorial, shows skip message)
+- [x] Finish button works (completes tutorial)
+- [x] Tutorial can be reset via localStorage.removeItem()
+
+## Known Issues & Fixes
+
+### Fixed Issues (Dec 20, 2025)
+
+#### 1. Tutorial Highlighting Not Working on Decision Tree
+**Issue:** Decision tree was not highlighting the tutorial cohort's path during tutorial steps.
+
+**Cause:** `passengerValues` prop was only passed when `hasQuery` was true, but tutorial starts with `hasQuery=false`.
+
+**Fix:** Updated `ModelComparisonView.jsx:61` to pass passenger values when tutorial is active:
+```javascript
+passengerValues={hasQuery || highlightMode ? passengerData : null}
+```
+
+#### 2. Sex Feature Missing from SHAP Waterfall
+**Issue:** The most important feature (sex) was not appearing in the SHAP waterfall chart.
+
+**Cause:** Backend was returning feature data without a "Base" entry, causing the frontend to mislabel the first feature (sex) as "Base".
+
+**Fix:** Added explicit "Base" item to waterfall data in `backend/models/xgboost_model.py:138-161`.
 
 ## Future Enhancements
 

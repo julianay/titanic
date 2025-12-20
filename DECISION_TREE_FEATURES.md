@@ -1,7 +1,7 @@
 # Decision Tree Visualization Features
 
 **Component**: `/frontend/src/components/visualizations/DecisionTreeViz.jsx`
-**Last Updated**: December 17, 2025
+**Last Updated**: December 20, 2025
 
 This document consolidates all decision tree visualization features and enhancements.
 
@@ -9,11 +9,47 @@ This document consolidates all decision tree visualization features and enhancem
 
 ## Table of Contents
 
-1. [Variable Stroke Widths](#variable-stroke-widths)
-2. [Selective Path Highlighting](#selective-path-highlighting)
-3. [Dual Path Visualization](#dual-path-visualization)
-4. [Usage Examples](#usage-examples)
-5. [Technical Implementation](#technical-implementation)
+1. [Tree Layout](#tree-layout)
+2. [Variable Stroke Widths](#variable-stroke-widths)
+3. [Selective Path Highlighting](#selective-path-highlighting)
+4. [Dual Path Visualization](#dual-path-visualization)
+5. [Usage Examples](#usage-examples)
+6. [Technical Implementation](#technical-implementation)
+
+---
+
+## Tree Layout
+
+**Status**: ✅ Vertical Layout (Dec 20, 2025)
+
+### Overview
+
+The decision tree uses a top-to-bottom (vertical) layout for improved readability and conventional presentation.
+
+### Visual Structure
+
+- **Root node**: Positioned at the top
+- **Decision splits**: Flow downward
+- **Leaf nodes**: Terminal outcomes at the bottom
+- **Feature labels**: Above internal nodes, below leaf nodes
+- **Edge labels**: Positioned left/right of branches
+
+### Layout Change History (Dec 20, 2025)
+
+**Previous**: Horizontal (left-to-right) layout
+**Current**: Vertical (top-to-bottom) layout
+
+**Motivation**: Vertical tree layouts are more conventional and easier to read, especially for wider trees.
+
+**Implementation Changes**:
+1. Margins adjusted: `{ top: 40, right: 20, bottom: 80, left: 20 }`
+2. Tree size dimensions swapped
+3. Changed from `d3.linkHorizontal()` to `d3.linkVertical()`
+4. Swapped x/y coordinate mappings throughout
+5. Repositioned edge labels with `dx` offsets
+6. Simplified label positioning (internal nodes above, leaf nodes below)
+
+**Backwards Compatibility**: All features preserved (hover effects, highlighting modes, comparison mode, tutorial mode)
 
 ---
 

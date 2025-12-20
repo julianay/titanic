@@ -267,7 +267,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
     const container = containerRef.current
     const actualWidth = width || container.offsetWidth
-    const margin = { top: 20, right: 150, bottom: 20, left: 80 }
+    const margin = { top: 40, right: 20, bottom: 80, left: 20 }
 
     // Clear existing content
     d3.select(containerRef.current).selectAll("svg").remove()
@@ -285,7 +285,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
     setTreeVersion(v => v + 1) // Increment version to trigger highlighting
 
     const tree = d3.tree()
-      .size([height - margin.top - margin.bottom, actualWidth - margin.left - margin.right])
+      .size([actualWidth - margin.left - margin.right, height - margin.top - margin.bottom])
 
     const root = d3.hierarchy(treeData, d => d.children)
     const treeLayout = tree(root)
@@ -330,9 +330,9 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       .enter()
       .append("path")
       .attr("class", "link")
-      .attr("d", d3.linkHorizontal()
-        .x(d => d.y)
-        .y(d => d.x))
+      .attr("d", d3.linkVertical()
+        .x(d => d.x)
+        .y(d => d.y))
       .attr("stroke-width", d => strokeScale(d.target.data.samples))
       .attr("stroke-linecap", "round")
       .attr("stroke-opacity", 0.6)
@@ -343,13 +343,14 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       .enter()
       .append("text")
       .attr("class", "edge-label")
-      .attr("x", d => (d.source.y + d.target.y) / 2 + 15)
-      .attr("y", d => (d.source.x + d.target.x) / 2)
+      .attr("x", d => (d.source.x + d.target.x) / 2)
+      .attr("y", d => (d.source.y + d.target.y) / 2)
       .attr("text-anchor", "middle")
-      .attr("dy", d => {
+      .attr("dx", d => {
         const isLeftChild = d.target.x < d.source.x
-        return isLeftChild ? -5 : 12
+        return isLeftChild ? -15 : 15
       })
+      .attr("dy", -5)
       .text(d => {
         const isLeftChild = d.source.data.children && d.source.data.children[0] === d.target.data
         return isLeftChild ? (d.source.data.left_label || '') : (d.source.data.right_label || '')
@@ -360,7 +361,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       .enter()
       .append("g")
       .attr("class", "node")
-      .attr("transform", d => `translate(${d.y},${d.x})`)
+      .attr("transform", d => `translate(${d.x},${d.y})`)
 
     // PIE CHART NODES: Show class distribution as pie charts
     const pie = d3.pie()
@@ -469,19 +470,15 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       })
     })
 
-    // Labels: leaf nodes on right, internal nodes below
+    // Labels: leaf nodes below, internal nodes above
     nodes.append("text")
       .attr("dy", d => {
         const radius = Math.sqrt(d.data.samples) * 2
-        // Leaf nodes: center vertically, Internal nodes: below circle
-        return d.data.is_leaf ? 5 : radius + 15
+        // Leaf nodes: below circle, Internal nodes: above circle
+        return d.data.is_leaf ? radius + 15 : -radius - 8
       })
-      .attr("x", d => {
-        const radius = Math.sqrt(d.data.samples) * 2
-        // Leaf nodes: to the right, Internal nodes: centered
-        return d.data.is_leaf ? radius + 10 : 0
-      })
-      .attr("text-anchor", d => d.data.is_leaf ? "start" : "middle")
+      .attr("x", 0)
+      .attr("text-anchor", "middle")
       .text(d => {
         if (d.data.is_leaf) {
           return d.data.predicted_class === 1 ? "✓ Survived" : "✗ Died"

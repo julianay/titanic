@@ -135,6 +135,15 @@ def get_shap_explanation(sex: int, pclass: int, age: float, fare: float):
     waterfall_data = []
     cumulative = base_value
 
+    # Add base value as first item (for visualization)
+    waterfall_data.append({
+        "feature": "Base",
+        "value": 0.0,  # Base has no contribution itself
+        "start": float(base_value),
+        "end": float(base_value),
+        "feature_value": ""
+    })
+
     for feat, shap_val, feat_val in zip(feature_names, shap_values_individual, input_data.iloc[0]):
         waterfall_data.append({
             "feature": feat,
@@ -145,8 +154,11 @@ def get_shap_explanation(sex: int, pclass: int, age: float, fare: float):
         })
         cumulative += shap_val
 
-    # Sort by absolute SHAP value
-    waterfall_data_sorted = sorted(waterfall_data, key=lambda x: abs(x['value']), reverse=True)
+    # Sort features by absolute SHAP value (keep Base at index 0)
+    base_item = waterfall_data[0]
+    feature_items = waterfall_data[1:]
+    feature_items_sorted = sorted(feature_items, key=lambda x: abs(x['value']), reverse=True)
+    waterfall_data_sorted = [base_item] + feature_items_sorted
 
     return {
         'base_value': base_value,
