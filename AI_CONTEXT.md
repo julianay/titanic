@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 20, 2025 (PM)
+**Last Updated:** December 20, 2025 (Evening)
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -324,6 +324,11 @@ React displays predictions with intuitive colors:
 **Issue**: Need to check git remotes or deploy
 - **Solution**: See [Git Repositories & Deployment](#-git-repositories--deployment) section for complete workflow
 
+**Issue**: "What if?" controls not updating visualizations
+- **Fixed**: December 20, 2025 (Evening)
+- **Solution**: Added `setHasQuery(true)` and `setActiveComparison(null)` to `handleChange` in App.jsx
+- **Details**: When sliders/radio buttons changed, passenger data updated but visualizations didn't show because `hasQuery` flag wasn't set
+
 ---
 
 ## 🎯 Completed Features (All Ported from Streamlit)
@@ -443,6 +448,7 @@ React displays predictions with intuitive colors:
   - Dual path visualization on decision tree (blue vs orange paths)
   - **Dec 20, 2025 (PM)**: Dual SHAP waterfall charts - side-by-side feature contribution explanations for both cohorts
   - **Dec 20, 2025 (AM)**: Fixed bug where comparison paths persisted when switching to single path queries
+  - **Dec 20, 2025 (Evening)**: Fixed "What if?" controls not updating visualizations (App.jsx handleChange)
 
 - **DECISION_TREE_FEATURES.md** - **CONSOLIDATED** decision tree visualization features
   - Variable stroke widths (edge thickness based on passenger counts)
@@ -458,5 +464,5 @@ React displays predictions with intuitive colors:
 
 ---
 
-**Last Updated:** December 20, 2025 (PM)
+**Last Updated:** December 20, 2025 (Evening)
 **Status:** Production-ready with all features complete

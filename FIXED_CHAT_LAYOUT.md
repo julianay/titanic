@@ -206,3 +206,25 @@ width: 30%;
 - `/frontend/src/components/ChatPanel.jsx` - Chat UI with presets
 - `/frontend/src/components/ControlPanel.jsx` - Accordion controls
 - `/frontend/src/App.jsx` - State management and prop passing
+
+## Bug Fixes
+
+### December 20, 2025 (Evening): "What if?" Controls Not Updating Visualizations
+
+**Issue**: When users adjusted sliders or radio buttons in the "What if?" accordion panel, the passenger data was updated but the visualizations (decision tree path, SHAP waterfall) didn't update to show the new predictions.
+
+**Root Cause**: The `handleChange` function in `App.jsx` was updating `passengerData` state but not setting the `hasQuery` flag to `true`. The `ModelComparisonView` component only displays passenger values when `hasQuery` is true, so the visualizations remained in their initial "no query" state.
+
+**Fix**: Updated `App.jsx` line 30-37:
+```jsx
+const handleChange = (field, value) => {
+  setPassengerData(prev => ({
+    ...prev,
+    [field]: value
+  }))
+  setHasQuery(true) // Mark that user has made a query
+  setActiveComparison(null) // Clear any active comparison
+}
+```
+
+**Impact**: Now when users adjust any control (sex, class, age, fare), the visualizations immediately update to show the decision path and predictions for those values.

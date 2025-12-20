@@ -32,6 +32,8 @@ function App() {
       ...prev,
       [field]: value
     }))
+    setHasQuery(true) // Mark that user has made a query
+    setActiveComparison(null) // Clear any active comparison
   }
 
   // Handle preset selection - update all values at once
