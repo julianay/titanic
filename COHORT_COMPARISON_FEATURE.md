@@ -7,6 +7,7 @@ Users can now compare survival rates between different passenger cohorts directl
 2. **Dual path visualization** in the decision tree showing where each cohort travels
 
 **UPDATES**:
+- **Dec 20, 2025**: **Fixed comparison mode clearing** - Comparison paths now properly clear when switching to single path queries
 - **Dec 19, 2025**: **Chat-centric predictions** - All predictions now appear in chat with both models shown!
 - **Dec 17, 2025 (AM)**: Added **dynamic comparisons** - compare ANY two cohorts!
 - **Dec 17, 2025 (PM)**: Added **dual path visualization** - see both paths on the decision tree!
@@ -81,6 +82,77 @@ When comparing two cohorts, the decision tree now highlights **both paths simult
 - Paths diverge at the first split (sex <= 0.5)
 - Blue path (women) goes left, orange path (men) goes right
 - Paths continue through different branches showing different survival outcomes
+
+### Bug Fix: Comparison Mode Clearing (Dec 20, 2025)
+
+Fixed a critical issue where comparison path highlighting persisted when switching back to single path queries.
+
+**Problem**:
+1. User views comparison (e.g., "women vs men") → tree shows dual paths (blue + orange)
+2. User then queries single path (e.g., "women" or clicks preset button)
+3. Bug: Comparison paths remained visible, blocking single path display
+4. Result: Single path highlighting didn't appear or appeared incorrectly
+
+**Root Cause**:
+- When switching from comparison to single path mode, the comparison CSS classes (`path-a`, `path-b`, `path-shared`) weren't being cleared
+- The `activeComparison` state wasn't cleared when using preset buttons
+- D3.js selections retained comparison styling even when new highlighting was applied
+
+**Solution** (2 fixes):
+
+**Fix 1: Clear comparison classes in DecisionTreeViz** (`DecisionTreeViz.jsx` lines 513-532)
+```javascript
+// Exiting comparison mode - explicitly clear all comparison classes first
+if (!comparisonData && svgRef.current) {
+  const svg = svgRef.current
+  svg.selectAll('.pie-chart')
+    .classed('path-a', false)
+    .classed('path-b', false)
+    .classed('path-shared', false)
+  svg.selectAll('.node text')
+    .classed('path-a', false)
+    .classed('path-b', false)
+    .classed('path-shared', false)
+  svg.selectAll('.link')
+    .classed('path-a', false)
+    .classed('path-b', false)
+    .classed('path-shared', false)
+  svg.selectAll('.edge-label')
+    .classed('path-a', false)
+    .classed('path-b', false)
+    .classed('path-shared', false)
+}
+```
+
+**Fix 2: Clear activeComparison in preset handlers** (`App.jsx` lines 41, 51)
+```javascript
+// Handle preset selection - update all values at once
+const handlePresetSelect = (presetValues) => {
+  setPassengerData(presetValues)
+  setHasQuery(true)
+  setActiveComparison(null) // Clear any active comparison
+}
+
+// Handle preset chat message
+const handlePresetChat = (preset) => {
+  // ... existing code ...
+  setHasQuery(true)
+  setActiveComparison(null) // Clear any active comparison
+  // ... existing code ...
+}
+```
+
+**Files Modified**:
+- `/frontend/src/components/visualizations/DecisionTreeViz.jsx` - Added explicit comparison class clearing
+- `/frontend/src/App.jsx` - Clear `activeComparison` state in both preset handlers
+
+**Testing**:
+- ✅ Comparison → typed single query → clears correctly
+- ✅ Comparison → preset button → clears correctly
+- ✅ Single path → comparison → shows dual paths
+- ✅ Multiple switches between modes → works consistently
+
+**Impact**: All transition paths now work seamlessly, improving user experience when exploring different queries.
 
 ### Chat-Centric Predictions (Dec 19, 2025)
 
@@ -285,6 +357,7 @@ return checkHardcodedPatterns(query)
 - Updates `activeComparison` when user makes comparison query
 - Clears `activeComparison` when switching to regular queries
 - Passes `activeComparison` to `ModelComparisonView`
+- **Dec 20, 2025 Update**: Added `setActiveComparison(null)` to both `handlePresetSelect` and `handlePresetChat` (lines 41, 51)
 
 #### 6. `/frontend/src/components/ModelComparisonView.jsx`
 - Added `activeComparison` prop
@@ -303,6 +376,7 @@ return checkHardcodedPatterns(query)
   - `.path-a`: Blue styling (#218FCE) for first cohort
   - `.path-b`: Orange styling (#FF7F50) for second cohort
   - Applied to links, nodes, text, and edge labels
+- **Dec 20, 2025 Update**: Added explicit clearing of comparison classes when exiting comparison mode (lines 513-532)
 
 **Technical Implementation**:
 ```javascript
