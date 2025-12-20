@@ -510,6 +510,27 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       return
     }
 
+    // Exiting comparison mode - explicitly clear all comparison classes first
+    if (!comparisonData && svgRef.current) {
+      const svg = svgRef.current
+      svg.selectAll('.pie-chart')
+        .classed('path-a', false)
+        .classed('path-b', false)
+        .classed('path-shared', false)
+      svg.selectAll('.node text')
+        .classed('path-a', false)
+        .classed('path-b', false)
+        .classed('path-shared', false)
+      svg.selectAll('.link')
+        .classed('path-a', false)
+        .classed('path-b', false)
+        .classed('path-shared', false)
+      svg.selectAll('.edge-label')
+        .classed('path-a', false)
+        .classed('path-b', false)
+        .classed('path-shared', false)
+    }
+
     // Otherwise, highlight single path (normal mode)
     if (!passengerValues) return
 
