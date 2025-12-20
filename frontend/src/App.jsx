@@ -38,6 +38,7 @@ function App() {
   const handlePresetSelect = (presetValues) => {
     setPassengerData(presetValues)
     setHasQuery(true) // Mark that user has made a query
+    setActiveComparison(null) // Clear any active comparison
   }
 
   // Handle preset chat message
@@ -47,6 +48,7 @@ function App() {
     const passengerDesc = formatPassengerDescription(sex, pclass, age, fare)
 
     setHasQuery(true) // Mark that user has made a query
+    setActiveComparison(null) // Clear any active comparison
 
     // Add messages to chat with prediction card
     setChatMessages(prev => [
