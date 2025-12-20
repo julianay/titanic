@@ -79,6 +79,7 @@ titanic/
 ### React Frontend
 - **Interactive Tutorial** - Guided walkthrough for first-time users with synchronized highlighting
 - **D3.js Visualizations** - Vertical decision tree with donut charts, SHAP waterfall charts
+- **Zoom and Pan** - Interactive zoom controls (scroll wheel, drag, +/−/reset buttons)
 - **Real-time predictions** with 500ms debouncing
 - **Model Comparison** - Side-by-side Decision Tree vs XGBoost with dual-path highlighting
 - **Color-coded results** (green/yellow/red based on survival probability)
@@ -203,6 +204,7 @@ The models reveal:
 
 ✨ **New Features:**
 - Vertical tree layout (top-to-bottom) for improved readability
+- Zoom and pan controls for decision tree exploration (scroll wheel, drag, +/−/reset buttons)
 
 🐛 **Bug Fixes:**
 - Tutorial highlighting now works correctly on decision tree

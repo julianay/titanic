@@ -71,9 +71,54 @@ waterfall_data_sorted = [base_item] + feature_items_sorted
 
 ---
 
+## New Features
+
+### 3. Interactive Zoom and Pan for Decision Tree
+
+**Feature:** Added zoom and pan controls to the decision tree visualization for better exploration of large trees.
+
+**Implementation:**
+
+Added D3.js zoom behavior with both mouse interaction and control buttons:
+
+**Mouse Interaction:**
+- Scroll wheel to zoom in/out (centered on cursor position)
+- Click and drag to pan around the tree
+- Cursor feedback (grab/grabbing)
+
+**Control Buttons:**
+- **+** button: Zoom in by 30%
+- **−** button: Zoom out by ~23%
+- **Reset** button: Return to default view
+
+**Zoom Limits:**
+- Minimum: 30% (0.3x scale)
+- Maximum: 300% (3x scale)
+
+**Code Changes:**
+
+`frontend/src/components/visualizations/DecisionTreeViz.jsx`:
+- Added zoom behavior with `d3.zoom()`
+- Created separate zoom group to preserve margin transforms
+- Added three zoom control functions: `handleZoomIn()`, `handleZoomOut()`, `handleZoomReset()`
+- Added control buttons UI with Tailwind CSS styling
+- Added cursor styles for dragging feedback
+
+**Files Changed:**
+- `frontend/src/components/visualizations/DecisionTreeViz.jsx` (lines 25-26, 278-308, 148-162, 595-603, 784-813)
+
+**Compatibility:**
+- ✅ Works with tutorial highlighting mode
+- ✅ Works with comparison mode (dual path visualization)
+- ✅ Preserves hover effects and tooltips
+- ✅ Maintains variable stroke widths
+- ✅ Responsive layout compatible
+
+---
+
 ## Feature Changes
 
-### 3. Decision Tree Orientation Changed from Horizontal to Vertical
+### 4. Decision Tree Orientation Changed from Horizontal to Vertical
 
 **Change:** Converted the decision tree visualization from left-to-right (horizontal) to top-to-bottom (vertical) orientation.
 

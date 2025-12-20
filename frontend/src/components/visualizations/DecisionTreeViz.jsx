@@ -22,6 +22,8 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
   const [containerWidth, setContainerWidth] = useState(0)
   const [treeVersion, setTreeVersion] = useState(0) // Increment when tree is rebuilt
   const d3TreeRef = useRef(null) // Store D3 tree layout
+  const zoomRef = useRef(null) // Store zoom behavior
+  const svgContainerRef = useRef(null) // Store SVG container for zoom control
 
   // Helper function: Trace path through tree based on input values
   const tracePath = (node, inputValues) => {
@@ -141,6 +143,22 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       .classed('path-b', false)
       .classed('path-shared', false)
       .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
+  }
+
+  // Zoom control functions
+  const handleZoomIn = () => {
+    if (!svgContainerRef.current || !zoomRef.current) return
+    svgContainerRef.current.transition().duration(300).call(zoomRef.current.scaleBy, 1.3)
+  }
+
+  const handleZoomOut = () => {
+    if (!svgContainerRef.current || !zoomRef.current) return
+    svgContainerRef.current.transition().duration(300).call(zoomRef.current.scaleBy, 0.77)
+  }
+
+  const handleZoomReset = () => {
+    if (!svgContainerRef.current || !zoomRef.current) return
+    svgContainerRef.current.transition().duration(300).call(zoomRef.current.transform, d3.zoomIdentity)
   }
 
   // Helper function: Update tree highlighting for TWO paths (comparison mode)
@@ -273,15 +291,36 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
     d3.select(containerRef.current).selectAll("svg").remove()
     d3.selectAll(".tree-tooltip").remove()
 
-    const svg = d3.select(containerRef.current)
+    // Create SVG container
+    const svgContainer = d3.select(containerRef.current)
       .append("svg")
       .attr("width", actualWidth)
       .attr("height", height)
+
+    // Create zoom group (this is what gets transformed by zoom)
+    const zoomGroup = svgContainer
+      .append("g")
+      .attr("class", "zoom-group")
+
+    // Create main group with margins
+    const svg = zoomGroup
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
 
-    // Store SVG reference for scoped highlighting
+    // Setup zoom behavior
+    const zoom = d3.zoom()
+      .scaleExtent([0.3, 3])  // Min zoom: 30%, Max zoom: 300%
+      .on("zoom", (event) => {
+        zoomGroup.attr("transform", event.transform)
+      })
+
+    // Apply zoom to SVG
+    svgContainer.call(zoom)
+
+    // Store references
     svgRef.current = svg
+    zoomRef.current = zoom
+    svgContainerRef.current = svgContainer
     setTreeVersion(v => v + 1) // Increment version to trigger highlighting
 
     const tree = d3.tree()
@@ -554,6 +593,15 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
   return (
     <>
       <style>{`
+        /* ZOOM STYLES */
+        .zoom-group {
+          cursor: grab;
+        }
+
+        .zoom-group:active {
+          cursor: grabbing;
+        }
+
         /* PIE CHART STYLES */
         .pie-chart path {
           opacity: 0.4;
@@ -742,8 +790,35 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         }
       `}</style>
 
-      <div className="mb-2 text-xs text-gray-400">
-        <strong>Edge thickness</strong> represents the number of passengers following that path
+      <div className="mb-2 flex items-center justify-between">
+        <div className="text-xs text-gray-400">
+          <strong>Edge thickness</strong> represents the number of passengers following that path
+        </div>
+
+        {/* Zoom controls */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleZoomIn}
+            className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 rounded transition-colors"
+            title="Zoom In"
+          >
+            +
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 rounded transition-colors"
+            title="Zoom Out"
+          >
+            −
+          </button>
+          <button
+            onClick={handleZoomReset}
+            className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 rounded transition-colors"
+            title="Reset Zoom"
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       <div

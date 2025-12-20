@@ -10,11 +10,12 @@ This document consolidates all decision tree visualization features and enhancem
 ## Table of Contents
 
 1. [Tree Layout](#tree-layout)
-2. [Variable Stroke Widths](#variable-stroke-widths)
-3. [Selective Path Highlighting](#selective-path-highlighting)
-4. [Dual Path Visualization](#dual-path-visualization)
-5. [Usage Examples](#usage-examples)
-6. [Technical Implementation](#technical-implementation)
+2. [Zoom and Pan](#zoom-and-pan)
+3. [Variable Stroke Widths](#variable-stroke-widths)
+4. [Selective Path Highlighting](#selective-path-highlighting)
+5. [Dual Path Visualization](#dual-path-visualization)
+6. [Usage Examples](#usage-examples)
+7. [Technical Implementation](#technical-implementation)
 
 ---
 
@@ -50,6 +51,72 @@ The decision tree uses a top-to-bottom (vertical) layout for improved readabilit
 6. Simplified label positioning (internal nodes above, leaf nodes below)
 
 **Backwards Compatibility**: All features preserved (hover effects, highlighting modes, comparison mode, tutorial mode)
+
+---
+
+## Zoom and Pan
+
+**Status**: ✅ Implemented (Dec 20, 2025)
+
+### Overview
+
+Interactive zoom and pan functionality allows users to explore large decision trees in detail. Users can zoom in to see node details or zoom out for a high-level overview.
+
+### Features
+
+#### Mouse Interaction
+- **Scroll wheel**: Zoom in/out (centered on mouse position)
+- **Click and drag**: Pan around the tree
+- **Smooth transitions**: Programmatic zooms animated over 300ms
+- **Cursor feedback**: Grab cursor when hovering, grabbing cursor when dragging
+
+#### Control Buttons
+- **+ button**: Zoom in by 30%
+- **− button**: Zoom out by ~23%
+- **Reset button**: Return to default zoom level and position
+
+### Zoom Limits
+
+- **Minimum zoom**: 30% (0.3x scale)
+- **Maximum zoom**: 300% (3x scale)
+- Prevents users from zooming too far in or out and getting lost
+
+### Implementation Details
+
+**D3.js Zoom Behavior**:
+```javascript
+const zoom = d3.zoom()
+  .scaleExtent([0.3, 3])  // Min/max zoom levels
+  .on("zoom", (event) => {
+    zoomGroup.attr("transform", event.transform)
+  })
+
+svgContainer.call(zoom)
+```
+
+**Programmatic Zoom Functions**:
+```javascript
+handleZoomIn()    // Zoom in with smooth transition
+handleZoomOut()   // Zoom out with smooth transition
+handleZoomReset() // Reset to identity transform
+```
+
+### User Experience
+
+- **Exploration**: Zoom in to inspect individual nodes and splits
+- **Overview**: Zoom out to see the entire tree structure
+- **Navigation**: Pan to view different sections of large trees
+- **Precision**: Mouse wheel provides fine-grained zoom control
+- **Quick reset**: One-click return to default view
+
+### Compatibility
+
+The zoom feature works seamlessly with all other visualization features:
+- ✅ Tutorial highlighting mode
+- ✅ Comparison mode (dual path visualization)
+- ✅ Hover effects and tooltips
+- ✅ Variable stroke widths
+- ✅ Responsive layout
 
 ---
 
