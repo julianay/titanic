@@ -8,6 +8,7 @@ Users can now compare survival rates between different passenger cohorts directl
 3. **Dual SHAP waterfall charts** (NEW!) showing feature contributions for both cohorts side-by-side
 
 **UPDATES**:
+- **Dec 20, 2025 (Late Evening)**: **Fixed comparison detection** - "kids vs elderly" now works! Updated pattern to recognize "kids", "children", "elderly", "seniors"
 - **Dec 20, 2025 (PM)**: **Dual SHAP waterfall charts** - Comparison mode now shows side-by-side SHAP explanations for both cohorts!
 - **Dec 20, 2025 (AM)**: **Fixed comparison mode clearing** - Comparison paths now properly clear when switching to single path queries
 - **Dec 19, 2025**: **Chat-centric predictions** - All predictions now appear in chat with both models shown!
@@ -38,14 +39,17 @@ The comparison system now intelligently parses natural language to extract ANY t
 
 For very simple queries, hardcoded patterns provide cleaner labels:
 - "women vs men" → Clear labels without extra details
-- "children vs adults" → Standardized age comparison
+- "children vs adults" / "kids vs elderly" → Standardized age comparison (intelligently sets age: kids=8, elderly=65, adults=35)
 - "1st class vs 3rd class" → Class-only comparison
+
+**Note**: As of Dec 20, 2025 (Late Evening), the age comparison pattern now recognizes "kids", "children", "elderly", and "seniors" keywords, fixing a bug where "kids vs elderly" queries were not being detected as comparisons.
 
 ### Example Queries
 
 **Simple comparisons** (hardcoded fallback):
 - "compare women vs men"
 - "children against adults"
+- "kids vs elderly"
 - "1st class versus 3rd class"
 
 **Complex comparisons** (dynamic parsing):

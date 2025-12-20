@@ -2,7 +2,37 @@
 
 ## Bug Fixes
 
-### 1. Tutorial Highlighting Not Working on Decision Tree
+### 1. Comparison Detection Not Working for "kids vs elderly" (Late Evening)
+
+**Issue:** Comparison queries using "kids vs elderly" were not being detected as comparisons and instead returned an error message.
+
+**Root Cause:** In `frontend/src/utils/cohortPatterns.js`, the hardcoded fallback pattern for age-based comparisons only recognized "child/children" and "adults" keywords, but not "kids" or "elderly". The regex pattern was:
+```javascript
+/\bchild(ren)?\s+(vs\.?|versus|against|and|or)\s+adults?\b/
+```
+
+**Fix:** Extended the pattern to recognize all age-related keywords and intelligently set ages:
+- "kids" or "children" → age 8
+- "elderly" or "seniors" → age 65
+- "adults" → age 35
+
+Updated regex pattern (lines 212-213):
+```javascript
+/\b(child(ren)?|kids?)\s+(vs\.?|versus|against|and|or)\s+(adults?|elderly|seniors?)\b/i
+```
+
+**Files Changed:**
+- `frontend/src/utils/cohortPatterns.js:211-225`
+
+**Impact:** Comparison queries now work with all variations:
+- "kids vs elderly" ✅
+- "children vs seniors" ✅
+- "kids vs adults" ✅
+- "elderly vs kids" ✅ (reverse order)
+
+---
+
+### 2. Tutorial Highlighting Not Working on Decision Tree
 
 **Issue:** During the tutorial, the decision tree was not highlighting the tutorial cohort's path, even though the XGBoost waterfall chart highlighting was working correctly.
 
@@ -27,7 +57,7 @@ passengerValues={hasQuery || highlightMode ? passengerData : null}
 
 ---
 
-### 2. Sex Feature Missing from SHAP Waterfall Chart
+### 3. Sex Feature Missing from SHAP Waterfall Chart
 
 **Issue:** The "sex" feature was not appearing in the SHAP waterfall chart, despite being the most important feature in the Global Feature Importance chart. For the tutorial passenger (30-year-old woman in 1st class), sex has the largest SHAP contribution (~+2.39) but was completely hidden from the visualization.
 
@@ -73,7 +103,53 @@ waterfall_data_sorted = [base_item] + feature_items_sorted
 
 ## New Features
 
-### 3. Interactive Zoom and Pan for Decision Tree
+### 4. Layout Restructuring for Better Space Utilization (Late Evening)
+
+**Feature:** Restructured the page layout to give more space to visualizations while maintaining the chat interface.
+
+**Changes:**
+
+**Main Layout** (`Layout.jsx`):
+- Changed column split from 70/30 to **80/20**
+- Visualizations now occupy 80% of screen width (was 70%)
+- Chat/controls occupy 20% of screen width (was 30%)
+
+**Visualization Layout** (`ModelComparisonView.jsx`):
+- Left column now split into two sections side-by-side:
+  - **Decision Tree: 70%** (left side)
+  - **XGBoost Section: 30%** (right side)
+- XGBoost visualizations stacked vertically:
+  - SHAP waterfall chart (top)
+  - Global feature importance (bottom)
+
+**Comparison Mode**:
+- Dual SHAP waterfalls now stack vertically instead of side-by-side
+- Fits better in the narrower 30% column
+
+**Code Changes:**
+
+`Layout.jsx`:
+- Line 37: `w-[70%]` → `w-[80%]` (left column)
+- Line 54: `w-[30%]` → `w-[20%]` (right column)
+
+`ModelComparisonView.jsx`:
+- Line 48: Changed from `grid grid-cols-2` to `flex flex-row`
+- Line 50: Added `lg:w-[70%]` to Decision Tree section
+- Line 75: Added `lg:w-[30%]` to XGBoost section
+- Lines 86, 147: Changed from `grid grid-cols-2` to `space-y-6` for vertical stacking
+
+**Files Changed:**
+- `frontend/src/components/Layout.jsx:37, 54`
+- `frontend/src/components/ModelComparisonView.jsx:48, 50, 75, 86, 147`
+
+**Impact:**
+- More screen space for complex visualizations
+- Better use of horizontal space
+- Maintains all functionality (tutorial, comparison mode, responsive design)
+
+---
+
+### 5. Interactive Zoom and Pan for Decision Tree
 
 **Feature:** Added zoom and pan controls to the decision tree visualization for better exploration of large trees.
 
@@ -118,7 +194,7 @@ Added D3.js zoom behavior with both mouse interaction and control buttons:
 
 ## Feature Changes
 
-### 4. Decision Tree Orientation Changed from Horizontal to Vertical
+### 6. Decision Tree Orientation Changed from Horizontal to Vertical
 
 **Change:** Converted the decision tree visualization from left-to-right (horizontal) to top-to-bottom (vertical) orientation.
 
