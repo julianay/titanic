@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 17, 2025
+**Last Updated:** December 20, 2025
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -440,6 +440,7 @@ React displays predictions with intuitive colors:
   - Dynamic comparison parsing ("1st class women vs 3rd class men")
   - Side-by-side prediction cards
   - Dual path visualization on decision tree (blue vs orange paths)
+  - **Dec 20, 2025**: Fixed bug where comparison paths persisted when switching to single path queries
 
 - **DECISION_TREE_FEATURES.md** - **CONSOLIDATED** decision tree visualization features
   - Variable stroke widths (edge thickness based on passenger counts)
@@ -455,5 +456,5 @@ React displays predictions with intuitive colors:
 
 ---
 
-**Last Updated:** December 17, 2025
+**Last Updated:** December 20, 2025
 **Status:** Production-ready with all features complete

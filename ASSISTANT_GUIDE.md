@@ -1,7 +1,7 @@
 # Coding Assistant Guide
 
 **Purpose**: Help coding assistants (GitHub Copilot, Cursor, etc.) make changes efficiently
-**Last Updated**: December 17, 2025
+**Last Updated**: December 20, 2025
 
 This guide provides step-by-step patterns for common tasks. Follow these exactly to avoid breaking things.
 
@@ -985,6 +985,7 @@ For more detailed information about specific features:
   - Dynamic comparison parsing ("1st class women vs 3rd class men")
   - Side-by-side prediction cards
   - Integration with dual path visualization on decision tree
+  - **Dec 20, 2025**: Fixed comparison path clearing bug (DecisionTreeViz.jsx, App.jsx)
 
 - **TUTORIAL_FEATURE.md** - Interactive tutorial system
   - Progressive path highlighting
