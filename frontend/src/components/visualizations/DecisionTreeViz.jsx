@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { TREE_COLORS, TREE_EFFECTS, TREE_OPACITY } from '../../utils/visualizationColors'
+import { TREE_COLORS, TREE_EFFECTS, TREE_OPACITY, TREE_STROKE, TREE_SIZING } from '../../utils/visualizationStyles'
 
 /**
  * DecisionTreeViz - Interactive D3.js decision tree visualization with donut chart nodes
@@ -109,9 +109,16 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         return !isTutorialMode && nodeData.data.id === finalNodeId
       })
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label')
       .classed(otherClass, false) // Clear other class
       .classed('path-a', false)    // Clear comparison classes
+      .classed('path-b', false)
+      .classed('path-shared', false)
+      .classed(highlightClass, d => path.includes(d.data.id))
+
+    svg.selectAll('.node text.prediction-label')
+      .classed(otherClass, false)
+      .classed('path-a', false)
       .classed('path-b', false)
       .classed('path-shared', false)
       .classed(highlightClass, d => path.includes(d.data.id))
@@ -183,7 +190,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       .classed('path-b', false)
       .classed('path-shared', false)
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('active', false)
       .classed('tutorial-highlight', false)
       .classed('path-a', false)
@@ -213,7 +220,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         return sharedNodes.includes(nodeData.data.id)
       })
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-shared', d => sharedNodes.includes(d.data.id))
 
     // Highlight shared links - both source AND target are shared
@@ -230,7 +237,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         return uniqueA.includes(nodeData.data.id)
       })
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-a', d => uniqueA.includes(d.data.id))
 
     // Highlight path A links - either BOTH in uniqueA, OR source in shared and target in uniqueA
@@ -258,7 +265,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         return uniqueB.includes(nodeData.data.id)
       })
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-b', d => uniqueB.includes(d.data.id))
 
     // Highlight path B links - either BOTH in uniqueB, OR source in shared and target in uniqueB
@@ -335,7 +342,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
     const maxSamples = d3.max(treeLayout.descendants(), d => d.data.samples)
     const strokeScale = d3.scaleSqrt()
       .domain([0, maxSamples])
-      .range([2, 20])  // Adjusted range for better visibility
+      .range([TREE_STROKE.minWidth, TREE_STROKE.maxWidth])
 
     // Debug: Log stroke width range
     console.log('Tree stroke widths:', {
@@ -411,11 +418,11 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
     // Add pie chart to each node
     nodes.each(function(d) {
       const nodeGroup = d3.select(this)
-      const radius = Math.sqrt(d.data.samples) * 2
+      const radius = Math.sqrt(d.data.samples) * TREE_SIZING.radiusMultiplier
 
       // Create arc generator for this node's radius (donut style)
       const arc = d3.arc()
-        .innerRadius(radius * 0.5)
+        .innerRadius(radius * TREE_SIZING.innerRadiusFraction)
         .outerRadius(radius)
 
       // Prepare data for pie chart: [died, survived]
@@ -436,7 +443,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         .attr("d", arc)
         .attr("fill", d => d.data.color)
         .attr("stroke", TREE_COLORS.nodeStroke)
-        .attr("stroke-width", 1)
+        .attr("stroke-width", TREE_STROKE.nodeStroke)
 
       // Add invisible circle for hover target (easier to hover)
       const hoverCircle = nodeGroup.append("circle")
@@ -459,7 +466,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
             return hoverPath.includes(nodeData.data.id)
           })
 
-        d3.selectAll('.node text')
+        d3.selectAll('.node text.feature-label')
           .classed('hover-active', function() {
             const nodeData = d3.select(this.parentNode).datum()
             return hoverPath.includes(nodeData.data.id)
@@ -500,7 +507,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         // Remove hover highlighting
         d3.selectAll('.pie-chart').classed('hover-active', false)
-        d3.selectAll('.node text').classed('hover-active', false)
+        d3.selectAll('.node text.feature-label').classed('hover-active', false)
         d3.selectAll('.link').classed('hover-active', false)
         d3.selectAll('.edge-label').classed('hover-active', false)
 
@@ -510,23 +517,35 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       })
     })
 
-    // Labels: leaf nodes below, internal nodes above
+    // Labels for internal nodes (feature names)
     nodes.append("text")
+      .attr("class", "feature-label")
       .attr("dy", d => {
-        const radius = Math.sqrt(d.data.samples) * 2
-        // Leaf nodes: below circle, Internal nodes: above circle
-        return d.data.is_leaf ? radius + 15 : -radius - 8
+        const radius = Math.sqrt(d.data.samples) * TREE_SIZING.radiusMultiplier
+        return -radius - TREE_SIZING.labelOffset.internal
+      })
+      .attr("x", 0)
+      .attr("text-anchor", "middle")
+      .text(d => d.data.is_leaf ? "" : (d.data.feature || ""))
+      .style("fill", TREE_COLORS.textDefault)
+
+    // Labels for leaf nodes (Survived/Died) - shown only when highlighted
+    nodes.append("text")
+      .attr("class", "prediction-label")
+      .attr("dy", d => {
+        const radius = Math.sqrt(d.data.samples) * TREE_SIZING.radiusMultiplier
+        return radius + TREE_SIZING.labelOffset.leaf
       })
       .attr("x", 0)
       .attr("text-anchor", "middle")
       .text(d => {
         if (d.data.is_leaf) {
-          return d.data.predicted_class === 1 ? "✓ Survived" : "✗ Died"
-        } else {
-          return d.data.feature || ""
+          return d.data.predicted_class === 1 ? "Survived" : "Died"
         }
+        return ""
       })
       .style("fill", TREE_COLORS.textDefault)
+      // Opacity controlled by CSS classes only
 
     // Cleanup function
     return () => {
@@ -554,7 +573,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         .classed('path-a', false)
         .classed('path-b', false)
         .classed('path-shared', false)
-      svg.selectAll('.node text')
+      svg.selectAll('.node text.feature-label, .node text.prediction-label')
         .classed('path-a', false)
         .classed('path-b', false)
         .classed('path-shared', false)
@@ -633,7 +652,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
           50% { transform: scale(1.1); }
         }
 
-        .node text {
+        .node text.feature-label {
           font-size: 12px;
           font-weight: 500;
           fill: ${TREE_COLORS.textDefault};
@@ -641,16 +660,50 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
           transition: opacity 0.3s ease;
         }
 
-        .node text.active {
+        .node text.feature-label.active {
           opacity: ${TREE_OPACITY.active};
           font-weight: 700;
           fill: ${TREE_COLORS.textDefault};
         }
 
         /* Hover highlighting for text */
-        .node text.hover-active {
+        .node text.feature-label.hover-active {
           opacity: ${TREE_OPACITY.hover};
           fill: ${TREE_COLORS.hover};
+        }
+
+        /* Prediction labels - hidden by default, shown when highlighted */
+        .node text.prediction-label {
+          font-size: 12px;
+          font-weight: 500;
+          fill: ${TREE_COLORS.textDefault};
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .node text.prediction-label.active,
+        .node text.prediction-label.tutorial-highlight,
+        .node text.prediction-label.path-a,
+        .node text.prediction-label.path-b,
+        .node text.prediction-label.path-shared {
+          opacity: ${TREE_OPACITY.active};
+          font-weight: 700;
+        }
+
+        .node text.prediction-label.tutorial-highlight {
+          fill: ${TREE_COLORS.tutorial};
+        }
+
+        .node text.prediction-label.path-a {
+          fill: ${TREE_COLORS.comparisonA};
+        }
+
+        .node text.prediction-label.path-b {
+          fill: ${TREE_COLORS.comparisonB};
+        }
+
+        .node text.prediction-label.path-shared {
+          fill: ${TREE_COLORS.comparisonShared};
         }
 
         .link {

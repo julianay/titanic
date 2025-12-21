@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { TREE_COLORS, TREE_EFFECTS, TREE_OPACITY } from '../../utils/visualizationColors'
+import { TREE_COLORS, TREE_EFFECTS, TREE_OPACITY, TREE_STROKE, TREE_SIZING } from '../../utils/visualizationStyles'
 
 /**
  * DecisionTreeVizHorizontal - Horizontal (left-to-right) decision tree visualization
@@ -102,7 +102,14 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         return !isTutorialMode && nodeData.data.id === finalNodeId
       })
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label')
+      .classed(otherClass, false)
+      .classed('path-a', false)
+      .classed('path-b', false)
+      .classed('path-shared', false)
+      .classed(highlightClass, d => path.includes(d.data.id))
+
+    svg.selectAll('.node text.prediction-label')
       .classed(otherClass, false)
       .classed('path-a', false)
       .classed('path-b', false)
@@ -173,7 +180,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
       .classed('path-b', false)
       .classed('path-shared', false)
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('active', false)
       .classed('tutorial-highlight', false)
       .classed('path-a', false)
@@ -202,7 +209,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         return sharedNodes.includes(nodeData.data.id)
       })
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-shared', d => sharedNodes.includes(d.data.id))
 
     svg.selectAll('.link')
@@ -217,7 +224,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         return uniqueA.includes(nodeData.data.id)
       })
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-a', d => uniqueA.includes(d.data.id))
 
     svg.selectAll('.link')
@@ -242,7 +249,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         return uniqueB.includes(nodeData.data.id)
       })
 
-    svg.selectAll('.node text')
+    svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-b', d => uniqueB.includes(d.data.id))
 
     svg.selectAll('.link')
@@ -322,7 +329,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     const maxSamples = d3.max(treeLayout.descendants(), d => d.data.samples)
     const strokeScale = d3.scaleSqrt()
       .domain([0, maxSamples])
-      .range([2, 20])
+      .range([TREE_STROKE.minWidth, TREE_STROKE.maxWidth])
 
     const tooltip = d3.select("body")
       .append("div")
@@ -385,10 +392,10 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
 
     nodes.each(function(d) {
       const nodeGroup = d3.select(this)
-      const radius = Math.sqrt(d.data.samples) * 2
+      const radius = Math.sqrt(d.data.samples) * TREE_SIZING.radiusMultiplier
 
       const arc = d3.arc()
-        .innerRadius(radius * 0.5)
+        .innerRadius(radius * TREE_SIZING.innerRadiusFraction)
         .outerRadius(radius)
 
       const pieData = pie([
@@ -406,7 +413,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         .attr("d", arc)
         .attr("fill", d => d.data.color)
         .attr("stroke", TREE_COLORS.nodeStroke)
-        .attr("stroke-width", 1)
+        .attr("stroke-width", TREE_STROKE.nodeStroke)
 
       const hoverCircle = nodeGroup.append("circle")
         .attr("r", radius)
@@ -425,7 +432,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
             return hoverPath.includes(nodeData.data.id)
           })
 
-        d3.selectAll('.node text')
+        d3.selectAll('.node text.feature-label')
           .classed('hover-active', function() {
             const nodeData = d3.select(this.parentNode).datum()
             return hoverPath.includes(nodeData.data.id)
@@ -464,7 +471,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
           .attr("transform", "scale(1)")
 
         d3.selectAll('.pie-chart').classed('hover-active', false)
-        d3.selectAll('.node text').classed('hover-active', false)
+        d3.selectAll('.node text.feature-label').classed('hover-active', false)
         d3.selectAll('.link').classed('hover-active', false)
         d3.selectAll('.edge-label').classed('hover-active', false)
 
@@ -474,19 +481,29 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
       })
     })
 
-    // Labels: HORIZONTAL layout - position to the right for leaf nodes, above for internal
+    // Labels for internal nodes (feature names)
     nodes.append("text")
-      .attr("dy", d => d.data.is_leaf ? 0 : -Math.sqrt(d.data.samples) * 2 - 8)
-      .attr("dx", d => d.data.is_leaf ? Math.sqrt(d.data.samples) * 2 + 10 : 0)
-      .attr("text-anchor", d => d.data.is_leaf ? "start" : "middle")
+      .attr("class", "feature-label")
+      .attr("dy", d => -Math.sqrt(d.data.samples) * TREE_SIZING.radiusMultiplier - TREE_SIZING.labelOffset.internal)
+      .attr("dx", 0)
+      .attr("text-anchor", "middle")
+      .text(d => d.data.is_leaf ? "" : (d.data.feature || ""))
+      .style("fill", TREE_COLORS.textDefault)
+
+    // Labels for leaf nodes (Survived/Died) - shown only when highlighted
+    nodes.append("text")
+      .attr("class", "prediction-label")
+      .attr("dy", 0)
+      .attr("dx", d => Math.sqrt(d.data.samples) * TREE_SIZING.radiusMultiplier + 10)
+      .attr("text-anchor", "start")
       .text(d => {
         if (d.data.is_leaf) {
-          return d.data.predicted_class === 1 ? "✓ Survived" : "✗ Died"
-        } else {
-          return d.data.feature || ""
+          return d.data.predicted_class === 1 ? "Survived" : "Died"
         }
+        return ""
       })
       .style("fill", TREE_COLORS.textDefault)
+      // Opacity controlled by CSS classes only
 
     // Cleanup function
     return () => {
@@ -512,7 +529,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         .classed('path-a', false)
         .classed('path-b', false)
         .classed('path-shared', false)
-      svg.selectAll('.node text')
+      svg.selectAll('.node text.feature-label, .node text.prediction-label')
         .classed('path-a', false)
         .classed('path-b', false)
         .classed('path-shared', false)
@@ -587,7 +604,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
           50% { transform: scale(1.1); }
         }
 
-        .node text {
+        .node text.feature-label {
           font-size: 12px;
           font-weight: 500;
           fill: ${TREE_COLORS.textDefault};
@@ -595,15 +612,49 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
           transition: opacity 0.3s ease;
         }
 
-        .node text.active {
+        .node text.feature-label.active {
           opacity: ${TREE_OPACITY.active};
           font-weight: 700;
           fill: ${TREE_COLORS.textDefault};
         }
 
-        .node text.hover-active {
+        .node text.feature-label.hover-active {
           opacity: ${TREE_OPACITY.hover};
           fill: ${TREE_COLORS.hover};
+        }
+
+        /* Prediction labels - hidden by default, shown when highlighted */
+        .node text.prediction-label {
+          font-size: 12px;
+          font-weight: 500;
+          fill: ${TREE_COLORS.textDefault};
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .node text.prediction-label.active,
+        .node text.prediction-label.tutorial-highlight,
+        .node text.prediction-label.path-a,
+        .node text.prediction-label.path-b,
+        .node text.prediction-label.path-shared {
+          opacity: ${TREE_OPACITY.active};
+          font-weight: 700;
+        }
+
+        .node text.prediction-label.tutorial-highlight {
+          fill: ${TREE_COLORS.tutorial};
+        }
+
+        .node text.prediction-label.path-a {
+          fill: ${TREE_COLORS.comparisonA};
+        }
+
+        .node text.prediction-label.path-b {
+          fill: ${TREE_COLORS.comparisonB};
+        }
+
+        .node text.prediction-label.path-shared {
+          fill: ${TREE_COLORS.comparisonShared};
         }
 
         .link {

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
-import { SHAP_COLORS } from '../../utils/visualizationColors'
+import { SHAP_COLORS } from '../../utils/visualizationStyles'
 
 /**
  * GlobalFeatureImportance - Horizontal bar chart showing mean absolute SHAP values

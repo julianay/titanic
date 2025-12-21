@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { SHAP_COLORS } from '../../utils/visualizationColors'
+import { SHAP_COLORS } from '../../utils/visualizationStyles'
 
 /**
  * SHAPWaterfall - Alternative waterfall chart with floating bars and connector lines

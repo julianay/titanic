@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UI_COLORS } from '../utils/visualizationColors'
+import { UI_COLORS } from '../utils/visualizationStyles'
 
 /**
  * ComparisonCard - Shows side-by-side survival predictions for two cohorts

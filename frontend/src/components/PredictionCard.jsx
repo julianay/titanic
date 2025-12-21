@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import LoadingSpinner from './LoadingSpinner'
-import { UI_COLORS } from '../utils/visualizationColors'
+import { UI_COLORS } from '../utils/visualizationStyles'
 
 function PredictionCard({ prediction, loading, error, modelName }) {
   // Get colors based on survival probability
