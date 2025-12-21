@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import Layout from './components/Layout'
 import ControlPanel from './components/ControlPanel'
-import ModelComparisonView from './components/ModelComparisonView'
+import ModelComparisonViewAlt from './components/ModelComparisonViewAlt'
 import ChatPanel from './components/ChatPanel'
 import useTutorial from './hooks/useTutorial'
 import { formatPassengerDescription, detectComparison } from './utils/cohortPatterns'
 
-function App() {
+function AppAlt() {
   const [passengerData, setPassengerData] = useState({
     sex: 0,       // 0 = Female, 1 = Male
     pclass: 2,    // 1, 2, or 3
@@ -123,10 +123,10 @@ function App() {
 
   return (
     <Layout
-      title="Explainable AI Explorer"
-      subtitle="Interactively compare how two models reason about the same prediction task"
+      title="Explainable AI Explorer (Alternative Layout)"
+      subtitle="Vertical layout: Decision Tree on top, XGBoost visualizations in a row below"
       leftContent={
-        <ModelComparisonView
+        <ModelComparisonViewAlt
           passengerData={passengerData}
           highlightMode={tutorial.getHighlightMode()}
           highlightFeatures={tutorial.getHighlightFeatures()}
@@ -157,4 +157,4 @@ function App() {
   )
 }
 
-export default App
+export default AppAlt

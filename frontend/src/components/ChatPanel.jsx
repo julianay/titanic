@@ -15,9 +15,13 @@ import SinglePredictionCard from './SinglePredictionCard'
  *   - { role: 'assistant', content: string } for text responses
  *   - { role: 'assistant', type: 'comparison', comparison: {...} } for comparison cards
  *   - { role: 'assistant', type: 'prediction', passengerData: {...}, label: string } for prediction cards
+ *   - { role: 'assistant', type: 'tutorial', content: string, step: number, isLastStep: boolean } for tutorial messages
  * @param {Function} onSendMessage - Callback when message sent: (text, parsedParams) => void
  * @param {Function} onPresetSelect - Callback when preset chip clicked (updates controls)
  * @param {Function} onPresetChat - Callback when preset chip clicked (adds chat message)
+ * @param {Function} onTutorialAdvance - Callback when tutorial Next button clicked
+ * @param {Function} onTutorialSkip - Callback when tutorial Skip button clicked
+ * @param {Function} onTutorialStart - Callback when tutorial Start button clicked
  *
  * @example
  * <ChatPanel
@@ -25,6 +29,9 @@ import SinglePredictionCard from './SinglePredictionCard'
  *   onSendMessage={(text, params) => handleMessage(text, params)}
  *   onPresetSelect={(values) => setPassengerData(values)}
  *   onPresetChat={(preset) => addChatMessage(preset)}
+ *   onTutorialAdvance={() => tutorial.advanceTutorial()}
+ *   onTutorialSkip={() => tutorial.skipTutorial()}
+ *   onTutorialStart={() => tutorial.startTutorial()}
  * />
  *
  * COMMON CHANGES:
@@ -38,7 +45,7 @@ import SinglePredictionCard from './SinglePredictionCard'
  * - Comparisons: "compare women vs men", "1st class vs 3rd class"
  * - Parsed by parsePassengerQuery() in cohortPatterns.js
  */
-function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat }) {
+function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTutorialAdvance, onTutorialSkip, onTutorialStart }) {
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef(null)
 
@@ -120,6 +127,27 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat }) {
                   passengerData={msg.passengerData}
                   label={msg.label}
                 />
+              ) : msg.type === 'tutorial' ? (
+                // Render tutorial message with controls
+                <div>
+                  <div className="mb-3">{msg.content}</div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={onTutorialAdvance}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      {msg.isLastStep ? 'Finish Tutorial' : 'Next'}
+                    </button>
+                    {!msg.isLastStep && (
+                      <button
+                        onClick={onTutorialSkip}
+                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        Skip
+                      </button>
+                    )}
+                  </div>
+                </div>
               ) : (
                 // Regular text message
                 <div>{msg.content}</div>
@@ -130,11 +158,11 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Suggestion Buttons */}
+      {/* Suggestion Buttons - styled as chips */}
       {messages.length === 0 && (
-        <div className="mb-3 space-y-2">
-          <p className="text-xs text-gray-500">Try asking:</p>
-          <div className="space-y-1">
+        <div className="mb-3 pt-3 border-t border-gray-800">
+          <p className="text-xs text-gray-500 mb-2">Try asking:</p>
+          <div className="flex flex-wrap gap-2 mb-3">
             {suggestionButtons.map((suggestion, idx) => (
               <button
                 key={idx}
@@ -144,27 +172,22 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat }) {
                     onSendMessage(suggestion, parsedParams)
                   }
                 }}
-                className="w-full text-left px-3 py-2 text-xs bg-gray-800 hover:bg-[#218FCE] hover:bg-opacity-20 hover:text-[#218FCE] rounded transition-colors"
+                className="px-3 py-1.5 text-xs bg-gray-800 text-gray-300 rounded-full hover:bg-[#218FCE] hover:bg-opacity-20 hover:text-[#218FCE] transition-colors"
               >
                 {suggestion}
               </button>
             ))}
           </div>
+
+          {/* Tutorial chip */}
+          <button
+            onClick={onTutorialStart}
+            className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
+          >
+            📚 Start Tutorial
+          </button>
         </div>
       )}
-
-      {/* Preset suggestion chips - above input */}
-      <div className="flex flex-wrap gap-2 mb-3 pt-3 border-t border-gray-800">
-        {presets.map((preset) => (
-          <button
-            key={preset.id}
-            onClick={() => handlePresetClick(preset)}
-            className="px-3 py-1.5 text-xs bg-gray-800 text-gray-300 rounded-full hover:bg-[#218FCE] hover:bg-opacity-20 hover:text-[#218FCE] transition-colors"
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
 
       {/* Input Form - sticky at bottom */}
       <form onSubmit={handleSubmit} className="flex gap-2">

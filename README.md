@@ -46,7 +46,8 @@ cd frontend
 npm install
 npm run dev
 
-# Open http://localhost:5173
+# Open http://localhost:5173 (original layout)
+# Open http://localhost:5173/index-alt.html (alternative layout)
 ```
 
 ---
@@ -77,15 +78,16 @@ titanic/
 ## 🎯 Features
 
 ### React Frontend
-- **Interactive Tutorial** - Guided walkthrough for first-time users with synchronized highlighting
-- **D3.js Visualizations** - Vertical decision tree with donut charts, SHAP waterfall charts
-- **Zoom and Pan** - Interactive zoom controls (scroll wheel, drag, +/−/reset buttons)
+- **Two Layout Options** - Choose between original 80/20 split or alternative vertical layout
+- **Interactive Tutorial** - Guided walkthrough with inline controls and synchronized highlighting
+- **D3.js Visualizations** - Decision tree (vertical or horizontal) with donut charts, SHAP waterfall charts
+- **Zoom and Pan** - Interactive zoom controls (drag to pan, +/−/reset buttons; scroll wheel disabled on horizontal tree)
 - **Real-time predictions** with 500ms debouncing
 - **Model Comparison** - Side-by-side Decision Tree vs XGBoost with dual-path highlighting
 - **Color-coded results** (green/yellow/red based on survival probability)
 - **Smart fare suggestions** that auto-adjust by passenger class
-- **Chat interface** for natural language exploration and cohort comparison
-- **Quick presets** for instant testing (4 passenger profiles)
+- **Chat interface** for natural language exploration with chip-styled suggestions
+- **Cohort comparison** - Compare survival rates between different passenger groups
 - **Responsive design** (two-column desktop, stacked mobile)
 - **Loading skeletons** and error boundaries
 - **Dark theme** with modern UI
@@ -108,7 +110,8 @@ titanic/
 - **[AI Context](AI_CONTEXT.md)** - Comprehensive project documentation for AI assistants
 - **[Tutorial Feature](TUTORIAL_FEATURE.md)** - Interactive tutorial system
 - **[Decision Tree Features](DECISION_TREE_FEATURES.md)** - Tree visualization enhancements
-- **[Changelog](CHANGELOG_DEC20_2025.md)** - Recent updates and bug fixes
+- **[Changelog Dec 20](CHANGELOG_DEC20_2025.md)** - Tree layout and tutorial fixes
+- **[Changelog Dec 21](CHANGELOG_DEC21_2025.md)** - Alternative layout and UI improvements
 
 ---
 
@@ -200,15 +203,30 @@ The models reveal:
 - **Age impacts survival** (children had higher survival rates)
 - **Fare correlates with class** (higher fares → better survival)
 
-### Recent Updates (Dec 20, 2025)
+### Recent Updates (Dec 21, 2025)
 
 ✨ **New Features:**
+- Alternative layout option with horizontal decision tree (left-to-right)
+- Multi-page setup: compare layouts side-by-side in different browser tabs
+- Inline tutorial controls (no more blue box)
+- "Start Tutorial" chip for easy testing
+- Chip-styled suggestion buttons in chat
+
+🎨 **UI Improvements:**
+- Removed redundant preset chips (women's path, men's path, etc.)
+- Cohort labels moved to XGBoost section header in comparison mode
+- Cleaner XGBoost card headers (removed sub-headings)
+- Disabled scroll wheel zoom on horizontal tree (pan by dragging still works)
+
+### Previous Updates (Dec 20, 2025)
+
+✨ **Features:**
 - Vertical tree layout (top-to-bottom) for improved readability
-- Zoom and pan controls for decision tree exploration (scroll wheel, drag, +/−/reset buttons)
+- Zoom and pan controls for decision tree exploration
 
 🐛 **Bug Fixes:**
 - Tutorial highlighting now works correctly on decision tree
-- Sex feature now appears in SHAP waterfall chart (was hidden due to mislabeling)
+- Sex feature now appears in SHAP waterfall chart
 
 ---
 

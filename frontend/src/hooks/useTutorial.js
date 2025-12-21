@@ -85,7 +85,10 @@ function useTutorial(onPassengerChange, onAddChatMessage) {
     if (onAddChatMessage) {
       onAddChatMessage({
         role: 'assistant',
-        content: getTutorialMessage(0)
+        type: 'tutorial',
+        content: getTutorialMessage(0),
+        step: 0,
+        isLastStep: false
       })
     }
   }
@@ -118,7 +121,10 @@ function useTutorial(onPassengerChange, onAddChatMessage) {
       if (onAddChatMessage) {
         onAddChatMessage({
           role: 'assistant',
-          content: getTutorialMessage(nextStep)
+          type: 'tutorial',
+          content: getTutorialMessage(nextStep),
+          step: nextStep,
+          isLastStep: nextStep >= 2
         })
       }
     } else {
