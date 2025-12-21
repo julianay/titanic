@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 20, 2025 (Late Evening - Layout Changes)
+**Last Updated:** December 21, 2025 (ChatPanel Improvements)
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -129,13 +129,16 @@ titanic/
 │   │   │   ├── LoadingSkeleton.jsx # Loading states
 │   │   │   ├── ErrorBoundary.jsx  # Error handling
 │   │   │   └── visualizations/
-│   │   │       ├── DecisionTree.jsx  # D3 tree viz
+│   │   │       ├── DecisionTreeViz.jsx  # Vertical D3 tree viz
+│   │   │       ├── DecisionTreeVizHorizontal.jsx  # Horizontal D3 tree viz
 │   │   │       ├── SHAPWaterfall.jsx # SHAP chart
 │   │   │       └── GlobalFeatureImportance.jsx
 │   │   ├── hooks/
-│   │   │   └── usePredict.js      # API integration (500ms debounce)
+│   │   │   ├── usePredict.js      # API integration (500ms debounce)
+│   │   │   └── useTutorial.js     # Tutorial state management
 │   │   ├── utils/
-│   │   │   └── cohortPatterns.js  # NL query parsing
+│   │   │   ├── cohortPatterns.js  # NL query parsing
+│   │   │   └── visualizationColors.js  # Centralized color system
 │   │   ├── App.jsx                # Main component
 │   │   └── index.css              # Tailwind + dark theme
 │   ├── .env                       # VITE_API_URL (empty for production)
@@ -204,10 +207,12 @@ curl -X POST http://localhost:7860/api/predict \
 - **Active state detection**: Highlights currently active preset
 
 **ChatPanel.jsx**
-- Natural language query parsing
+- Natural language query parsing with cohort comparisons
 - Educational responses with survival statistics
-- Integration with preset buttons
-- Scrollable message history
+- Chip-styled suggestion buttons (3 presets + tutorial button)
+- Smart visibility: chips stay visible until user types custom message
+- Show/hide toggle for chips to maximize chat space
+- Scrollable message history with inline tutorial controls
 
 **ModelComparisonView.jsx**
 - **Layout**: Side-by-side display with Decision Tree (70%) and XGBoost (30%)
@@ -377,15 +382,39 @@ React displays predictions with intuitive colors:
 
 ---
 
-## 🎨 Design System
+## 🎨 Design System & Centralized Colors
 
-### Colors
+### Centralized Color System
+
+**All colors are defined in**: `frontend/src/utils/visualizationColors.js`
+
+This single file exports:
+- `TREE_COLORS` - Decision tree visualization colors
+- `SHAP_COLORS` - SHAP visualization colors (aligned with tree colors)
+- `UI_COLORS` - UI card colors (prediction results)
+- `TREE_EFFECTS` - Drop shadow effects for different states
+- `TREE_OPACITY` - Opacity values for inactive/hover/active states
+
+**Core Color Palette**:
+- **Survived/Positive**: `#B8F06E` (light green) - Tree survived class, SHAP positive impact, high probability UI
+- **Died/Negative**: `#F09A48` (orange) - Tree died class, SHAP negative impact, low probability UI
+- **Tutorial/Highlight**: `#ffd700` (gold) - Tutorial mode, hover effects, shared comparison paths
+- **Uncertain**: `#fbbf24` (yellow) - Medium probability UI cards (40-70%)
+
+**Semantic Consistency**:
+- Green anywhere = survived/positive/high survival
+- Orange anywhere = died/negative/low survival
+- Gold anywhere = attention/highlight/tutorial
+
+**Components Using Color System** (7 total):
+- Visualizations: `DecisionTreeViz.jsx`, `DecisionTreeVizHorizontal.jsx`, `SHAPWaterfall.jsx`, `GlobalFeatureImportance.jsx`
+- UI Cards: `PredictionCard.jsx`, `SinglePredictionCard.jsx`, `ComparisonCard.jsx`
+
+### UI Theme Colors
 - **Background**: `#0e1117` (dark mode)
 - **Text**: `#fafafa` (light gray)
 - **Borders**: `#1f2937` (gray-800)
-- **Success**: Green (>70% survival)
-- **Warning**: Yellow (40-70% survival)
-- **Danger**: Red (<40% survival)
+- **Primary Accent**: `#218FCE` (blue) - Buttons, links, input focus
 
 ### Typography
 - Base font: 14px
@@ -427,6 +456,14 @@ React displays predictions with intuitive colors:
 
 ## 📚 Documentation References
 
+### Navigation
+
+- **📋 DOCUMENTATION_INDEX.md** - **CENTRAL HUB** for navigating all documentation
+  - Quick start guides by use case
+  - Complete file organization
+  - Documentation by scenario ("I want to...")
+  - Key concepts and design principles
+
 ### For AI Assistants
 
 - **🤖 ASSISTANT_GUIDE.md** - **START HERE** for routine UI changes and simple tasks
@@ -435,7 +472,9 @@ React displays predictions with intuitive colors:
   - What to change vs what to avoid
   - Designed for GitHub Copilot, Cursor, and simpler assistants
 
-- **FIXED_CHAT_LAYOUT.md** - Recent layout changes (fixed split-screen, accordion controls)
+- **📝 Changelogs** - Recent changes by date
+  - CHANGELOG_DEC21_2025.md - Alternative layout, ChatPanel improvements
+  - CHANGELOG_DEC20_2025.md - Layout restructuring, tree fixes
 
 ### Component Documentation
 
@@ -469,6 +508,28 @@ React displays predictions with intuitive colors:
 
 ## 📝 Recent Changes
 
+### December 21, 2025
+**ChatPanel Improvements**:
+- **Fixed**: Suggestion chips no longer disappear when tutorial starts
+- **Smart Visibility**: Chips remain visible during tutorial and when clicking suggestions
+- **Auto-hide Logic**: Chips only hide after user types and submits their own custom message
+- **Show/Hide Toggle**: Added "hide/show" link next to "Try asking:" label
+  - Users can collapse chips to maximize chat space
+  - Toggle state persists during session
+- **Files changed**: `ChatPanel.jsx`, `CHANGELOG_DEC21_2025.md`, `docs/FRONTEND.md`
+
+**Alternative Layout & Multi-page Setup**:
+- Added `index-alt.html` with horizontal decision tree (left-to-right orientation)
+- Multi-page Vite configuration for side-by-side layout comparison
+- Horizontal tree uses `DecisionTreeVizHorizontal.jsx` with scroll wheel zoom disabled
+- Files: `AppAlt.jsx`, `ModelComparisonViewAlt.jsx`, `vite.config.js`
+
+**Centralized Color System**:
+- All colors moved to `visualizationColors.js` (single source of truth)
+- Green (#B8F06E) = survived/positive, Orange (#F09A48) = died/negative
+- Gold (#ffd700) = tutorial/highlights
+- 7 components now use centralized colors (4 visualizations + 3 UI cards)
+
 ### December 20, 2025 (Late Evening)
 **Layout Restructuring**:
 - Changed main layout from 70/30 to 80/20 split (visualizations get 80%, chat gets 20%)
@@ -479,5 +540,5 @@ React displays predictions with intuitive colors:
 
 ---
 
-**Last Updated:** December 20, 2025 (Late Evening - Layout Changes)
+**Last Updated:** December 21, 2025 (ChatPanel Improvements)
 **Status:** Production-ready with all features complete

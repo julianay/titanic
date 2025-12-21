@@ -4,10 +4,10 @@ import ComparisonCard from './ComparisonCard'
 import SinglePredictionCard from './SinglePredictionCard'
 
 /**
- * ChatPanel - Natural language chat interface with preset chips
+ * ChatPanel - Natural language chat interface with suggestion chips
  *
  * Allows users to query passenger survival rates using natural language.
- * Displays preset chips above input for quick access to common queries.
+ * Displays suggestion chips above input for quick access to common queries.
  * Auto-scrolls to show latest messages.
  *
  * @param {Array} messages - Array of message objects with structure:
@@ -34,11 +34,18 @@ import SinglePredictionCard from './SinglePredictionCard'
  *   onTutorialStart={() => tutorial.startTutorial()}
  * />
  *
+ * SUGGESTION CHIPS BEHAVIOR:
+ * - Chips stay visible during tutorial and when clicking chip suggestions
+ * - Chips only hide after user types and submits their own custom message
+ * - Show/hide toggle allows users to collapse chips for more chat space
+ * - Toggle state persists during session (via chipsVisible state)
+ *
  * COMMON CHANGES:
- * - Add preset: Add to presets array (sex: 0/1, pclass: 1/2/3, age: 0-80, fare: 0-100)
+ * - Add suggestion: Add to suggestionButtons array (line 98)
  * - Message spacing: Change space-y-3 to space-y-4, etc.
  * - Input styling: Modify className on <input> element
  * - Button colors: Change bg-[#218FCE] to other colors
+ * - Chips visibility: Edit hasTypedMessage state logic (line 50, 63)
  *
  * NATURAL LANGUAGE SUPPORT:
  * - Passenger queries: "show me a woman in 1st class"
@@ -47,6 +54,8 @@ import SinglePredictionCard from './SinglePredictionCard'
  */
 function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTutorialAdvance, onTutorialSkip, onTutorialStart }) {
   const [inputValue, setInputValue] = useState('')
+  const [hasTypedMessage, setHasTypedMessage] = useState(false) // Track if user has typed their own message
+  const [chipsVisible, setChipsVisible] = useState(true) // Track if chips are shown/hidden
   const messagesEndRef = useRef(null)
 
   // Auto-scroll to bottom when new messages arrive
@@ -57,6 +66,9 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!inputValue.trim()) return
+
+    // Mark that user has typed their own message
+    setHasTypedMessage(true)
 
     // Parse the query to extract passenger parameters
     const parsedParams = parsePassengerQuery(inputValue)
@@ -96,6 +108,9 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
     "What about a 3rd class male?",
     "Compare women vs men"
   ]
+
+  // Show chips until user types their own message (clicking chips doesn't count)
+  const shouldShowChips = !hasTypedMessage
 
   return (
     <div className="flex flex-col h-full p-6">
@@ -159,33 +174,46 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
       </div>
 
       {/* Suggestion Buttons - styled as chips */}
-      {messages.length === 0 && (
+      {shouldShowChips && (
         <div className="mb-3 pt-3 border-t border-gray-800">
-          <p className="text-xs text-gray-500 mb-2">Try asking:</p>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {suggestionButtons.map((suggestion, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  const parsedParams = parsePassengerQuery(suggestion)
-                  if (parsedParams) {
-                    onSendMessage(suggestion, parsedParams)
-                  }
-                }}
-                className="px-3 py-1.5 text-xs bg-gray-800 text-gray-300 rounded-full hover:bg-[#218FCE] hover:bg-opacity-20 hover:text-[#218FCE] transition-colors"
-              >
-                {suggestion}
-              </button>
-            ))}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-gray-500">Try asking:</p>
+            <button
+              onClick={() => setChipsVisible(!chipsVisible)}
+              className="text-xs text-gray-500 hover:text-[#218FCE] transition-colors underline"
+            >
+              {chipsVisible ? 'hide' : 'show'}
+            </button>
           </div>
 
-          {/* Tutorial chip */}
-          <button
-            onClick={onTutorialStart}
-            className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
-          >
-            📚 Start Tutorial
-          </button>
+          {chipsVisible && (
+            <>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {suggestionButtons.map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      const parsedParams = parsePassengerQuery(suggestion)
+                      if (parsedParams) {
+                        onSendMessage(suggestion, parsedParams)
+                      }
+                    }}
+                    className="px-3 py-1.5 text-xs bg-gray-800 text-gray-300 rounded-full hover:bg-[#218FCE] hover:bg-opacity-20 hover:text-[#218FCE] transition-colors"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tutorial chip */}
+              <button
+                onClick={onTutorialStart}
+                className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
+              >
+                📚 Start Tutorial
+              </button>
+            </>
+          )}
         </div>
       )}
 

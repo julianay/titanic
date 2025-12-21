@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
+import { SHAP_COLORS } from '../../utils/visualizationColors'
 
 /**
  * GlobalFeatureImportance - Horizontal bar chart showing mean absolute SHAP values
@@ -60,7 +61,7 @@ function GlobalFeatureImportance({ data, width = 280, height = 300 }) {
       .attr("y", d => y(d.feature) + y.bandwidth() / 2)
       .attr("x", d => x(d.value) + 5)
       .attr("dy", "0.35em")
-      .attr("fill", "#fafafa")
+      .attr("fill", SHAP_COLORS.text)
       .attr("font-size", "11px")
       .text(d => d.value.toFixed(3))
 
@@ -79,7 +80,7 @@ function GlobalFeatureImportance({ data, width = 280, height = 300 }) {
     svg.append("text")
       .attr("x", chartWidth / 2)
       .attr("y", chartHeight + 40)
-      .attr("fill", "#fafafa")
+      .attr("fill", SHAP_COLORS.text)
       .attr("text-anchor", "middle")
       .attr("font-size", "11px")
       .text("Mean |SHAP value|")
@@ -98,14 +99,14 @@ function GlobalFeatureImportance({ data, width = 280, height = 300 }) {
     <>
       <style>{`
         .bar {
-          fill: #52b788;
+          fill: ${SHAP_COLORS.barDefault};
           opacity: 0.8;
         }
         .bar:hover {
           opacity: 1;
         }
         .axis text {
-          fill: #fafafa;
+          fill: ${SHAP_COLORS.text};
           font-size: 12px;
         }
         .axis line, .axis path {

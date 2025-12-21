@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
+import { SHAP_COLORS } from '../../utils/visualizationColors'
 
 /**
  * SHAPWaterfall - Alternative waterfall chart with floating bars and connector lines
@@ -61,7 +62,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .attr("x", chartWidth / 2)
       .attr("y", -5)
       .attr("text-anchor", "middle")
-      .attr("fill", "#fafafa")
+      .attr("fill", SHAP_COLORS.text)
       .attr("font-size", "11px")
       .attr("font-weight", "bold")
       .text(`Base Value: ${baseValue.toFixed(3)} → Final Prediction: ${finalPrediction.toFixed(3)}`)
@@ -89,7 +90,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     svg.append("text")
       .attr("x", chartWidth / 2)
       .attr("y", chartHeight + 38)
-      .attr("fill", "#fafafa")
+      .attr("fill", SHAP_COLORS.text)
       .attr("text-anchor", "middle")
       .attr("font-size", "11px")
       .text("Cumulative SHAP")
@@ -143,7 +144,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .attr("x", d => x(d.end) + (d.value >= 0 ? 5 : -5))
       .attr("dy", "0.35em")
       .attr("text-anchor", d => d.value >= 0 ? "start" : "end")
-      .attr("fill", d => d.value >= 0 ? "#52b788" : "#e76f51")
+      .attr("fill", d => d.value >= 0 ? SHAP_COLORS.positive : SHAP_COLORS.negative)
       .text(d => (d.value >= 0 ? "+" : "") + d.value.toFixed(2))
 
     // Add Y axis with feature labels
@@ -169,15 +170,15 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     <>
       <style>{`
         .bar-positive {
-          fill: #52b788;
-          stroke: #6fcf97;
+          fill: ${SHAP_COLORS.positive};
+          stroke: ${SHAP_COLORS.positiveStroke};
           stroke-width: 1.5;
           opacity: 0.8;
           transition: all 0.3s ease;
         }
         .bar-negative {
-          fill: #e76f51;
-          stroke: #f4a261;
+          fill: ${SHAP_COLORS.negative};
+          stroke: ${SHAP_COLORS.negativeStroke};
           stroke-width: 1.5;
           opacity: 0.8;
           transition: all 0.3s ease;
@@ -189,10 +190,10 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
         }
         /* Tutorial highlight for SHAP bars */
         .bar-tutorial-highlight {
-          stroke: #ffd700 !important;
+          stroke: ${SHAP_COLORS.highlight} !important;
           stroke-width: 3 !important;
           opacity: 1 !important;
-          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+          filter: drop-shadow(0 0 8px ${SHAP_COLORS.highlightGlow});
         }
         .connector-line {
           stroke: #888;
@@ -200,14 +201,14 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
           stroke-dasharray: 3,3;
         }
         .axis text {
-          fill: #fafafa;
+          fill: ${SHAP_COLORS.text};
           font-size: 10px;
         }
         .axis line, .axis path {
           stroke: #666;
         }
         .value-label {
-          fill: #fafafa;
+          fill: ${SHAP_COLORS.text};
           font-size: 9px;
           font-weight: bold;
         }

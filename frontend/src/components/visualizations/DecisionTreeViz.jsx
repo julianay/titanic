@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
+import { TREE_COLORS, TREE_EFFECTS, TREE_OPACITY } from '../../utils/visualizationColors'
 
 /**
  * DecisionTreeViz - Interactive D3.js decision tree visualization with donut chart nodes
@@ -352,8 +353,8 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       .attr("class", "tree-tooltip tooltip")
       .style("position", "absolute")
       .style("padding", "12px")
-      .style("background", "rgba(0, 0, 0, 0.9)")
-      .style("color", "white")
+      .style("background", TREE_COLORS.tooltipBg)
+      .style("color", TREE_COLORS.tooltipText)
       .style("border-radius", "6px")
       .style("pointer-events", "none")
       .style("font-size", "13px")
@@ -419,8 +420,8 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
       // Prepare data for pie chart: [died, survived]
       const pieData = pie([
-        { label: 'died', value: d.data.class_0, color: '#5b8db8' },  // Blue for died
-        { label: 'survived', value: d.data.class_1, color: '#52b788' }  // Green for survived
+        { label: 'died', value: d.data.class_0, color: TREE_COLORS.died },
+        { label: 'survived', value: d.data.class_1, color: TREE_COLORS.survived }
       ])
 
       // Create a group for the pie chart
@@ -434,7 +435,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         .append("path")
         .attr("d", arc)
         .attr("fill", d => d.data.color)
-        .attr("stroke", "#888")
+        .attr("stroke", TREE_COLORS.nodeStroke)
         .attr("stroke-width", 1)
 
       // Add invisible circle for hover target (easier to hover)
@@ -525,7 +526,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
           return d.data.feature || ""
         }
       })
-      .style("fill", "#fafafa") // White text for all labels
+      .style("fill", TREE_COLORS.textDefault)
 
     // Cleanup function
     return () => {
@@ -604,23 +605,23 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         /* PIE CHART STYLES */
         .pie-chart path {
-          opacity: 0.4;
+          opacity: ${TREE_OPACITY.inactive};
           transition: all 0.3s ease;
         }
 
         .pie-chart.active path {
-          opacity: 1;
-          filter: drop-shadow(0 0 6px rgba(255,255,255,0.3));
+          opacity: ${TREE_OPACITY.active};
+          filter: ${TREE_EFFECTS.active};
         }
 
         /* Hover highlighting - temporary highlight on hover */
         .pie-chart.hover-active path {
-          opacity: 0.85;
-          filter: drop-shadow(0 0 4px rgba(255,215,0,0.4));
+          opacity: ${TREE_OPACITY.hover};
+          filter: ${TREE_EFFECTS.hover};
         }
 
         .pie-chart.final path {
-          filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
+          filter: ${TREE_EFFECTS.final};
         }
 
         .pie-chart.final {
@@ -635,158 +636,158 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         .node text {
           font-size: 12px;
           font-weight: 500;
-          fill: #fafafa;
-          opacity: 0.4;
+          fill: ${TREE_COLORS.textDefault};
+          opacity: ${TREE_OPACITY.inactive};
           transition: opacity 0.3s ease;
         }
 
         .node text.active {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #fafafa;
+          fill: ${TREE_COLORS.textDefault};
         }
 
         /* Hover highlighting for text */
         .node text.hover-active {
-          opacity: 0.85;
-          fill: #ffd700;
+          opacity: ${TREE_OPACITY.hover};
+          fill: ${TREE_COLORS.hover};
         }
 
         .link {
           fill: none;
-          stroke: #666;
+          stroke: ${TREE_COLORS.defaultStroke};
           stroke-linecap: round;
           stroke-opacity: 0.6;
           transition: all 0.3s ease;
         }
 
         .link.active {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
         }
 
         .link.active.survived {
-          stroke: #52b788;
+          stroke: ${TREE_COLORS.survived};
         }
 
         .link.active.died {
-          stroke: #e76f51;
+          stroke: ${TREE_COLORS.died};
         }
 
         /* Hover highlighting for links */
         .link.hover-active {
-          stroke: #ffd700;
+          stroke: ${TREE_COLORS.hover};
           opacity: 0.8;
         }
 
         .edge-label {
           font-size: 11px;
-          fill: #fafafa;
+          fill: ${TREE_COLORS.textDefault};
           font-weight: 600;
-          opacity: 0.4;
+          opacity: ${TREE_OPACITY.inactive};
           transition: all 0.3s ease;
         }
 
         .edge-label.active {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
         }
 
         .edge-label.hover-active {
-          opacity: 0.85;
-          fill: #ffd700;
+          opacity: ${TREE_OPACITY.hover};
+          fill: ${TREE_COLORS.hover};
         }
 
-        /* Tutorial/selective highlighting styles - gold/yellow color */
+        /* Tutorial/selective highlighting styles */
         .pie-chart.tutorial-highlight path {
-          opacity: 1;
-          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+          opacity: ${TREE_OPACITY.active};
+          filter: ${TREE_EFFECTS.tutorial};
         }
 
         .link.tutorial-highlight {
-          stroke: #ffd700 !important;
-          opacity: 1 !important;
+          stroke: ${TREE_COLORS.tutorial} !important;
+          opacity: ${TREE_OPACITY.active} !important;
           /* Note: stroke-width is not overridden - preserves variable width based on passenger count */
         }
 
         .node text.tutorial-highlight {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #ffd700;
+          fill: ${TREE_COLORS.tutorial};
         }
 
         .edge-label.tutorial-highlight {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #ffd700;
+          fill: ${TREE_COLORS.tutorial};
         }
 
-        /* Comparison mode - Path A (blue) */
+        /* Comparison mode - Path A */
         .pie-chart.path-a path {
-          opacity: 1;
-          filter: drop-shadow(0 0 8px rgba(33, 143, 206, 0.8));
+          opacity: ${TREE_OPACITY.active};
+          filter: ${TREE_EFFECTS.comparisonA};
         }
 
         .link.path-a {
-          stroke: #218FCE !important;
-          opacity: 1 !important;
+          stroke: ${TREE_COLORS.comparisonA} !important;
+          opacity: ${TREE_OPACITY.active} !important;
         }
 
         .node text.path-a {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #218FCE;
+          fill: ${TREE_COLORS.comparisonA};
         }
 
         .edge-label.path-a {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #218FCE;
+          fill: ${TREE_COLORS.comparisonA};
         }
 
-        /* Comparison mode - Path B (orange) */
+        /* Comparison mode - Path B */
         .pie-chart.path-b path {
-          opacity: 1;
-          filter: drop-shadow(0 0 8px rgba(255, 127, 80, 0.8));
+          opacity: ${TREE_OPACITY.active};
+          filter: ${TREE_EFFECTS.comparisonB};
         }
 
         .link.path-b {
-          stroke: #FF7F50 !important;
-          opacity: 1 !important;
+          stroke: ${TREE_COLORS.comparisonB} !important;
+          opacity: ${TREE_OPACITY.active} !important;
         }
 
         .node text.path-b {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #FF7F50;
+          fill: ${TREE_COLORS.comparisonB};
         }
 
         .edge-label.path-b {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #FF7F50;
+          fill: ${TREE_COLORS.comparisonB};
         }
 
-        /* Comparison mode - Shared path (white/purple) - nodes in both paths */
+        /* Comparison mode - Shared path - nodes in both paths */
         .pie-chart.path-shared path {
-          opacity: 1;
-          filter: drop-shadow(0 0 8px rgba(200, 200, 255, 0.9));
+          opacity: ${TREE_OPACITY.active};
+          filter: ${TREE_EFFECTS.comparisonShared};
         }
 
         .link.path-shared {
-          stroke: #c8c8ff !important;
-          opacity: 1 !important;
+          stroke: ${TREE_COLORS.comparisonShared} !important;
+          opacity: ${TREE_OPACITY.active} !important;
         }
 
         .node text.path-shared {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #c8c8ff;
+          fill: ${TREE_COLORS.comparisonShared};
         }
 
         .edge-label.path-shared {
-          opacity: 1;
+          opacity: ${TREE_OPACITY.active};
           font-weight: 700;
-          fill: #c8c8ff;
+          fill: ${TREE_COLORS.comparisonShared};
         }
       `}</style>
 
@@ -823,8 +824,8 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
       <div
         ref={containerRef}
-        className="w-full bg-[#0e1117] rounded-lg overflow-visible"
-        style={{ height: `${height}px` }}
+        className="w-full rounded-lg overflow-visible"
+        style={{ height: `${height}px`, backgroundColor: TREE_COLORS.background }}
       />
     </>
   )

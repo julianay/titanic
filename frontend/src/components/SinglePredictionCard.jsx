@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { UI_COLORS } from '../utils/visualizationColors'
 
 /**
  * SinglePredictionCard - Shows survival predictions for a single passenger in chat
@@ -33,10 +34,26 @@ function SinglePredictionCard({ passengerData, label }) {
     fetchPrediction()
   }, [passengerData])
 
-  const getColorClass = (probability) => {
-    if (probability >= 0.7) return 'bg-green-900/30 border-green-500/50 text-green-300'
-    if (probability >= 0.4) return 'bg-yellow-900/30 border-yellow-500/50 text-yellow-300'
-    return 'bg-red-900/30 border-red-500/50 text-red-300'
+  const getColors = (probability) => {
+    if (probability >= 0.7) {
+      return {
+        bg: UI_COLORS.survivedBg,
+        border: UI_COLORS.survivedBorder,
+        text: UI_COLORS.survivedText
+      }
+    }
+    if (probability >= 0.4) {
+      return {
+        bg: UI_COLORS.uncertainBg,
+        border: UI_COLORS.uncertainBorder,
+        text: UI_COLORS.uncertainText
+      }
+    }
+    return {
+      bg: UI_COLORS.diedBg,
+      border: UI_COLORS.diedBorder,
+      text: UI_COLORS.diedText
+    }
   }
 
   const formatPercentage = (prob) => `${Math.round(prob * 100)}%`
@@ -61,28 +78,47 @@ function SinglePredictionCard({ passengerData, label }) {
     )
   }
 
+  const dtColors = getColors(predictions.decision_tree.probability_survived)
+  const xgbColors = getColors(predictions.xgboost.probability_survived)
+
   return (
     <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
-      <p className="text-sm text-gray-400 mb-3">{label}</p>
+      <p className="text-sm mb-3" style={{ color: UI_COLORS.textSecondary }}>{label}</p>
 
       <div className="grid grid-cols-2 gap-3">
         {/* Decision Tree */}
-        <div className={`p-3 rounded-lg border ${getColorClass(predictions.decision_tree.probability_survived)}`}>
+        <div
+          className="p-3 rounded-lg border"
+          style={{
+            backgroundColor: dtColors.bg,
+            borderColor: dtColors.border
+          }}
+        >
           <div className="text-center">
-            <div className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Decision Tree</div>
-            <div className="text-3xl font-bold mb-2">{formatPercentage(predictions.decision_tree.probability_survived)}</div>
-            <div className="text-sm font-semibold">
+            <div className="text-xs mb-2 uppercase tracking-wider" style={{ color: UI_COLORS.textSecondary }}>Decision Tree</div>
+            <div className="text-3xl font-bold mb-2" style={{ color: dtColors.text }}>
+              {formatPercentage(predictions.decision_tree.probability_survived)}
+            </div>
+            <div className="text-sm font-semibold" style={{ color: dtColors.text }}>
               {predictions.decision_tree.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
         </div>
 
         {/* XGBoost */}
-        <div className={`p-3 rounded-lg border ${getColorClass(predictions.xgboost.probability_survived)}`}>
+        <div
+          className="p-3 rounded-lg border"
+          style={{
+            backgroundColor: xgbColors.bg,
+            borderColor: xgbColors.border
+          }}
+        >
           <div className="text-center">
-            <div className="text-xs text-gray-400 mb-2 uppercase tracking-wider">XGBoost</div>
-            <div className="text-3xl font-bold mb-2">{formatPercentage(predictions.xgboost.probability_survived)}</div>
-            <div className="text-sm font-semibold">
+            <div className="text-xs mb-2 uppercase tracking-wider" style={{ color: UI_COLORS.textSecondary }}>XGBoost</div>
+            <div className="text-3xl font-bold mb-2" style={{ color: xgbColors.text }}>
+              {formatPercentage(predictions.xgboost.probability_survived)}
+            </div>
+            <div className="text-sm font-semibold" style={{ color: xgbColors.text }}>
               {predictions.xgboost.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>

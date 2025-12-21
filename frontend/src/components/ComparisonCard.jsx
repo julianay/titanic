@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { UI_COLORS } from '../utils/visualizationColors'
 
 /**
  * ComparisonCard - Shows side-by-side survival predictions for two cohorts
@@ -48,10 +49,26 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
     fetchPredictions()
   }, [cohortA, cohortB])
 
-  const getColorClass = (probability) => {
-    if (probability >= 0.7) return 'bg-green-900/30 border-green-500/50 text-green-300'
-    if (probability >= 0.4) return 'bg-yellow-900/30 border-yellow-500/50 text-yellow-300'
-    return 'bg-red-900/30 border-red-500/50 text-red-300'
+  const getColors = (probability) => {
+    if (probability >= 0.7) {
+      return {
+        bg: UI_COLORS.survivedBg,
+        border: UI_COLORS.survivedBorder,
+        text: UI_COLORS.survivedText
+      }
+    }
+    if (probability >= 0.4) {
+      return {
+        bg: UI_COLORS.uncertainBg,
+        border: UI_COLORS.uncertainBorder,
+        text: UI_COLORS.uncertainText
+      }
+    }
+    return {
+      bg: UI_COLORS.diedBg,
+      border: UI_COLORS.diedBorder,
+      text: UI_COLORS.diedText
+    }
   }
 
   const formatPercentage = (prob) => `${Math.round(prob * 100)}%`
@@ -80,29 +97,51 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
   const diff = Math.abs(predictionsA.xgboost.probability_survived - predictionsB.xgboost.probability_survived)
   const higherCohort = predictionsA.xgboost.probability_survived > predictionsB.xgboost.probability_survived ? labelA : labelB
 
+  // Get colors for each prediction
+  const dtColorsA = getColors(predictionsA.decision_tree.probability_survived)
+  const xgbColorsA = getColors(predictionsA.xgboost.probability_survived)
+  const dtColorsB = getColors(predictionsB.decision_tree.probability_survived)
+  const xgbColorsB = getColors(predictionsB.xgboost.probability_survived)
+
   return (
     <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
-      <p className="text-sm text-gray-300 mb-3">{description}</p>
+      <p className="text-sm mb-3" style={{ color: UI_COLORS.textPrimary }}>{description}</p>
 
       <div className="grid grid-cols-2 gap-3 mb-3">
         {/* Cohort A */}
         <div className="space-y-2">
-          <div className="font-semibold text-sm text-gray-300">{labelA}</div>
+          <div className="font-semibold text-sm" style={{ color: UI_COLORS.textPrimary }}>{labelA}</div>
 
           {/* Decision Tree */}
-          <div className={`p-2 rounded-lg border ${getColorClass(predictionsA.decision_tree.probability_survived)}`}>
-            <div className="text-xs text-gray-400 mb-1">Decision Tree</div>
-            <div className="text-xl font-bold">{formatPercentage(predictionsA.decision_tree.probability_survived)}</div>
-            <div className="text-xs mt-1 opacity-80">
+          <div
+            className="p-2 rounded-lg border"
+            style={{
+              backgroundColor: dtColorsA.bg,
+              borderColor: dtColorsA.border
+            }}
+          >
+            <div className="text-xs mb-1" style={{ color: UI_COLORS.textSecondary }}>Decision Tree</div>
+            <div className="text-xl font-bold" style={{ color: dtColorsA.text }}>
+              {formatPercentage(predictionsA.decision_tree.probability_survived)}
+            </div>
+            <div className="text-xs mt-1 opacity-80" style={{ color: dtColorsA.text }}>
               {predictionsA.decision_tree.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
 
           {/* XGBoost */}
-          <div className={`p-2 rounded-lg border ${getColorClass(predictionsA.xgboost.probability_survived)}`}>
-            <div className="text-xs text-gray-400 mb-1">XGBoost</div>
-            <div className="text-xl font-bold">{formatPercentage(predictionsA.xgboost.probability_survived)}</div>
-            <div className="text-xs mt-1 opacity-80">
+          <div
+            className="p-2 rounded-lg border"
+            style={{
+              backgroundColor: xgbColorsA.bg,
+              borderColor: xgbColorsA.border
+            }}
+          >
+            <div className="text-xs mb-1" style={{ color: UI_COLORS.textSecondary }}>XGBoost</div>
+            <div className="text-xl font-bold" style={{ color: xgbColorsA.text }}>
+              {formatPercentage(predictionsA.xgboost.probability_survived)}
+            </div>
+            <div className="text-xs mt-1 opacity-80" style={{ color: xgbColorsA.text }}>
               {predictionsA.xgboost.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
@@ -110,22 +149,38 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
 
         {/* Cohort B */}
         <div className="space-y-2">
-          <div className="font-semibold text-sm text-gray-300">{labelB}</div>
+          <div className="font-semibold text-sm" style={{ color: UI_COLORS.textPrimary }}>{labelB}</div>
 
           {/* Decision Tree */}
-          <div className={`p-2 rounded-lg border ${getColorClass(predictionsB.decision_tree.probability_survived)}`}>
-            <div className="text-xs text-gray-400 mb-1">Decision Tree</div>
-            <div className="text-xl font-bold">{formatPercentage(predictionsB.decision_tree.probability_survived)}</div>
-            <div className="text-xs mt-1 opacity-80">
+          <div
+            className="p-2 rounded-lg border"
+            style={{
+              backgroundColor: dtColorsB.bg,
+              borderColor: dtColorsB.border
+            }}
+          >
+            <div className="text-xs mb-1" style={{ color: UI_COLORS.textSecondary }}>Decision Tree</div>
+            <div className="text-xl font-bold" style={{ color: dtColorsB.text }}>
+              {formatPercentage(predictionsB.decision_tree.probability_survived)}
+            </div>
+            <div className="text-xs mt-1 opacity-80" style={{ color: dtColorsB.text }}>
               {predictionsB.decision_tree.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
 
           {/* XGBoost */}
-          <div className={`p-2 rounded-lg border ${getColorClass(predictionsB.xgboost.probability_survived)}`}>
-            <div className="text-xs text-gray-400 mb-1">XGBoost</div>
-            <div className="text-xl font-bold">{formatPercentage(predictionsB.xgboost.probability_survived)}</div>
-            <div className="text-xs mt-1 opacity-80">
+          <div
+            className="p-2 rounded-lg border"
+            style={{
+              backgroundColor: xgbColorsB.bg,
+              borderColor: xgbColorsB.border
+            }}
+          >
+            <div className="text-xs mb-1" style={{ color: UI_COLORS.textSecondary }}>XGBoost</div>
+            <div className="text-xl font-bold" style={{ color: xgbColorsB.text }}>
+              {formatPercentage(predictionsB.xgboost.probability_survived)}
+            </div>
+            <div className="text-xs mt-1 opacity-80" style={{ color: xgbColorsB.text }}>
               {predictionsB.xgboost.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
@@ -133,7 +188,7 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
       </div>
 
       {/* Difference summary (using XGBoost) */}
-      <div className="text-xs text-gray-400 border-t border-gray-700 pt-2">
+      <div className="text-xs border-t pt-2" style={{ color: UI_COLORS.textSecondary, borderColor: UI_COLORS.cardBorder }}>
         <strong>{higherCohort}</strong> had a <strong>{formatPercentage(diff)}</strong> higher survival rate (XGBoost)
       </div>
     </div>

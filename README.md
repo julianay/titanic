@@ -104,14 +104,22 @@ titanic/
 
 ## 📚 Documentation
 
+### Quick Start
+- **[Documentation Index](DOCUMENTATION_INDEX.md)** - **START HERE** - Central navigation for all docs
+- **[AI Context](AI_CONTEXT.md)** - Comprehensive project documentation for AI assistants
+- **[Assistant Guide](ASSISTANT_GUIDE.md)** - Step-by-step patterns for common tasks
+
+### Technical Guides
 - **[Frontend Guide](docs/FRONTEND.md)** - React app setup, components, hooks
 - **[Backend Guide](docs/BACKEND.md)** - FastAPI server, models, development
 - **[API Reference](docs/API.md)** - Endpoint docs with examples
-- **[AI Context](AI_CONTEXT.md)** - Comprehensive project documentation for AI assistants
-- **[Tutorial Feature](TUTORIAL_FEATURE.md)** - Interactive tutorial system
+
+### Features & Changes
 - **[Decision Tree Features](DECISION_TREE_FEATURES.md)** - Tree visualization enhancements
-- **[Changelog Dec 20](CHANGELOG_DEC20_2025.md)** - Tree layout and tutorial fixes
+- **[Cohort Comparison](COHORT_COMPARISON_FEATURE.md)** - Natural language comparison system
+- **[Tutorial Feature](TUTORIAL_FEATURE.md)** - Interactive tutorial system
 - **[Changelog Dec 21](CHANGELOG_DEC21_2025.md)** - Alternative layout and UI improvements
+- **[Changelog Dec 20](CHANGELOG_DEC20_2025.md)** - Tree layout and tutorial fixes
 
 ---
 

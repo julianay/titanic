@@ -80,9 +80,22 @@ Both pages share the same backend API and controls for easy comparison.
 
 - **After**: Chip layout
   ```
-  Try asking:
+  Try asking:                                          hide
   [Show me a woman...] [What about...] [Compare women...]
+  [📚 Start Tutorial]
   ```
+
+### Suggestion Chips Visibility Behavior
+- **Fixed**: Chips no longer disappear when tutorial messages appear
+- **Changed**: Chips remain visible during tutorial and when clicking suggestion chips
+- **Smart Hide**: Chips only disappear after user types and submits their own custom message
+  - Clicking suggestion chips = exploration (chips stay)
+  - Typing custom message = user understands interface (chips hide)
+- **Added**: Show/hide toggle link next to "Try asking" label
+  - Click "hide" to collapse chips and maximize chat space
+  - Click "show" to bring chips back
+  - Toggle state persists during session
+  - "Try asking" label and border remain visible when hidden
 
 ---
 
@@ -152,10 +165,31 @@ frontend/
 └── src/
     ├── App.jsx (removed TutorialControls)
     ├── components/
-    │   └── ChatPanel.jsx (chip styling, inline tutorial)
+    │   └── ChatPanel.jsx (chip styling, inline tutorial, smart visibility, show/hide toggle)
     └── hooks/
         └── useTutorial.js (tutorial message metadata)
 ```
+
+### ChatPanel.jsx Implementation Details
+**State Management:**
+- `hasTypedMessage` (line 50): Tracks if user has typed their own message
+  - Set to `true` only when user submits via input field (line 63)
+  - Does NOT change when clicking suggestion chips
+- `chipsVisible` (line 51): Controls show/hide toggle state
+  - Persists during session (not in localStorage)
+  - Default: `true` (chips visible)
+
+**Visibility Logic:**
+- `shouldShowChips = !hasTypedMessage` (line 105)
+  - Shows chips during tutorial (tutorial messages don't set hasTypedMessage)
+  - Shows chips when clicking suggestions (chip clicks don't set hasTypedMessage)
+  - Hides chips only after user types custom message
+
+**Show/Hide Toggle:**
+- Small underlined link next to "Try asking:" (lines 174-179)
+- Toggles `chipsVisible` state on click
+- Text changes: "hide" → "show" → "hide"
+- Wraps chips in conditional render (lines 182-209)
 
 ### Files Removed (from layout)
 - TutorialControls component no longer used in App/AppAlt (file still exists but not imported)
@@ -200,6 +234,109 @@ frontend/
 - Tutorial buttons in old messages become non-functional after tutorial completes
   - This is expected behavior to prevent duplicate tutorial states
   - Use "📚 Start Tutorial" chip to restart
+
+---
+
+## Centralized Color System
+
+### Overview
+Refactored all visualization and UI colors into a single centralized configuration file for consistency and easy maintenance.
+
+### Color Palette Unification
+- **Created**: `frontend/src/utils/visualizationColors.js`
+  - Single source of truth for all colors across the application
+  - Comprehensive documentation and quick reference guide
+  - Used by 7 components (4 visualizations + 3 UI cards)
+
+### Color Scheme
+All components now use a consistent color palette:
+
+| Element | Color | Hex Code | Usage |
+|---------|-------|----------|-------|
+| Survived / Positive | Light Green | `#B8F06E` | Tree pie charts, SHAP positive impact, UI cards |
+| Died / Negative | Orange | `#F09A48` | Tree pie charts, SHAP negative impact, UI cards |
+| Tutorial/Highlight | Gold | `#ffd700` | Tutorial mode, hover states |
+| Uncertain (UI only) | Yellow | `#fbbf24` | Medium probability predictions |
+
+### Exported Constants
+
+#### TREE_COLORS
+- `died` / `survived` - Main class colors
+- `tutorial` / `hover` - Highlighting colors
+- `comparisonA` / `comparisonB` / `comparisonShared` - Comparison mode paths
+- `defaultStroke` / `nodeStroke` / `textDefault` / `background` - UI elements
+- `tooltipBg` / `tooltipText` - Tooltip styling
+
+#### SHAP_COLORS
+- `positive` / `positiveStroke` - Green (same as survived)
+- `negative` / `negativeStroke` - Orange (same as died)
+- `highlight` / `highlightGlow` - Gold highlighting
+- `text` / `barDefault` - Text and bar colors
+
+#### UI_COLORS
+- `survivedText` / `survivedBg` / `survivedBorder` - High probability cards
+- `diedText` / `diedBg` / `diedBorder` - Low probability cards
+- `uncertainText` / `uncertainBg` / `uncertainBorder` - Medium probability cards
+- `cardBg` / `cardBorder` / `textPrimary` / `textSecondary` / `textMuted` - General UI
+
+#### TREE_EFFECTS
+Drop shadow effects for different states (active, final, tutorial, hover, comparison)
+
+#### TREE_OPACITY
+Opacity values for inactive (0.4), hover (0.85), and active (1) states
+
+### Updated Components
+
+**Visualizations:**
+- `DecisionTreeViz.jsx` - Vertical tree layout
+- `DecisionTreeVizHorizontal.jsx` - Horizontal tree layout
+- `SHAPWaterfall.jsx` - SHAP waterfall chart
+- `GlobalFeatureImportance.jsx` - Feature importance bars
+
+**UI Cards:**
+- `PredictionCard.jsx` - Main prediction cards
+- `SinglePredictionCard.jsx` - Chat prediction cards
+- `ComparisonCard.jsx` - Cohort comparison cards
+
+### Key Changes
+
+1. **Comparison Mode Colors**
+   - Changed from blue/coral to green/orange (survived/died colors)
+   - Path A uses survived color (#B8F06E)
+   - Path B uses died color (#F09A48)
+   - Shared paths use gold (#ffd700)
+   - Makes comparison semantically meaningful
+
+2. **SHAP Color Alignment**
+   - Positive impact bars now match survived color
+   - Negative impact bars now match died color
+   - Creates visual consistency: green = survived, orange = died
+
+3. **UI Card Consistency**
+   - All prediction cards use the same colors as visualizations
+   - "Survived" text/borders match tree visualization green
+   - "Died" text/borders match tree visualization orange
+   - Unified experience across all components
+
+### Benefits
+
+- **Easy Maintenance**: Change any color in one place, updates everywhere
+- **Consistency**: Same colors across all visualizations and UI elements
+- **Semantic Meaning**: Colors have consistent meaning (green = positive/survived, orange = negative/died)
+- **Documentation**: Comprehensive comments explain each color's purpose
+- **Scalability**: Easy to add new colors or adjust existing palette
+
+### Example Usage
+
+```javascript
+import { TREE_COLORS, SHAP_COLORS, UI_COLORS } from '../utils/visualizationColors'
+
+// Use in D3 visualizations
+.attr("fill", TREE_COLORS.survived)
+
+// Use in React components with inline styles
+style={{ color: UI_COLORS.survivedText }}
+```
 
 ---
 

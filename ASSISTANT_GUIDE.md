@@ -1,7 +1,7 @@
 # Coding Assistant Guide
 
 **Purpose**: Help coding assistants (GitHub Copilot, Cursor, etc.) make changes efficiently
-**Last Updated**: December 20, 2025 (Evening)
+**Last Updated**: December 21, 2025 (ChatPanel Improvements)
 
 This guide provides step-by-step patterns for common tasks. Follow these exactly to avoid breaking things.
 
@@ -85,14 +85,19 @@ It doesn't:
 ├── components/
 │   ├── Layout.jsx              # Fixed split-screen layout
 │   ├── ControlPanel.jsx        # Accordion with sliders
-│   ├── ChatPanel.jsx           # Chat interface with presets
+│   ├── ChatPanel.jsx           # Chat interface with smart chip visibility
 │   ├── ComparisonCard.jsx      # Side-by-side cohort comparison
-│   ├── ModelComparisonView.jsx # Decision tree + SHAP views
-│   ├── TutorialControls.jsx    # Tutorial UI
+│   ├── ModelComparisonView.jsx # Main visualization layout (80/20)
+│   ├── ModelComparisonViewAlt.jsx # Alternative layout (vertical)
+│   ├── TutorialControls.jsx    # Tutorial UI (legacy - no longer used)
 │   └── visualizations/
-│       ├── DecisionTreeViz.jsx # D3 tree visualization
+│       ├── DecisionTreeViz.jsx # Vertical D3 tree visualization
+│       ├── DecisionTreeVizHorizontal.jsx # Horizontal tree visualization
 │       ├── SHAPWaterfall.jsx   # SHAP feature importance
-│       └── PredictionCard.jsx  # Survival prediction card
+│       ├── GlobalFeatureImportance.jsx # Global importance bars
+│       ├── PredictionCard.jsx  # Survival prediction card
+│       ├── SinglePredictionCard.jsx # Chat prediction card
+│       └── ComparisonCard.jsx  # Cohort comparison card
 ├── hooks/
 │   └── useTutorial.js          # Tutorial state management
 └── utils/
@@ -392,42 +397,106 @@ style={{
 
 ---
 
-### Task 7: Add a New Preset Chip
+### Task 7: Add a New Suggestion Chip
 
-**Example**: Add a "1st class woman" preset
+**Example**: Add a "show me an elderly passenger" suggestion
 
-**Step 1**: Find presets array in ChatPanel.jsx
+**Step 1**: Find suggestionButtons array in ChatPanel.jsx (around line 98)
 ```jsx
-const presets = [
-  { id: 'women', label: 'Women\'s path', values: { sex: 0, pclass: 2, age: 30, fare: 20 } },
-  { id: 'men', label: 'Men\'s path', values: { sex: 1, pclass: 3, age: 30, fare: 13 } },
-  { id: 'child', label: '1st class child', values: { sex: 0, pclass: 1, age: 5, fare: 84 } },
-  { id: 'third', label: '3rd class male', values: { sex: 1, pclass: 3, age: 40, fare: 8 } }
+const suggestionButtons = [
+  "Show me a woman in 1st class",
+  "What about a 3rd class male?",
+  "Compare women vs men"
 ]
 ```
 
-**Step 2**: Add new preset
+**Step 2**: Add new suggestion
 ```jsx
-const presets = [
-  { id: 'women', label: 'Women\'s path', values: { sex: 0, pclass: 2, age: 30, fare: 20 } },
-  { id: 'men', label: 'Men\'s path', values: { sex: 1, pclass: 3, age: 30, fare: 13 } },
-  { id: 'child', label: '1st class child', values: { sex: 0, pclass: 1, age: 5, fare: 84 } },
-  { id: 'third', label: '3rd class male', values: { sex: 1, pclass: 3, age: 40, fare: 8 } },
-  { id: 'firstwoman', label: '1st class woman', values: { sex: 0, pclass: 1, age: 30, fare: 84 } }  // NEW
+const suggestionButtons = [
+  "Show me a woman in 1st class",
+  "What about a 3rd class male?",
+  "Compare women vs men",
+  "Show me an elderly passenger"  // NEW
 ]
 ```
 
-**Parameter guide**:
-- `sex`: 0=Female, 1=Male
-- `pclass`: 1=First, 2=Second, 3=Third
-- `age`: 0-80 (any integer)
-- `fare`: 0-100 (historical: 1st=84, 2nd=20, 3rd=13)
+**Natural Language Support**:
+The suggestion will be parsed by `parsePassengerQuery()` in `cohortPatterns.js`:
+- "woman/female" → `sex: 0`
+- "man/male" → `sex: 1`
+- "1st/first class" → `pclass: 1`
+- "2nd/second class" → `pclass: 2`
+- "3rd/third class" → `pclass: 3`
+- "child/young" → `age: 5`
+- "elderly/old" → `age: 70`
 
-**That's it!** Chip will appear automatically.
+**That's it!** Chip will appear automatically and clicking it will parse the query.
 
 ---
 
-### Task 8: Change Layout Column Widths
+### Task 8: Modify ChatPanel Chip Visibility Behavior
+
+**Current Behavior** (as of Dec 21, 2025):
+- Chips stay visible during tutorial and when clicking suggestion chips
+- Chips only hide after user types and submits their own custom message
+- Show/hide toggle allows users to collapse chips for more space
+
+**How It Works**:
+- `hasTypedMessage` state (line 50): Tracks if user has typed their own message
+  - Set to `true` only in `handleSubmit` when user types in input field
+  - NOT affected by clicking suggestion chips or tutorial
+- `chipsVisible` state (line 51): Controls show/hide toggle
+  - Default: `true`
+  - Toggled by clicking "hide/show" link
+
+**Example: Make chips always visible (never auto-hide)**:
+
+**Step 1**: Find the visibility logic in ChatPanel.jsx (line 105)
+```jsx
+// Show chips until user types their own message (clicking chips doesn't count)
+const shouldShowChips = !hasTypedMessage
+```
+
+**Step 2**: Change to always show:
+```jsx
+// Always show chips (never auto-hide)
+const shouldShowChips = true
+```
+
+**Example: Make chips disappear immediately after any interaction**:
+
+**Step 1**: Modify the condition (line 105)
+```jsx
+// Hide chips after any message (tutorial, clicks, or typed)
+const shouldShowChips = messages.length === 0
+```
+
+**Example: Hide chips after clicking any chip**:
+
+**Step 1**: Find the chip click handler around line 188
+```jsx
+onClick={() => {
+  const parsedParams = parsePassengerQuery(suggestion)
+  if (parsedParams) {
+    onSendMessage(suggestion, parsedParams)
+  }
+}}
+```
+
+**Step 2**: Add setHasTypedMessage
+```jsx
+onClick={() => {
+  const parsedParams = parsePassengerQuery(suggestion)
+  if (parsedParams) {
+    setHasTypedMessage(true)  // NEW - hide chips after clicking
+    onSendMessage(suggestion, parsedParams)
+  }
+}}
+```
+
+---
+
+### Task 9: Change Layout Column Widths
 
 **Example**: Make chat wider (40% instead of 30%)
 
@@ -797,11 +866,13 @@ className="text-lg"  // ✓ Clear
 | File | Purpose | Common Changes |
 |------|---------|----------------|
 | `App.jsx` | State management, prop wiring | Add new state, wire props |
-| `Layout.jsx` | Page layout structure | Column widths, spacing |
+| `Layout.jsx` | Page layout structure (80/20 split) | Column widths, spacing |
 | `ControlPanel.jsx` | Sliders and controls | Ranges, labels, accordion |
-| `ChatPanel.jsx` | Chat interface | Messages, presets, input |
+| `ChatPanel.jsx` | Chat with smart chip visibility | Suggestions, visibility logic, toggle |
 | `ComparisonCard.jsx` | Cohort comparison display | Styling, layout |
-| `TutorialControls.jsx` | Tutorial UI | Button text, styling |
+| `ModelComparisonView.jsx` | Main visualization layout | Tree/SHAP positioning |
+| `ModelComparisonViewAlt.jsx` | Alternative vertical layout | Tree/SHAP positioning |
+| `visualizationColors.js` | Centralized color system | Color values (changes affect all components) |
 
 ---
 
@@ -971,7 +1042,14 @@ npm run build
 
 ## Additional Documentation
 
-For more detailed information about specific features:
+### Central Navigation
+
+- **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)** - Central hub for all documentation
+  - Quick start by use case ("I want to...")
+  - Complete file organization and navigation
+  - Key concepts and design principles
+
+### Detailed Feature Information
 
 ### Feature Documentation
 

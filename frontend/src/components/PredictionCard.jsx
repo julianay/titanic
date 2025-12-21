@@ -1,19 +1,29 @@
 import PropTypes from 'prop-types'
 import LoadingSpinner from './LoadingSpinner'
+import { UI_COLORS } from '../utils/visualizationColors'
 
 function PredictionCard({ prediction, loading, error, modelName }) {
-  // Get background color based on survival probability
-  const getBackgroundColor = (probability) => {
-    if (probability > 70) return 'bg-green-900 bg-opacity-30 border-green-700'
-    if (probability >= 40) return 'bg-yellow-900 bg-opacity-30 border-yellow-700'
-    return 'bg-red-900 bg-opacity-30 border-red-700'
-  }
-
-  // Get text color based on survival probability
-  const getTextColor = (probability) => {
-    if (probability > 70) return 'text-green-400'
-    if (probability >= 40) return 'text-yellow-400'
-    return 'text-red-400'
+  // Get colors based on survival probability
+  const getColors = (probability) => {
+    if (probability > 70) {
+      return {
+        bg: UI_COLORS.survivedBg,
+        border: UI_COLORS.survivedBorder,
+        text: UI_COLORS.survivedText
+      }
+    }
+    if (probability >= 40) {
+      return {
+        bg: UI_COLORS.uncertainBg,
+        border: UI_COLORS.uncertainBorder,
+        text: UI_COLORS.uncertainText
+      }
+    }
+    return {
+      bg: UI_COLORS.diedBg,
+      border: UI_COLORS.diedBorder,
+      text: UI_COLORS.diedText
+    }
   }
 
   // Loading state
@@ -50,35 +60,45 @@ function PredictionCard({ prediction, loading, error, modelName }) {
   // Calculate survival probability percentage
   const survivalProbability = Math.round(prediction.probability_survived * 100)
   const survived = prediction.prediction === 1
+  const colors = getColors(survivalProbability)
+  const outcomeColors = survived ?
+    { text: UI_COLORS.survivedText } :
+    { text: UI_COLORS.diedText }
 
   return (
-    <div className={`p-6 border rounded-lg ${getBackgroundColor(survivalProbability)}`}>
+    <div
+      className="p-6 border rounded-lg"
+      style={{
+        backgroundColor: colors.bg,
+        borderColor: colors.border
+      }}
+    >
       {/* Model Name Header */}
-      <div className="text-center mb-4 pb-3 border-b border-gray-700">
-        <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
+      <div className="text-center mb-4 pb-3 border-b" style={{ borderColor: UI_COLORS.cardBorder }}>
+        <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: UI_COLORS.textSecondary }}>
           {modelName}
         </p>
       </div>
 
       {/* Survival Probability */}
       <div className="text-center mb-4">
-        <p className="text-sm text-gray-400 mb-2">Survival Probability</p>
-        <p className={`text-5xl font-bold ${getTextColor(survivalProbability)}`}>
+        <p className="text-sm mb-2" style={{ color: UI_COLORS.textSecondary }}>Survival Probability</p>
+        <p className="text-5xl font-bold" style={{ color: colors.text }}>
           {survivalProbability}%
         </p>
       </div>
 
       {/* Prediction */}
-      <div className="text-center pt-4 border-t border-gray-700">
-        <p className="text-sm text-gray-400 mb-1">Predicted Outcome</p>
-        <p className={`text-2xl font-semibold ${survived ? 'text-green-400' : 'text-red-400'}`}>
+      <div className="text-center pt-4 border-t" style={{ borderColor: UI_COLORS.cardBorder }}>
+        <p className="text-sm mb-1" style={{ color: UI_COLORS.textSecondary }}>Predicted Outcome</p>
+        <p className="text-2xl font-semibold" style={{ color: outcomeColors.text }}>
           {prediction.prediction_label || (survived ? 'Survived' : 'Died')}
         </p>
       </div>
 
       {/* Death Probability (subtle) */}
       <div className="text-center mt-3 pt-3 border-t border-gray-800">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs" style={{ color: UI_COLORS.textMuted }}>
           Death Probability: {Math.round(prediction.probability_died * 100)}%
         </p>
       </div>

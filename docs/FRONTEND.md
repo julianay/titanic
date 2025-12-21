@@ -13,10 +13,11 @@ A modern, responsive React application that connects to the FastAPI backend to p
 3. [Project Structure](#project-structure)
 4. [Components](#components)
 5. [Custom Hooks](#custom-hooks)
-6. [Features](#features)
-7. [Configuration](#configuration)
-8. [Development](#development)
-9. [Troubleshooting](#troubleshooting)
+6. [Color System](#color-system)
+7. [Features](#features)
+8. [Configuration](#configuration)
+9. [Development](#development)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -58,15 +59,35 @@ frontend/
 │   ├── components/          # React components
 │   │   ├── Layout.jsx       # Two-column responsive layout
 │   │   ├── ControlPanel.jsx # Passenger input controls + presets
-│   │   └── LoadingSpinner.jsx # Animated loading indicator
+│   │   ├── ChatPanel.jsx    # Natural language chat interface
+│   │   ├── LoadingSpinner.jsx # Animated loading indicator
+│   │   ├── PredictionCard.jsx # Prediction result cards
+│   │   ├── SinglePredictionCard.jsx # Chat prediction cards
+│   │   ├── ComparisonCard.jsx # Cohort comparison cards
+│   │   ├── TutorialControls.jsx # Tutorial navigation (legacy, no longer used)
+│   │   ├── ModelComparisonView.jsx # Main visualization layout
+│   │   ├── ModelComparisonViewAlt.jsx # Alternative visualization layout
+│   │   └── visualizations/  # D3.js visualization components
+│   │       ├── DecisionTreeViz.jsx # Vertical tree layout
+│   │       ├── DecisionTreeVizHorizontal.jsx # Horizontal tree layout
+│   │       ├── SHAPWaterfall.jsx # SHAP waterfall chart
+│   │       └── GlobalFeatureImportance.jsx # Feature importance bars
 │   ├── hooks/              # Custom React hooks
-│   │   └── usePredict.js   # API integration with debouncing
+│   │   ├── usePredict.js   # API integration with debouncing
+│   │   └── useTutorial.js  # Tutorial state management
+│   ├── utils/              # Utility modules
+│   │   ├── visualizationColors.js # Centralized color system
+│   │   └── cohortPatterns.js # Natural language parsing
 │   ├── App.jsx             # Main application component
+│   ├── AppAlt.jsx          # Alternative layout component
 │   ├── main.jsx            # Application entry point
+│   ├── main-alt.jsx        # Alternative layout entry point
 │   └── index.css           # Global styles + Tailwind directives
 ├── public/                 # Static assets
+├── index.html              # Main layout HTML
+├── index-alt.html          # Alternative layout HTML
 ├── .env                    # Environment variables
-├── vite.config.js          # Vite configuration
+├── vite.config.js          # Vite configuration (multi-page setup)
 ├── tailwind.config.js      # Tailwind CSS configuration
 ├── postcss.config.js       # PostCSS configuration
 └── package.json            # Dependencies and scripts
@@ -143,6 +164,73 @@ Interactive passenger input controls with smart features.
 
 ---
 
+### ChatPanel (`src/components/ChatPanel.jsx`)
+
+Natural language chat interface with suggestion chips and tutorial integration.
+
+**Props:**
+- `messages` (array) - Array of message objects with various types
+- `onSendMessage` (function) - Called when message submitted: `(text, parsedParams) => void`
+- `onPresetSelect` (function) - Called when preset chip clicked (updates controls)
+- `onPresetChat` (function) - Called when preset chip clicked (adds chat message)
+- `onTutorialAdvance` (function) - Called when tutorial Next button clicked
+- `onTutorialSkip` (function) - Called when tutorial Skip button clicked
+- `onTutorialStart` (function) - Called when tutorial Start button clicked
+
+**Message Types:**
+1. **User Messages**: `{ role: 'user', content: string }`
+2. **Text Responses**: `{ role: 'assistant', content: string }`
+3. **Comparison Cards**: `{ role: 'assistant', type: 'comparison', comparison: {...} }`
+4. **Prediction Cards**: `{ role: 'assistant', type: 'prediction', passengerData: {...}, label: string }`
+5. **Tutorial Messages**: `{ role: 'assistant', type: 'tutorial', content: string, step: number, isLastStep: boolean }`
+
+**Suggestion Chips:**
+- **3 Preset Queries**:
+  - "Show me a woman in 1st class"
+  - "What about a 3rd class male?"
+  - "Compare women vs men"
+- **Tutorial Chip**: "📚 Start Tutorial"
+- **Smart Visibility**: Chips remain visible until user types their own message
+  - Clicking chips = exploration (chips stay visible)
+  - Typing custom message = user knows how to use chat (chips hide)
+  - During tutorial = chips stay visible
+- **Show/Hide Toggle**:
+  - Small "hide/show" link next to "Try asking" label
+  - Click to collapse chips for more chat space
+  - Click again to restore chips
+  - Toggle state persists during session
+
+**Natural Language Parsing:**
+- Supports passenger queries: "woman in 1st class", "3rd class male", "child age 5"
+- Supports comparison queries: "women vs men", "1st class vs 3rd class"
+- Parsed by `parsePassengerQuery()` and `detectComparison()` utilities
+
+**Features:**
+- Auto-scrolls to latest messages
+- Inline tutorial controls (Next/Skip buttons appear in tutorial messages)
+- Chip-styled suggestion buttons for quick queries
+- Input validation and error handling
+
+**Usage:**
+```jsx
+<ChatPanel
+  messages={chatMessages}
+  onSendMessage={handleSendMessage}
+  onPresetSelect={handlePresetSelect}
+  onPresetChat={handlePresetChat}
+  onTutorialAdvance={tutorial.advanceTutorial}
+  onTutorialSkip={tutorial.skipTutorial}
+  onTutorialStart={tutorial.startTutorial}
+/>
+```
+
+**Common Changes:**
+- Add suggestion: Add to `suggestionButtons` array (line 98)
+- Change chip styling: Modify classes on line 194
+- Adjust visibility behavior: Edit `hasTypedMessage` state logic (line 50, 63)
+
+---
+
 ### LoadingSpinner (`src/components/LoadingSpinner.jsx`)
 
 Animated loading indicator with customizable message.
@@ -212,6 +300,216 @@ clearPredictionCache()
 // Get current cache size (for debugging)
 console.log(getCacheSize()) // e.g., 42
 ```
+
+---
+
+## Color System
+
+### Centralized Color Configuration
+
+All colors across visualizations and UI components are managed in a single file:
+**`src/utils/visualizationColors.js`**
+
+This provides:
+- **Single source of truth**: Change any color in one place
+- **Consistency**: Same colors across all components
+- **Semantic meaning**: Colors have consistent meaning throughout the app
+- **Easy maintenance**: Well-documented with inline comments
+
+### Color Palette
+
+| Purpose | Color Name | Hex Code | Usage |
+|---------|-----------|----------|-------|
+| Survived / Positive | Light Green | `#B8F06E` | Tree pie charts (survived), SHAP positive impact, UI cards (high probability) |
+| Died / Negative | Orange | `#F09A48` | Tree pie charts (died), SHAP negative impact, UI cards (low probability) |
+| Tutorial/Highlight | Gold | `#ffd700` | Tutorial mode, hover states, shared comparison paths |
+| Uncertain | Yellow | `#fbbf24` | UI cards with medium survival probability (40-70%) |
+
+### Color Constants
+
+#### TREE_COLORS
+Decision tree visualization colors:
+```javascript
+import { TREE_COLORS } from '../utils/visualizationColors'
+
+TREE_COLORS.died              // #F09A48 - Orange for died/class 0
+TREE_COLORS.survived          // #B8F06E - Light green for survived/class 1
+TREE_COLORS.tutorial          // #ffd700 - Gold for tutorial highlighting
+TREE_COLORS.hover             // #ffd700 - Gold for hover effects
+TREE_COLORS.comparisonA       // #B8F06E - Green for comparison path A
+TREE_COLORS.comparisonB       // #F09A48 - Orange for comparison path B
+TREE_COLORS.comparisonShared  // #ffd700 - Gold for shared paths
+TREE_COLORS.defaultStroke     // #666 - Default link/edge color
+TREE_COLORS.nodeStroke        // #888 - Stroke around pie segments
+TREE_COLORS.textDefault       // #fafafa - Default text color
+TREE_COLORS.background        // #0e1117 - Tree background
+TREE_COLORS.tooltipBg         // rgba(0,0,0,0.9) - Tooltip background
+TREE_COLORS.tooltipText       // white - Tooltip text
+```
+
+#### SHAP_COLORS
+SHAP visualization colors (aligned with tree colors):
+```javascript
+import { SHAP_COLORS } from '../utils/visualizationColors'
+
+SHAP_COLORS.positive          // #B8F06E - Same as survived
+SHAP_COLORS.positiveStroke    // #cef78e - Lighter green for stroke
+SHAP_COLORS.negative          // #F09A48 - Same as died
+SHAP_COLORS.negativeStroke    // #f5b06d - Lighter orange for stroke
+SHAP_COLORS.highlight         // #ffd700 - Gold for highlighted bars
+SHAP_COLORS.highlightGlow     // rgba(255,215,0,0.8) - Gold glow
+SHAP_COLORS.text              // #fafafa - White-ish text
+SHAP_COLORS.barDefault        // #B8F06E - Default bar color
+```
+
+#### UI_COLORS
+UI card colors (prediction results):
+```javascript
+import { UI_COLORS } from '../utils/visualizationColors'
+
+// High probability (survived)
+UI_COLORS.survivedText        // #B8F06E
+UI_COLORS.survivedBg          // rgba(184,240,110,0.15)
+UI_COLORS.survivedBorder      // rgba(184,240,110,0.5)
+
+// Low probability (died)
+UI_COLORS.diedText            // #F09A48
+UI_COLORS.diedBg              // rgba(240,154,72,0.15)
+UI_COLORS.diedBorder          // rgba(240,154,72,0.5)
+
+// Medium probability (uncertain)
+UI_COLORS.uncertainText       // #fbbf24
+UI_COLORS.uncertainBg         // rgba(251,191,36,0.15)
+UI_COLORS.uncertainBorder     // rgba(251,191,36,0.5)
+
+// General UI
+UI_COLORS.cardBg              // rgba(31,41,55,0.5)
+UI_COLORS.cardBorder          // #374151
+UI_COLORS.textPrimary         // #e5e7eb
+UI_COLORS.textSecondary       // #9ca3af
+UI_COLORS.textMuted           // #6b7280
+```
+
+#### TREE_EFFECTS
+Drop shadow effects for different states:
+```javascript
+import { TREE_EFFECTS } from '../utils/visualizationColors'
+
+TREE_EFFECTS.active           // White glow for active elements
+TREE_EFFECTS.final            // Brighter white glow for final node
+TREE_EFFECTS.tutorial         // Gold glow for tutorial mode
+TREE_EFFECTS.hover            // Subtle gold glow for hover
+TREE_EFFECTS.comparisonA      // Green glow for path A
+TREE_EFFECTS.comparisonB      // Orange glow for path B
+TREE_EFFECTS.comparisonShared // Gold glow for shared paths
+```
+
+#### TREE_OPACITY
+Opacity values for different states:
+```javascript
+import { TREE_OPACITY } from '../utils/visualizationColors'
+
+TREE_OPACITY.inactive         // 0.4 - Faded inactive elements
+TREE_OPACITY.hover            // 0.85 - Slightly transparent on hover
+TREE_OPACITY.active           // 1 - Full opacity for active elements
+```
+
+### Usage Examples
+
+**In D3 Visualizations:**
+```javascript
+import { TREE_COLORS, SHAP_COLORS } from '../utils/visualizationColors'
+
+// Pie chart colors
+const pieData = pie([
+  { label: 'died', value: d.data.class_0, color: TREE_COLORS.died },
+  { label: 'survived', value: d.data.class_1, color: TREE_COLORS.survived }
+])
+
+// SHAP bar colors
+.attr("fill", d => d.value >= 0 ? SHAP_COLORS.positive : SHAP_COLORS.negative)
+
+// Tooltips
+.style("background", TREE_COLORS.tooltipBg)
+.style("color", TREE_COLORS.tooltipText)
+```
+
+**In React Components:**
+```javascript
+import { UI_COLORS } from '../utils/visualizationColors'
+
+// Inline styles
+<div style={{
+  backgroundColor: UI_COLORS.survivedBg,
+  borderColor: UI_COLORS.survivedBorder,
+  color: UI_COLORS.survivedText
+}}>
+  Predicted: Survived
+</div>
+
+// Dynamic color selection
+const getColors = (probability) => {
+  if (probability > 0.7) return {
+    bg: UI_COLORS.survivedBg,
+    border: UI_COLORS.survivedBorder,
+    text: UI_COLORS.survivedText
+  }
+  // ... more conditions
+}
+```
+
+### Components Using Color System
+
+**Visualizations:**
+- `DecisionTreeViz.jsx` - Vertical tree layout
+- `DecisionTreeVizHorizontal.jsx` - Horizontal tree layout
+- `SHAPWaterfall.jsx` - SHAP waterfall chart
+- `GlobalFeatureImportance.jsx` - Feature importance bars
+
+**UI Cards:**
+- `PredictionCard.jsx` - Main prediction display
+- `SinglePredictionCard.jsx` - Chat prediction cards
+- `ComparisonCard.jsx` - Cohort comparison cards
+
+### Semantic Color Meanings
+
+The color system enforces semantic consistency:
+
+| Color | Meaning Across App |
+|-------|-------------------|
+| **Green (#B8F06E)** | Survived outcome, positive SHAP impact, high survival probability |
+| **Orange (#F09A48)** | Died outcome, negative SHAP impact, low survival probability |
+| **Gold (#ffd700)** | Tutorial mode, highlights, shared comparison paths |
+| **Yellow (#fbbf24)** | Uncertain/medium survival probability (UI only) |
+
+This consistency helps users build a mental model:
+- Seeing green anywhere = positive/survived
+- Seeing orange anywhere = negative/died
+- Seeing gold anywhere = attention/highlight
+
+### Updating Colors
+
+To change colors across the entire application:
+
+1. Open `src/utils/visualizationColors.js`
+2. Update the desired color constant
+3. Save the file
+4. All components automatically use the new color
+
+**Example:** Change survived color to blue:
+```javascript
+export const TREE_COLORS = {
+  survived: '#3B82F6',  // Changed from #B8F06E to blue
+  // ... rest of colors
+}
+```
+
+This single change updates:
+- Tree pie charts
+- SHAP positive impact bars
+- High probability UI cards
+- Comparison path A highlighting
+- All other references to survived color
 
 ---
 
@@ -446,7 +744,11 @@ When adding new features:
 3. **Styling**: Use Tailwind utility classes
 4. **State Management**: Use React hooks (useState, useEffect)
 5. **API Calls**: Use or extend `usePredict` hook
-6. **Colors**: Stick to theme colors (#218FCE accent, #0e1117 background)
+6. **Colors**: Import from `src/utils/visualizationColors.js`
+   - Use `TREE_COLORS` for visualizations
+   - Use `SHAP_COLORS` for SHAP charts
+   - Use `UI_COLORS` for UI components
+   - Never hardcode colors - always use the centralized constants
 
 ---
 
