@@ -160,10 +160,10 @@ titanic/
 - **Toggle:** Users can manually hide/show chips
 - **Documentation:** [ASSISTANT_GUIDE.md - Task 8](ASSISTANT_GUIDE.md#task-8-modify-chatpanel-chip-visibility-behavior)
 
-### Alternative Layouts
-- **Main Layout:** `index.html` - 80/20 split with vertical tree
-- **Alt Layout:** `index-alt.html` - Vertical stacking with horizontal tree
-- **Purpose:** Compare layout options side-by-side
+### Layout
+- **Current Layout:** `index.html` - Vertical stacking with horizontal tree (uses `main-alt.jsx`)
+- **Backup Layout:** `index-backup.html` - Former 80/20 split layout (uses `main.jsx`, not built)
+- **Note:** Alternative layout became the default on Dec 22, 2025
 - **Documentation:** [CHANGELOG_DEC21_2025.md](CHANGELOG_DEC21_2025.md)
 
 ### Natural Language Processing

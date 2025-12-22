@@ -84,10 +84,10 @@ frontend/
 │   ├── main-alt.jsx        # Alternative layout entry point
 │   └── index.css           # Global styles + Tailwind directives
 ├── public/                 # Static assets
-├── index.html              # Main layout HTML
-├── index-alt.html          # Alternative layout HTML
+├── index.html              # Main HTML (uses main-alt.jsx)
+├── index-backup.html       # Backup HTML (uses main.jsx, not built)
 ├── .env                    # Environment variables
-├── vite.config.js          # Vite configuration (multi-page setup)
+├── vite.config.js          # Vite configuration
 ├── tailwind.config.js      # Tailwind CSS configuration
 ├── postcss.config.js       # PostCSS configuration
 └── package.json            # Dependencies and scripts
