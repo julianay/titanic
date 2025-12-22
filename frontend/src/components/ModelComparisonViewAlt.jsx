@@ -105,6 +105,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
                       baseValue={shapDataA.base_value}
                       finalPrediction={shapDataA.final_prediction}
                       highlightFeatures={highlightFeatures}
+                      passengerData={activeComparison?.cohortA}
                     />
                   ) : (
                     <LoadingSkeleton variant="chart" />
@@ -123,6 +124,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
                       baseValue={shapDataB.base_value}
                       finalPrediction={shapDataB.final_prediction}
                       highlightFeatures={highlightFeatures}
+                      passengerData={activeComparison?.cohortB}
                     />
                   ) : (
                     <LoadingSkeleton variant="chart" />
@@ -150,7 +152,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
             </div>
           </>
         ) : (
-          /* Single Mode: 2 cards side-by-side (waterfall + global) */
+          /* Single Mode: Waterfall and global side-by-side */
           <div className="grid grid-cols-2 gap-6">
             {/* SHAP Waterfall */}
             <div className="bg-gray-900 rounded-lg p-4">
@@ -163,6 +165,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
                     baseValue={shapData.base_value}
                     finalPrediction={shapData.final_prediction}
                     highlightFeatures={highlightFeatures}
+                    passengerData={passengerData}
                   />
                 ) : (
                   <LoadingSkeleton variant="chart" />

@@ -14,11 +14,24 @@ import { SHAP_COLORS } from '../../utils/visualizationStyles'
  * @param {number} baseValue - Baseline prediction value
  * @param {number} finalPrediction - Final prediction after all contributions
  * @param {Array<string>} highlightFeatures - Tutorial: features to highlight (e.g., ['sex', 'pclass'])
+ * @param {Object} passengerData - Passenger data for description (sex, pclass, age, fare)
  * @param {number} height - Chart height (default: 300)
  */
-function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFeatures = null, height = 300 }) {
+function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFeatures = null, passengerData = null, height = 300 }) {
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(650)
+
+  // Format passenger description for title
+  const formatPassengerDescription = (data) => {
+    if (!data) return "SHAP Waterfall"
+
+    const { sex, pclass, age, fare } = data
+    const gender = sex === 0 ? "female" : "male"
+    const classMap = { 1: "1st", 2: "2nd", 3: "3rd" }
+    const passengerClass = classMap[pclass] || pclass
+
+    return `${age}-year-old ${gender} in ${passengerClass} class, £${fare} fare`
+  }
 
   // Observe container size changes
   useEffect(() => {
@@ -46,7 +59,28 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     // Clear existing content
     d3.select(containerRef.current).selectAll("*").remove()
 
-    const margin = { top: 20, right: 60, bottom: 50, left: 100 }
+    // Normalize waterfall data to ensure proper continuity
+    // Each bar should start exactly where the previous bar ended
+    const normalizedData = []
+    for (let i = 0; i < waterfallData.length; i++) {
+      if (i === 0) {
+        // First bar (Base) - keep as is
+        normalizedData.push({ ...waterfallData[i] })
+      } else {
+        // Subsequent bars - ensure start equals previous normalized end
+        const prevEnd = normalizedData[i - 1].end
+        normalizedData.push({
+          ...waterfallData[i],
+          start: prevEnd,
+          end: prevEnd + waterfallData[i].value
+        })
+      }
+    }
+
+    // Use normalized data for rendering
+    const dataToRender = normalizedData
+
+    const margin = { top: 35, right: 60, bottom: 80, left: 60 }
     const chartWidth = containerWidth - margin.left - margin.right
     const chartHeight = height - margin.top - margin.bottom
 
@@ -60,57 +94,58 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     // Title with base value and final prediction
     svg.append("text")
       .attr("x", chartWidth / 2)
-      .attr("y", -5)
+      .attr("y", -15)
       .attr("text-anchor", "middle")
       .attr("fill", SHAP_COLORS.text)
       .attr("font-size", "11px")
       .attr("font-weight", "bold")
       .text(`Base Value: ${baseValue.toFixed(3)} → Final Prediction: ${finalPrediction.toFixed(3)}`)
 
-    // Create scales - HORIZONTAL orientation
-    const y = d3.scaleBand()
-      .domain(waterfallData.map((d, i) => i))
-      .range([0, chartHeight])
+    // Create scales - VERTICAL orientation (swapped axes)
+    const x = d3.scaleBand()
+      .domain(dataToRender.map((d, i) => i))
+      .range([0, chartWidth])
       .padding(0.3)
 
-    const allValues = waterfallData.flatMap(d => [d.start, d.end])
-    const xExtent = d3.extent(allValues)
-    const x = d3.scaleLinear()
-      .domain(xExtent)
-      .range([0, chartWidth])
+    const allValues = dataToRender.flatMap(d => [d.start, d.end])
+    const yExtent = d3.extent(allValues)
+    const y = d3.scaleLinear()
+      .domain(yExtent)
+      .range([chartHeight, 0])
       .nice()
 
-    // Add X axis
+    // Add Y axis
     svg.append("g")
       .attr("class", "axis")
-      .attr("transform", `translate(0,${chartHeight})`)
-      .call(d3.axisBottom(x).ticks(5))
+      .call(d3.axisLeft(y).ticks(5))
 
-    // Add X axis label
+    // Add Y axis label
     svg.append("text")
-      .attr("x", chartWidth / 2)
-      .attr("y", chartHeight + 38)
+      .attr("transform", "rotate(-90)")
+      .attr("x", -chartHeight / 2)
+      .attr("y", -45)
       .attr("fill", SHAP_COLORS.text)
       .attr("text-anchor", "middle")
       .attr("font-size", "11px")
       .text("Cumulative SHAP")
 
-    // Draw connector lines between bars (horizontal)
-    for (let i = 0; i < waterfallData.length - 1; i++) {
-      const current = waterfallData[i]
-      const next = waterfallData[i + 1]
+    // Draw connector lines between bars (vertical)
+    // These connect the end of one bar to the start of the next
+    for (let i = 0; i < dataToRender.length - 1; i++) {
+      const current = dataToRender[i]
+      const next = dataToRender[i + 1]
 
       svg.append("line")
         .attr("class", "connector-line")
-        .attr("x1", x(current.end))
-        .attr("y1", y(i) + y.bandwidth())
-        .attr("x2", x(next.start))
-        .attr("y2", y(i + 1))
+        .attr("x1", x(i) + x.bandwidth())  // Right edge of current bar
+        .attr("y1", y(current.end))        // Vertical position of current bar's end value
+        .attr("x2", x(i + 1))              // Left edge of next bar
+        .attr("y2", y(next.start))         // Vertical position of next bar's start value
     }
 
-    // Draw floating bars (horizontal)
+    // Draw floating bars (vertical)
     svg.selectAll(".bar")
-      .data(waterfallData)
+      .data(dataToRender)
       .enter()
       .append("rect")
       .attr("class", (d, i) => {
@@ -128,33 +163,80 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
 
         return className
       })
-      .attr("y", (d, i) => y(i))
-      .attr("x", d => x(Math.min(d.start, d.end)))
-      .attr("height", y.bandwidth())
-      .attr("width", d => Math.abs(x(d.start) - x(d.end)) || 3)
+      .attr("x", (d, i) => x(i))
+      .attr("y", d => {
+        // For vertical waterfall: bar spans from d.start to d.end
+        // With inverted y-scale, higher values have lower y-coordinates
+        // The rect's y attr is the top, so use the smaller y-coordinate
+        return Math.min(y(d.start), y(d.end))
+      })
+      .attr("width", x.bandwidth())
+      .attr("height", d => {
+        // Height is the absolute difference in y-coordinates
+        const height = Math.abs(y(d.start) - y(d.end))
+        // Minimum height for visibility (especially for base bar)
+        return Math.max(height, 3)
+      })
       .attr("rx", 2)
 
     // Add value labels on bars (skip base value, smaller font)
+    // Position labels inside bars when they fit, otherwise outside
+    const minHeightForLabel = 18 // Minimum bar height needed to fit label inside
+
     svg.selectAll(".value-label")
-      .data(waterfallData.filter((d, i) => i > 0))
+      .data(dataToRender.filter((d, i) => i > 0))
       .enter()
       .append("text")
       .attr("class", "value-label")
-      .attr("y", (d, i) => y(i + 1) + y.bandwidth() / 2)
-      .attr("x", d => x(d.end) + (d.value >= 0 ? 5 : -5))
-      .attr("dy", "0.35em")
-      .attr("text-anchor", d => d.value >= 0 ? "start" : "end")
-      .attr("fill", d => d.value >= 0 ? SHAP_COLORS.positive : SHAP_COLORS.negative)
+      .attr("x", (d, i) => x(i + 1) + x.bandwidth() / 2)
+      .attr("y", d => {
+        const barHeight = Math.abs(y(d.start) - y(d.end))
+
+        if (barHeight >= minHeightForLabel) {
+          // Bar is tall enough - center label inside
+          return (y(d.start) + y(d.end)) / 2
+        } else {
+          // Bar too small - place label outside
+          // For positive contributions, place above the bar
+          // For negative contributions, place below the bar
+          if (d.value >= 0) {
+            return y(d.end) - 5
+          } else {
+            return y(d.end) + 12
+          }
+        }
+      })
+      .attr("dy", d => {
+        const barHeight = Math.abs(y(d.start) - y(d.end))
+        // Only apply vertical centering offset when inside the bar
+        return barHeight >= minHeightForLabel ? "0.35em" : "0"
+      })
+      .attr("text-anchor", "middle")
+      .attr("fill", d => {
+        const barHeight = Math.abs(y(d.start) - y(d.end))
+        // Use black for labels inside bars, colored for labels outside
+        if (barHeight >= minHeightForLabel) {
+          return "#000000"
+        } else {
+          return d.value >= 0 ? SHAP_COLORS.positive : SHAP_COLORS.negative
+        }
+      })
       .text(d => (d.value >= 0 ? "+" : "") + d.value.toFixed(2))
 
-    // Add Y axis with feature labels
+    // Add X axis with feature labels (feature names only, no values)
     svg.append("g")
       .attr("class", "axis")
-      .call(d3.axisLeft(y).tickFormat((d, i) => {
-        const item = waterfallData[i]
+      .attr("transform", `translate(0,${chartHeight})`)
+      .call(d3.axisBottom(x).tickFormat((d, i) => {
+        const item = dataToRender[i]
         if (i === 0) return "Base"
-        return item.feature_value !== "" ? `${item.feature}=${item.feature_value}` : item.feature
+        return item.feature
       }))
+      .selectAll("text")
+      .attr("transform", "rotate(-45)")
+      .style("text-anchor", "end")
+      .attr("dx", "-0.5em")
+      .attr("dy", "0.5em")
 
   }, [waterfallData, baseValue, finalPrediction, highlightFeatures, containerWidth, height])
 
@@ -208,14 +290,13 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
           stroke: #666;
         }
         .value-label {
-          fill: ${SHAP_COLORS.text};
           font-size: 9px;
           font-weight: bold;
         }
       `}</style>
 
       <div className="w-full">
-        <h3 className="text-sm font-semibold mb-3 text-gray-200">SHAP Waterfall</h3>
+        <h3 className="text-sm font-semibold mb-3 text-gray-200">{formatPassengerDescription(passengerData)}</h3>
         <div ref={containerRef} className="w-full" />
       </div>
     </>

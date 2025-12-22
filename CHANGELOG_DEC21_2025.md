@@ -346,3 +346,128 @@ No breaking changes. Both layouts coexist:
 - Existing deployment continues to work at root URL
 - New alternative layout available at `/index-alt.html`
 - All API endpoints and backend remain unchanged
+
+---
+
+## SHAP Waterfall Chart Improvements
+
+### Overview
+Redesigned the SHAP waterfall chart to use vertical bars with horizontal feature labels, improving readability and making better use of available space in the alternative layout.
+
+### Visual Changes
+
+#### Axis Orientation
+- **Before**: Horizontal bars with features on Y-axis (left), cumulative SHAP on X-axis (bottom)
+- **After**: Vertical bars with features on X-axis (bottom), cumulative SHAP on Y-axis (left)
+- **Benefit**: Matches the standard waterfall chart pattern shown in reference images (like profit waterfalls)
+
+#### Feature Labels
+- **Removed**: Feature values from axis labels (e.g., "sex=0", "pclass=1", "age=8")
+- **Changed**: Now shows only feature names (e.g., "sex", "pclass", "age")
+- **Added**: Rotated labels at -45° to prevent overlap
+- **Benefit**: Cleaner, more readable axis; specific values shown in chart title instead
+
+#### Chart Title
+- **Before**: Generic "SHAP Waterfall" title
+- **After**: Descriptive passenger information (e.g., "8-year-old female in 1st class, £84 fare")
+- **Implementation**:
+  - Added `passengerData` prop to `SHAPWaterfall` component
+  - Created `formatPassengerDescription()` helper function
+  - Dynamically generates human-readable descriptions
+- **Benefit**: Clear context for what the waterfall is explaining
+
+#### Value Label Positioning
+- **Smart positioning**: Labels adapt based on bar height
+  - **Inside bars**: When bar height ≥ 18px
+    - Label centered vertically within the bar
+    - Black text for contrast against colored bars
+  - **Outside bars**: When bar height < 18px
+    - Positive values: label placed above bar (5px gap)
+    - Negative values: label placed below bar (12px gap)
+    - Colored text (green/orange) to indicate direction
+- **Benefit**: Prevents label overlap with axis while keeping all values readable
+
+#### Base Value Text
+- **Spacing**: Moved from y=-5 to y=-15 (10px higher)
+- **Margin adjustment**: Increased top margin from 20px to 35px
+- **Benefit**: Prevents overlap with tall positive bars and their labels
+
+### Layout Changes
+
+#### Alternative Layout (ModelComparisonViewAlt.jsx)
+- **Single mode**: Waterfall and Global Feature Importance side-by-side (2 columns)
+- **Comparison mode**:
+  - Two waterfalls side-by-side in first row
+  - Global Feature Importance full-width underneath in second row
+- **Previous state**: Waterfall full-width on top, Global underneath (both full-width)
+
+### Technical Implementation
+
+#### Data Normalization (SHAPWaterfall.jsx:49-68)
+- **Issue**: Waterfall bars weren't connecting properly (gaps between bars)
+- **Solution**: Added data normalization step before rendering
+  ```javascript
+  // Ensure each bar starts exactly where previous bar ended
+  for (let i = 0; i < waterfallData.length; i++) {
+    if (i === 0) {
+      normalizedData.push({ ...waterfallData[i] })
+    } else {
+      const prevEnd = normalizedData[i - 1].end
+      normalizedData.push({
+        ...waterfallData[i],
+        start: prevEnd,
+        end: prevEnd + waterfallData[i].value
+      })
+    }
+  }
+  ```
+- **Benefit**: Perfect waterfall continuity regardless of backend data precision
+
+#### Connector Lines
+- **Position**: Now flow vertically between bars
+- **Coordinates**: Connect from right edge of one bar to left edge of next
+- **Y-positioning**: Links the `end` value of current bar to `start` value of next bar
+
+#### CSS Changes (SHAPWaterfall.jsx:279-282)
+- **Removed**: Static `fill` property from `.value-label` class
+- **Reason**: Allows dynamic fill colors based on label position
+  - Black when inside bars
+  - Green/orange when outside bars
+
+### Updated Component Props
+
+**SHAPWaterfall.jsx:**
+```javascript
+function SHAPWaterfall({
+  waterfallData,           // Array of waterfall data
+  baseValue,               // Baseline prediction
+  finalPrediction,         // Final prediction value
+  highlightFeatures,       // Tutorial highlighting
+  passengerData,           // NEW: {sex, pclass, age, fare}
+  height = 300
+})
+```
+
+**ModelComparisonViewAlt.jsx:**
+- Passes `passengerData` to main waterfall (line 168)
+- Passes `activeComparison.cohortA` to cohort A waterfall (line 108)
+- Passes `activeComparison.cohortB` to cohort B waterfall (line 127)
+
+### Files Modified
+
+```
+frontend/src/
+├── components/
+│   ├── ModelComparisonViewAlt.jsx        # Layout: side-by-side → vertical stacking
+│   └── visualizations/
+│       └── SHAPWaterfall.jsx              # Swapped axes, labels, normalization
+```
+
+### User Experience Benefits
+
+1. **Better Readability**: Vertical bars easier to compare heights at a glance
+2. **Clear Context**: Passenger description immediately shows what's being explained
+3. **No Overlap**: Smart label positioning prevents text collisions
+4. **Standard Format**: Matches familiar waterfall chart conventions
+5. **Compact Layout**: Works well in half-width column alongside Global Feature Importance
+6. **Accurate Continuity**: Normalized data ensures perfect waterfall flow
