@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 21, 2025 (Path Coloring Rule & Default State)
+**Last Updated:** December 22, 2025 (What-If Chat Integration & Tree Label Improvements)
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -121,8 +121,8 @@ titanic/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Layout.jsx         # Two-column responsive layout
-│   │   │   ├── ControlPanel.jsx   # Passenger inputs + presets
 │   │   │   ├── ChatPanel.jsx      # Natural language chat
+│   │   │   ├── WhatIfCard.jsx     # Interactive what-if controls (appears in chat)
 │   │   │   ├── ModelComparisonView.jsx  # Side-by-side comparison
 │   │   │   ├── PredictionCard.jsx # Prediction display
 │   │   │   ├── ComparisonSummary.jsx  # Agreement summary
@@ -209,10 +209,11 @@ curl -X POST http://localhost:7860/api/predict \
 **ChatPanel.jsx**
 - Natural language query parsing with cohort comparisons
 - Educational responses with survival statistics
-- Chip-styled suggestion buttons (3 presets + tutorial button)
+- Chip-styled suggestion buttons (3 query suggestions + tutorial + what-if)
 - Smart visibility: chips stay visible until user types custom message
 - Show/hide toggle for chips to maximize chat space
 - Scrollable message history with inline tutorial controls
+- Interactive what-if card integration for parameter exploration
 
 **ModelComparisonView.jsx**
 - **Layout**: Side-by-side display with Decision Tree (70%) and XGBoost (30%)
@@ -473,6 +474,7 @@ This single file exports:
   - Designed for GitHub Copilot, Cursor, and simpler assistants
 
 - **📝 Changelogs** - Recent changes by date
+  - CHANGELOG_DEC22_2025.md - What-If chat integration, tree label improvements
   - CHANGELOG_DEC21_2025.md - Alternative layout, ChatPanel improvements
   - CHANGELOG_DEC20_2025.md - Layout restructuring, tree fixes
 
@@ -507,6 +509,27 @@ This single file exports:
 ---
 
 ## 📝 Recent Changes
+
+### December 22, 2025
+**What-If Feature - Chat Integration**:
+- Removed ControlPanel accordion from right sidebar
+- Created WhatIfCard component that appears in chat
+- Added "🔮 What If?" suggestion chip
+- Interactive parameter controls within chat conversation flow
+- Fixed race condition in slider updates (using message state as source of truth)
+- Changed slider value parsing from parseInt to parseFloat for backend compatibility
+- Files changed: `WhatIfCard.jsx` (new), `ChatPanel.jsx`, `App.jsx`, `AppAlt.jsx`
+
+**Tree Label Improvements**:
+- Updated passenger class split labels to be user-friendly
+- Instead of "≤ 1.5", now shows "1st class" vs "2nd & 3rd class"
+- Files changed: `backend/models/decision_tree.py`
+
+**Layout Ratio Adjustments**:
+- SHAP Waterfall: 70% width (increased from 50%)
+- Global Feature Importance: 30% width (decreased from 50%)
+- More space for detailed waterfall chart information
+- Files changed: `ModelComparisonView.jsx`, `ModelComparisonViewAlt.jsx`
 
 ### December 21, 2025 (Afternoon)
 **Tree Path Coloring Rule - ALWAYS Reflect Leaf Values**:
@@ -564,5 +587,5 @@ This single file exports:
 
 ---
 
-**Last Updated:** December 21, 2025 (Path Coloring Rule & Default State)
+**Last Updated:** December 22, 2025 (What-If Chat Integration & Tree Label Improvements)
 **Status:** Production-ready with all features complete

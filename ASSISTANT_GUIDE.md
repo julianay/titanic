@@ -1,7 +1,7 @@
 # Coding Assistant Guide
 
 **Purpose**: Help coding assistants (GitHub Copilot, Cursor, etc.) make changes efficiently
-**Last Updated**: December 21, 2025 (Path Coloring Rule & Default State)
+**Last Updated**: December 22, 2025 (What-If Chat Integration & Tree Label Improvements)
 
 This guide provides step-by-step patterns for common tasks. Follow these exactly to avoid breaking things.
 
@@ -84,8 +84,8 @@ It doesn't:
 ├── App.jsx                      # Main app, state management
 ├── components/
 │   ├── Layout.jsx              # Fixed split-screen layout
-│   ├── ControlPanel.jsx        # Accordion with sliders
 │   ├── ChatPanel.jsx           # Chat interface with smart chip visibility
+│   ├── WhatIfCard.jsx          # Interactive what-if controls (appears in chat)
 │   ├── ComparisonCard.jsx      # Side-by-side cohort comparison
 │   ├── ModelComparisonView.jsx # Main visualization layout (80/20)
 │   ├── ModelComparisonViewAlt.jsx # Alternative layout (vertical)
@@ -110,8 +110,8 @@ It doesn't:
 
 **Key Files You'll Touch Most**:
 - `Layout.jsx` - Layout structure
-- `ControlPanel.jsx` - Control sliders
-- `ChatPanel.jsx` - Chat UI
+- `ChatPanel.jsx` - Chat UI and what-if integration
+- `WhatIfCard.jsx` - Interactive parameter controls
 - `App.jsx` - State management (be careful!)
 
 **Files to Avoid Unless Necessary**:
@@ -135,21 +135,22 @@ Read: /Users/julyamas/Documents/Projects/hf/titanic/frontend/src/components/File
 ### 2. Understand the Layout
 
 The app has a **fixed split-screen layout**:
-- **Left (70%)**: Visualizations (scrolls)
-- **Right (30%)**: Controls + Chat (fixed)
+- **Left (80%)**: Visualizations (scrolls)
+- **Right (20%)**: Chat interface (fixed)
 
 ```
-┌─────────────────────────┬─────────────┐
-│  Header (scrolls)       │   Controls  │
-│  Visualizations         │   (accordion)
-│  (scroll down)          │   ─────────  │
-│                         │   Chat      │
-│                         │   Messages  │
-│                         │   (scroll)  │
-│                         │   ─────────  │
-│                         │   Input     │
-└─────────────────────────┴─────────────┘
+┌──────────────────────────────┬──────────┐
+│  Header (scrolls)            │   Chat   │
+│  Visualizations              │   (fixed)│
+│  - Decision Tree (70%)       │          │
+│  - XGBoost (30%)             │ Messages │
+│  (scroll down)               │ (scroll) │
+│                              │          │
+│                              │ Input    │
+└──────────────────────────────┴──────────┘
 ```
+
+**What-If controls** appear as interactive cards within chat when user clicks "🔮 What If?" chip.
 
 ### 3. Test After Changes
 
@@ -329,23 +330,31 @@ const handleClearMessages = () => {
 
 ---
 
-### Task 5: Change Accordion Default State
+### Task 5: Add What-If Control Options
 
-**Example**: Make accordion open by default
+**Example**: Add a new slider or control to WhatIfCard
 
-**Step 1**: Find ControlPanel.jsx state
-```jsx
-// Line 5
-const [isExpanded, setIsExpanded] = useState(false)
+**Step 1**: Read WhatIfCard.jsx
+```bash
+Read: /Users/julyamas/Documents/Projects/hf/titanic/frontend/src/components/WhatIfCard.jsx
 ```
 
-**Step 2**: Change default
+**Step 2**: Find existing slider pattern
 ```jsx
-// Change false to true
-const [isExpanded, setIsExpanded] = useState(true)
+// Example: Age slider
+<input
+  type="range"
+  min="0"
+  max="80"
+  value={values.age}
+  onChange={(e) => onChange('age', parseFloat(e.target.value))}
+/>
 ```
 
-**That's it!** No other changes needed.
+**Step 3**: Copy and modify for your new control
+- Follow existing patterns exactly
+- Use `parseFloat` for numeric values (backend expects floats)
+- Update onChange handler with correct field name
 
 ---
 
@@ -383,7 +392,7 @@ const [passengerData, setPassengerData] = useState({
 
 **Example**: Change age slider from 0-80 to 0-100
 
-**Step 1**: Find slider in ControlPanel.jsx
+**Step 1**: Find slider in WhatIfCard.jsx
 ```jsx
 <input
   type="range"
@@ -929,8 +938,8 @@ className="text-lg"  // ✓ Clear
 |------|---------|----------------|
 | `App.jsx` | State management, prop wiring | Add new state, wire props |
 | `Layout.jsx` | Page layout structure (80/20 split) | Column widths, spacing |
-| `ControlPanel.jsx` | Sliders and controls | Ranges, labels, accordion |
-| `ChatPanel.jsx` | Chat with smart chip visibility | Suggestions, visibility logic, toggle |
+| `ChatPanel.jsx` | Chat with smart chip visibility | Suggestions, visibility logic, toggle, what-if integration |
+| `WhatIfCard.jsx` | Interactive parameter controls (in chat) | Sliders, ranges, labels |
 | `ComparisonCard.jsx` | Cohort comparison display | Styling, layout |
 | `ModelComparisonView.jsx` | Main visualization layout | Tree/SHAP positioning |
 | `ModelComparisonViewAlt.jsx` | Alternative vertical layout | Tree/SHAP positioning |

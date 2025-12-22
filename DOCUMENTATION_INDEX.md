@@ -2,7 +2,7 @@
 
 > **Purpose:** Central navigation hub for all project documentation
 
-**Last Updated:** December 21, 2025
+**Last Updated:** December 22, 2025
 
 ---
 
@@ -58,14 +58,18 @@ Detailed documentation for specific features and enhancements:
 
 ---
 
-## 📝 Changelogs
+## 📝 Changelog
 
-Track recent changes and updates:
+All notable changes in a single, consolidated file:
 
-| File | Date | Summary |
-|------|------|---------|
-| **[CHANGELOG_DEC21_2025.md](CHANGELOG_DEC21_2025.md)** | Dec 21, 2025 | Alternative layout, ChatPanel improvements, centralized colors |
-| **[CHANGELOG_DEC20_2025.md](CHANGELOG_DEC20_2025.md)** | Dec 20, 2025 | Layout restructuring, tree layout, tutorial fixes |
+| File | Coverage | Summary |
+|------|----------|---------|
+| **[CHANGELOG.md](CHANGELOG.md)** | Dec 20-22, 2025 | Consolidated changelog with all recent changes organized by date |
+
+**Legacy** (individual files - now consolidated):
+- CHANGELOG_DEC22_2025.md - Tree label improvements, What-If chat integration
+- CHANGELOG_DEC21_2025.md - Alternative layout, ChatPanel improvements
+- CHANGELOG_DEC20_2025.md - Layout restructuring, tree layout, tutorial fixes
 
 ---
 
@@ -87,8 +91,9 @@ Track recent changes and updates:
 3. Reference implementation in source code
 
 ### "I want to know what changed recently"
-1. Check [CHANGELOG_DEC21_2025.md](CHANGELOG_DEC21_2025.md) for latest changes
-2. Check [CHANGELOG_DEC20_2025.md](CHANGELOG_DEC20_2025.md) for previous day
+1. Check [CHANGELOG.md](CHANGELOG.md) - All changes from Dec 20-22, 2025 in one place
+2. Changes are organized by date (newest first)
+3. Each section includes technical details and impact
 
 ### "I want to add a new feature"
 1. Read [AI_CONTEXT.md](AI_CONTEXT.md) - Understand current architecture
@@ -116,15 +121,18 @@ titanic/
 ├── AI_CONTEXT.md                # Comprehensive AI assistant reference
 ├── ASSISTANT_GUIDE.md           # Step-by-step task patterns
 │
+├── CHANGELOG.md                 # Consolidated changelog (Dec 20-22, 2025)
+│
 ├── Feature Documentation
 │   ├── DECISION_TREE_FEATURES.md      # Tree visualization features
 │   ├── COHORT_COMPARISON_FEATURE.md   # Comparison system
 │   ├── TUTORIAL_FEATURE.md            # Tutorial system
 │   └── FIXED_CHAT_LAYOUT.md           # Archived - see changelog
 │
-├── Changelogs
-│   ├── CHANGELOG_DEC21_2025.md        # Latest changes
-│   └── CHANGELOG_DEC20_2025.md        # Previous changes
+├── Legacy Changelogs (now consolidated in CHANGELOG.md)
+│   ├── CHANGELOG_DEC22_2025.md        # Latest changes
+│   ├── CHANGELOG_DEC21_2025.md        # Previous changes
+│   └── CHANGELOG_DEC20_2025.md        # Older changes
 │
 └── docs/                              # Technical documentation
     ├── FRONTEND.md                    # React frontend guide
@@ -190,7 +198,7 @@ titanic/
 1. **For common tasks:** Check [ASSISTANT_GUIDE.md](ASSISTANT_GUIDE.md)
 2. **For architecture questions:** Check [AI_CONTEXT.md](AI_CONTEXT.md)
 3. **For component details:** Check [docs/FRONTEND.md](docs/FRONTEND.md)
-4. **For recent changes:** Check [CHANGELOG_DEC21_2025.md](CHANGELOG_DEC21_2025.md)
+4. **For recent changes:** Check [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -219,5 +227,5 @@ titanic/
 
 ---
 
-**Last Updated:** December 21, 2025
+**Last Updated:** December 22, 2025
 **Maintained By:** AI Assistants (Claude Code, GitHub Copilot, Cursor)

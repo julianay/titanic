@@ -142,10 +142,10 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             </div>
           </>
         ) : (
-          /* Single Mode: Show 1 Waterfall + Global Importance stacked vertically */
-          <div className="space-y-6 mb-6">
-            {/* SHAP Waterfall */}
-            <div className="bg-gray-900 rounded-lg p-4">
+          /* Single Mode: Show 1 Waterfall (70%) + Global Importance (30%) side-by-side */
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
+            {/* SHAP Waterfall - 70% */}
+            <div className="bg-gray-900 rounded-lg p-4 lg:w-[70%]">
               <ErrorBoundary errorTitle="SHAP Waterfall Error">
                 {shapLoading ? (
                   <LoadingSkeleton variant="chart" />
@@ -162,8 +162,8 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
               </ErrorBoundary>
             </div>
 
-            {/* Global Feature Importance */}
-            <div className="bg-gray-900 rounded-lg p-4">
+            {/* Global Feature Importance - 30% */}
+            <div className="bg-gray-900 rounded-lg p-4 lg:w-[30%]">
               <ErrorBoundary errorTitle="Feature Importance Error">
                 {globalLoading ? (
                   <LoadingSkeleton variant="chart" />

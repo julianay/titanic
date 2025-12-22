@@ -152,10 +152,10 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
             </div>
           </>
         ) : (
-          /* Single Mode: Waterfall and global side-by-side */
-          <div className="grid grid-cols-2 gap-6">
-            {/* SHAP Waterfall */}
-            <div className="bg-gray-900 rounded-lg p-4">
+          /* Single Mode: Waterfall (70%) and global (30%) side-by-side */
+          <div className="flex gap-6">
+            {/* SHAP Waterfall - 70% */}
+            <div className="bg-gray-900 rounded-lg p-4 w-[70%]">
               <ErrorBoundary errorTitle="SHAP Waterfall Error">
                 {shapLoading ? (
                   <LoadingSkeleton variant="chart" />
@@ -173,8 +173,8 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
               </ErrorBoundary>
             </div>
 
-            {/* Global Feature Importance */}
-            <div className="bg-gray-900 rounded-lg p-4">
+            {/* Global Feature Importance - 30% */}
+            <div className="bg-gray-900 rounded-lg p-4 w-[30%]">
               <ErrorBoundary errorTitle="Feature Importance Error">
                 {globalLoading ? (
                   <LoadingSkeleton variant="chart" />

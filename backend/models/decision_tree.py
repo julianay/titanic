@@ -153,6 +153,22 @@ def sklearn_tree_to_dict(
                 # threshold for sex is typically 0.5 (0=female, 1=male)
                 node_data['left_label'] = 'female'
                 node_data['right_label'] = 'male'
+        elif feature_name == 'pclass':
+            # For passenger class, show meaningful class names
+            # pclass is 1, 2, or 3 (1st, 2nd, 3rd class)
+            # Left child: ≤ threshold, Right child: > threshold
+            if threshold <= 1.5:
+                # Split at 1.5: pclass 1 vs pclass 2&3
+                node_data['left_label'] = '1st class'
+                node_data['right_label'] = '2nd & 3rd class'
+            elif threshold <= 2.5:
+                # Split at 2.5: pclass 1&2 vs pclass 3
+                node_data['left_label'] = '1st & 2nd class'
+                node_data['right_label'] = '3rd class'
+            else:
+                # Unusual split, shouldn't happen with pclass values
+                node_data['left_label'] = f"≤ {threshold:.1f}"
+                node_data['right_label'] = f"> {threshold:.1f}"
         else:
             # For numeric features, just show the threshold
             node_data['left_label'] = f"≤ {threshold:.1f}"

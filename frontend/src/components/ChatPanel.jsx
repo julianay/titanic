@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { parsePassengerQuery } from '../utils/cohortPatterns'
 import ComparisonCard from './ComparisonCard'
 import SinglePredictionCard from './SinglePredictionCard'
+import WhatIfCard from './WhatIfCard'
 
 /**
  * ChatPanel - Natural language chat interface with suggestion chips
@@ -22,6 +23,9 @@ import SinglePredictionCard from './SinglePredictionCard'
  * @param {Function} onTutorialAdvance - Callback when tutorial Next button clicked
  * @param {Function} onTutorialSkip - Callback when tutorial Skip button clicked
  * @param {Function} onTutorialStart - Callback when tutorial Start button clicked
+ * @param {Function} onWhatIfStart - Callback when What If chip clicked
+ * @param {Function} onWhatIfChange - Callback when what-if controls change: (field, value) => void
+ * @param {Function} onWhatIfApply - Callback when what-if Apply button clicked
  *
  * @example
  * <ChatPanel
@@ -52,7 +56,7 @@ import SinglePredictionCard from './SinglePredictionCard'
  * - Comparisons: "compare women vs men", "1st class vs 3rd class"
  * - Parsed by parsePassengerQuery() in cohortPatterns.js
  */
-function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTutorialAdvance, onTutorialSkip, onTutorialStart }) {
+function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTutorialAdvance, onTutorialSkip, onTutorialStart, onWhatIfStart, onWhatIfChange, onWhatIfApply }) {
   const [inputValue, setInputValue] = useState('')
   const [hasTypedMessage, setHasTypedMessage] = useState(false) // Track if user has typed their own message
   const [chipsVisible, setChipsVisible] = useState(true) // Track if chips are shown/hidden
@@ -163,6 +167,13 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                     )}
                   </div>
                 </div>
+              ) : msg.type === 'whatif' ? (
+                // Render What-If card
+                <WhatIfCard
+                  values={msg.passengerData}
+                  onChange={onWhatIfChange}
+                  onApply={onWhatIfApply}
+                />
               ) : (
                 // Regular text message
                 <div>{msg.content}</div>
@@ -205,13 +216,21 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                 ))}
               </div>
 
-              {/* Tutorial chip */}
-              <button
-                onClick={onTutorialStart}
-                className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
-              >
-                📚 Start Tutorial
-              </button>
+              {/* Tutorial and What If chips */}
+              <div className="flex gap-2">
+                <button
+                  onClick={onTutorialStart}
+                  className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
+                >
+                  📚 Start Tutorial
+                </button>
+                <button
+                  onClick={onWhatIfStart}
+                  className="px-3 py-1.5 text-xs bg-[#218FCE] hover:bg-[#1a7ab8] text-white rounded-full transition-colors"
+                >
+                  🔮 What If?
+                </button>
+              </div>
             </>
           )}
         </div>

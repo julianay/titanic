@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import Layout from './components/Layout'
-import ControlPanel from './components/ControlPanel'
 import ModelComparisonView from './components/ModelComparisonView'
 import ChatPanel from './components/ChatPanel'
 import useTutorial from './hooks/useTutorial'
@@ -32,20 +31,14 @@ function App() {
   // Track active comparison for visualization
   const [activeComparison, setActiveComparison] = useState(null)
 
+  // Track what-if mode (temporary state while adjusting parameters)
+  const [whatIfData, setWhatIfData] = useState(null)
+
   // Tutorial hook
   const tutorial = useTutorial(
     setPassengerData,  // onPassengerChange
     (message) => setChatMessages(prev => [...prev, message])  // onAddChatMessage
   )
-
-  const handleChange = (field, value) => {
-    setPassengerData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-    setHasQuery(true) // Mark that user has made a query
-    setActiveComparison(null) // Clear any active comparison
-  }
 
   // Handle preset selection - update all values at once
   const handlePresetSelect = (presetValues) => {
@@ -74,6 +67,91 @@ function App() {
         label: passengerDesc
       }
     ])
+  }
+
+  // Handle What-If chip click - show what-if card in chat
+  const handleWhatIfStart = () => {
+    // Initialize what-if data with current passenger data
+    setWhatIfData({ ...passengerData })
+
+    // Add what-if card to chat
+    setChatMessages(prev => [
+      ...prev,
+      { role: 'user', content: 'What if?' },
+      {
+        role: 'assistant',
+        type: 'whatif',
+        passengerData: { ...passengerData }
+      }
+    ])
+  }
+
+  // Handle what-if control changes (update temporary state)
+  const handleWhatIfChange = (field, value) => {
+    // Update the what-if card in chat with new values
+    setChatMessages(prevMessages => {
+      // Find the last what-if message
+      let lastWhatIfIndex = -1
+      let currentData = null
+      for (let i = prevMessages.length - 1; i >= 0; i--) {
+        if (prevMessages[i].type === 'whatif') {
+          lastWhatIfIndex = i
+          currentData = prevMessages[i].passengerData
+          break
+        }
+      }
+
+      if (lastWhatIfIndex === -1 || !currentData) {
+        return prevMessages // No whatif message found
+      }
+
+      // Create updated data from the current message data (not state)
+      const updated = {
+        ...currentData,
+        [field]: value
+      }
+
+      // Update whatIfData state
+      setWhatIfData(updated)
+
+      // Update only the last what-if message
+      return prevMessages.map((msg, index) => {
+        if (index === lastWhatIfIndex) {
+          return {
+            ...msg,
+            passengerData: updated
+          }
+        }
+        return msg
+      })
+    })
+  }
+
+  // Handle what-if apply - update main passenger data and show results
+  const handleWhatIfApply = () => {
+    if (!whatIfData) return
+
+    const { sex, pclass, age, fare } = whatIfData
+    const passengerDesc = formatPassengerDescription(sex, pclass, age, fare)
+
+    // Update main passenger data
+    setPassengerData(whatIfData)
+    setHasQuery(true)
+    setActiveComparison(null)
+
+    // Add prediction card to chat
+    setChatMessages(prev => [
+      ...prev,
+      {
+        role: 'assistant',
+        type: 'prediction',
+        passengerData: whatIfData,
+        label: passengerDesc
+      }
+    ])
+
+    // Clear what-if mode
+    setWhatIfData(null)
   }
 
   // Handle chat message submission
@@ -146,14 +224,6 @@ function App() {
           hasQuery={hasQuery}
         />
       }
-      controlsContent={
-        <ControlPanel
-          values={passengerData}
-          onChange={handleChange}
-          onPresetSelect={handlePresetSelect}
-          onPresetChat={handlePresetChat}
-        />
-      }
       chatContent={
         <ChatPanel
           messages={chatMessages}
@@ -163,6 +233,9 @@ function App() {
           onTutorialAdvance={tutorial.advanceTutorial}
           onTutorialSkip={tutorial.skipTutorial}
           onTutorialStart={tutorial.startTutorial}
+          onWhatIfStart={handleWhatIfStart}
+          onWhatIfChange={handleWhatIfChange}
+          onWhatIfApply={handleWhatIfApply}
         />
       }
     />
