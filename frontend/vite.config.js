@@ -9,7 +9,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        alt: resolve(__dirname, 'index-alt.html'),
       },
     },
   },
