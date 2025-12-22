@@ -3,6 +3,7 @@ import { parsePassengerQuery } from '../utils/cohortPatterns'
 import ComparisonCard from './ComparisonCard'
 import SinglePredictionCard from './SinglePredictionCard'
 import WhatIfCard from './WhatIfCard'
+import './ChatPanel.css'
 
 /**
  * ChatPanel - Natural language chat interface with suggestion chips
@@ -61,11 +62,33 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
   const [hasTypedMessage, setHasTypedMessage] = useState(false) // Track if user has typed their own message
   const [chipsVisible, setChipsVisible] = useState(true) // Track if chips are shown/hidden
   const messagesEndRef = useRef(null)
+  const [prevMessageCount, setPrevMessageCount] = useState(messages.length)
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
+    // Track message count changes for animation purposes
+    if (messages.length > prevMessageCount) {
+      setPrevMessageCount(messages.length)
+    }
+
+    // Scroll immediately for instant feedback
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+
+    // Scroll again after delays to account for async content loading (like ComparisonCard)
+    // Multiple timeouts ensure we catch content as it loads
+    const timeoutId1 = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+
+    const timeoutId2 = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, 500)
+
+    return () => {
+      clearTimeout(timeoutId1)
+      clearTimeout(timeoutId2)
+    }
+  }, [messages, prevMessageCount])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -118,6 +141,9 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
 
   return (
     <div className="flex flex-col h-full p-6">
+      {/* Chat Title */}
+      <h2 className="text-lg font-semibold mb-4 text-gray-100">Ask about cohorts</h2>
+
       {/* Messages Area - scrollable */}
       <div className="flex-1 overflow-y-auto space-y-3 mb-4">
         {messages.length === 0 ? (
@@ -125,61 +151,90 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
             Ask about different passenger types to see survival statistics
           </div>
         ) : (
-          messages.map((msg, idx) => (
-            <div key={idx} className={`text-sm ${msg.role === 'user' ? 'text-gray-300' : 'text-gray-100'}`}>
-              {msg.role === 'user' ? (
-                <div className="font-medium text-[#218FCE]">
-                  {msg.content ? '> ' + msg.content : ''}
+          messages.map((msg, idx) => {
+            // Determine if this is a new message (for animation)
+            const isNewMessage = idx >= prevMessageCount
+            const animationClass = isNewMessage ? 'chat-message-new' : 'chat-message'
+
+            return (
+              <div key={idx} className={`text-sm ${animationClass}`}>
+                {msg.role === 'user' ? (
+                <div className="flex justify-end">
+                  <div className="bg-gray-800 text-gray-300 rounded-2xl px-4 py-2 max-w-[85%] font-medium">
+                    {msg.content}
+                  </div>
                 </div>
               ) : msg.type === 'comparison' ? (
                 // Render comparison card
-                <ComparisonCard
-                  cohortA={msg.comparison.cohortA}
-                  cohortB={msg.comparison.cohortB}
-                  labelA={msg.comparison.labelA}
-                  labelB={msg.comparison.labelB}
-                  description={msg.comparison.description}
-                />
+                <div className="flex gap-2">
+                  <span className="text-gray-400 text-base">✨</span>
+                  <div className="flex-1">
+                    <ComparisonCard
+                      cohortA={msg.comparison.cohortA}
+                      cohortB={msg.comparison.cohortB}
+                      labelA={msg.comparison.labelA}
+                      labelB={msg.comparison.labelB}
+                      description={msg.comparison.description}
+                    />
+                  </div>
+                </div>
               ) : msg.type === 'prediction' ? (
                 // Render single prediction card
-                <SinglePredictionCard
-                  passengerData={msg.passengerData}
-                  label={msg.label}
-                />
+                <div className="flex gap-2">
+                  <span className="text-gray-400 text-base">✨</span>
+                  <div className="flex-1">
+                    <SinglePredictionCard
+                      passengerData={msg.passengerData}
+                      label={msg.label}
+                    />
+                  </div>
+                </div>
               ) : msg.type === 'tutorial' ? (
                 // Render tutorial message with controls
-                <div>
-                  <div className="mb-3">{msg.content}</div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={onTutorialAdvance}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      {msg.isLastStep ? 'Finish Tutorial' : 'Next'}
-                    </button>
-                    {!msg.isLastStep && (
+                <div className="flex gap-2">
+                  <span className="text-gray-400 text-base">✨</span>
+                  <div className="flex-1">
+                    <div className="mb-3 text-gray-100">{msg.content}</div>
+                    <div className="flex gap-2">
                       <button
-                        onClick={onTutorialSkip}
-                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
+                        onClick={onTutorialAdvance}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                       >
-                        Skip
+                        {msg.isLastStep ? 'Finish Tutorial' : 'Next'}
                       </button>
-                    )}
+                      {!msg.isLastStep && (
+                        <button
+                          onClick={onTutorialSkip}
+                          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          Skip
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : msg.type === 'whatif' ? (
                 // Render What-If card
-                <WhatIfCard
-                  values={msg.passengerData}
-                  onChange={onWhatIfChange}
-                  onApply={onWhatIfApply}
-                />
+                <div className="flex gap-2">
+                  <span className="text-gray-400 text-base">✨</span>
+                  <div className="flex-1">
+                    <WhatIfCard
+                      values={msg.passengerData}
+                      onChange={onWhatIfChange}
+                      onApply={onWhatIfApply}
+                    />
+                  </div>
+                </div>
               ) : (
                 // Regular text message
-                <div>{msg.content}</div>
+                <div className="flex gap-2">
+                  <span className="text-gray-400 text-base">✨</span>
+                  <div className="flex-1 text-gray-100">{msg.content}</div>
+                </div>
               )}
-            </div>
-          ))
+              </div>
+            )
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

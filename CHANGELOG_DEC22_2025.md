@@ -248,3 +248,259 @@ for (let i = prevMessages.length - 1; i >= 0; i--) {
 - **Cleaner UI**: Controls only appear when needed
 - **Consistent pattern**: Matches tutorial and comparison chip interactions
 - **Better UX**: Results appear directly after adjustments in chat timeline
+
+---
+
+## Chat Interface Enhancements
+
+### Chat Area Styling & Layout
+
+**Changed in**:
+- `frontend/src/components/Layout.jsx`
+- `frontend/src/components/ChatPanel.jsx`
+
+#### Chat Width Increase
+Increased chat column width for better readability and more assistant-like appearance:
+- Left column: 80% → 70%
+- Right column (chat): 20% → 30%
+
+#### Chat Title
+Added prominent title to chat area: **"Ask about cohorts"**
+- Font: text-lg, semibold
+- Color: text-gray-100
+- Positioned at top of chat panel with mb-4 spacing
+
+#### AI Response Styling
+Added sparkle icon (✨) to all assistant messages for visual distinction:
+- Appears on the left side of assistant responses
+- Color: text-gray-400
+- Size: text-base
+- Applied to all message types: text, comparison cards, prediction cards, tutorial, what-if
+
+#### User Message Styling
+Converted user messages to chat bubble style:
+- Background: bg-gray-800 (matching chip style)
+- Text: text-gray-300
+- Border radius: rounded-2xl (18px)
+- Padding: px-4 py-2
+- Alignment: Right-aligned with justify-end
+- Width: max-w-[85%] of chat column
+- Font weight: font-medium
+
+**Before**:
+```jsx
+<div className="font-medium text-[#218FCE]">
+  {msg.content ? '> ' + msg.content : ''}
+</div>
+```
+
+**After**:
+```jsx
+<div className="flex justify-end">
+  <div className="bg-gray-800 text-gray-300 rounded-2xl px-4 py-2 max-w-[85%] font-medium">
+    {msg.content}
+  </div>
+</div>
+```
+
+### Chat Message Animations
+
+**New file**: `frontend/src/components/ChatPanel.css`
+**Changed in**: `frontend/src/components/ChatPanel.jsx`
+
+#### Animation Features
+
+1. **Fade + Slide Effect**
+   - Messages fade in from 0 to 1 opacity
+   - Simultaneous 16px upward slide (translateY)
+   - Duration: 0.5s ease-out
+   - Smooth, polished appearance
+
+2. **Sequential Reveal**
+   - Initial messages load with staggered delays
+   - 150ms between each message
+   - Creates natural "beats" rhythm
+   - Supports up to 8+ messages with progressive delays
+
+3. **Staggered Timing**
+   ```css
+   .chat-message:nth-child(1) { animation-delay: 0ms; }
+   .chat-message:nth-child(2) { animation-delay: 150ms; }
+   .chat-message:nth-child(3) { animation-delay: 300ms; }
+   .chat-message:nth-child(4) { animation-delay: 450ms; }
+   /* ... up to 1200ms for 9+ */
+   ```
+
+4. **New Message Animation**
+   - Freshly added messages use `.chat-message-new` class
+   - No delay (0ms) for immediate feedback
+   - Tracks previous message count to identify new additions
+
+#### Implementation Details
+
+**Animation Keyframe**:
+```css
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
+
+**Message Tracking**:
+```javascript
+const [prevMessageCount, setPrevMessageCount] = useState(messages.length)
+
+// In render
+const isNewMessage = idx >= prevMessageCount
+const animationClass = isNewMessage ? 'chat-message-new' : 'chat-message'
+```
+
+**Additional Transitions**:
+- Buttons: 0.2s transition on all properties
+- Rounded boxes: 0.2s transition on transform and box-shadow
+
+---
+
+## Initial Page Animation
+
+### Auto-Playing Tree & SHAP Animation
+
+**New file**: `frontend/src/hooks/useInitialAnimation.js`
+**Changed in**:
+- `frontend/src/App.jsx`
+- `frontend/src/AppAlt.jsx`
+
+#### Overview
+Added automatic animation on page load that progressively highlights the decision tree path and SHAP waterfall features for the default passenger (8-year-old female in 1st class, £84 fare).
+
+#### Animation Sequence
+
+1. **Initial State (1.5s)**
+   - highlightMode: `-1` (no path highlighted)
+   - Tree shows unhighlighted state
+   - SHAP waterfall shows no feature highlights
+
+2. **Sex Split (2s)**
+   - highlightMode: `"first_split"`
+   - Highlights root node → first child (sex split)
+   - Highlights "sex" feature in SHAP waterfall
+
+3. **Full Path (2.5s)**
+   - highlightMode: `"full_path"`
+   - Shows complete path through tree
+   - Highlights all features: sex, pclass, age, fare
+
+4. **End State**
+   - Stays on full path
+   - Animation completes
+
+#### Implementation
+
+**Hook Structure**:
+```javascript
+function useInitialAnimation() {
+  const [animationStep, setAnimationStep] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(true)
+
+  // Auto-step through animation
+  useEffect(() => {
+    if (!isAnimating) return
+
+    const currentStep = ANIMATION_STEPS[animationStep]
+    if (!currentStep || animationStep >= ANIMATION_STEPS.length - 1) {
+      setIsAnimating(false)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setAnimationStep(prev => prev + 1)
+    }, currentStep.duration)
+
+    return () => clearTimeout(timer)
+  }, [isAnimating, animationStep])
+
+  return {
+    isAnimating,
+    getHighlightMode: () => ...,
+    getHighlightFeatures: () => ...
+  }
+}
+```
+
+**Highlight Mode Values**:
+- `-1`: Empty path (no highlights) - achieved via `fullPath.slice(0, 0)`
+- `"first_split"`: Root + first child only - via `fullPath.slice(0, 2)`
+- `"full_path"`: Complete path to leaf node
+- `number`: Custom depth - via `fullPath.slice(0, highlightMode + 1)`
+
+**Integration**:
+```javascript
+// In App.jsx and AppAlt.jsx
+const initialAnimation = useInitialAnimation()
+
+const getHighlightMode = () => {
+  if (tutorial.tutorialActive) return tutorial.getHighlightMode()
+  if (initialAnimation.isAnimating) return initialAnimation.getHighlightMode()
+  return null
+}
+```
+
+#### Timing & Behavior
+- Plays automatically on every page load
+- Total duration: ~6 seconds (1.5s + 2s + 2.5s)
+- No user interaction required
+- Tutorial takes precedence if active
+- Provides engaging onboarding experience
+
+#### Technical Details
+
+**Why highlightMode: -1 works**:
+The tree visualization code uses `getLimitedPath()`:
+```javascript
+if (typeof highlightMode === 'number') {
+  return fullPath.slice(0, highlightMode + 1)
+}
+// With highlightMode = -1:
+// fullPath.slice(0, -1 + 1) = fullPath.slice(0, 0) = []
+```
+
+This gives an empty array, resulting in no path highlights.
+
+**Tutorial Disabled**:
+- Removed auto-start from `useTutorial.js`
+- Tutorial now only starts via "Start Tutorial" button
+- Initial animation provides simpler, automatic onboarding
+- Tutorial available for deeper exploration
+
+---
+
+## Auto-Scroll Enhancement
+
+**Changed in**: `frontend/src/components/ChatPanel.jsx`
+
+Added multiple scroll attempts to handle asynchronous content loading (ComparisonCard):
+
+```javascript
+// Scroll immediately
+messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+
+// Scroll after 100ms (initial render)
+setTimeout(() => {
+  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+}, 100)
+
+// Scroll after 500ms (async data loaded)
+setTimeout(() => {
+  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+}, 500)
+```
+
+**Problem Solved**: ComparisonCard loads predictions via API, starting small (loading skeleton) then expanding to full height. Single scroll attempt would complete before card expansion, leaving bottom content hidden.
+
+**Solution**: Progressive scrolling ensures chat scrolls to bottom even as content loads and expands asynchronously.

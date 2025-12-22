@@ -49,16 +49,8 @@ function useTutorial(onPassengerChange, onAddChatMessage) {
     return seen === 'true'
   })
 
-  // Auto-start tutorial on first visit
-  useEffect(() => {
-    if (!hasSeenTutorial && !tutorialActive) {
-      // Small delay to let the UI load
-      const timer = setTimeout(() => {
-        startTutorial()
-      }, 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [hasSeenTutorial, tutorialActive])
+  // Tutorial no longer auto-starts - user can manually start it via button
+  // (Initial animation plays instead on first load)
 
   /**
    * Get the tutorial message for the current step

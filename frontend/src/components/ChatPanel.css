@@ -1,0 +1,72 @@
+/* Chat message animations - fade in with slight upward slide */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Base animation for all messages on initial load */
+.chat-message {
+  animation: slideInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+/* Staggered delays for sequential messages on initial load */
+/* Creates "beats" effect: intro → content → follow-up */
+.chat-message:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.chat-message:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.chat-message:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+.chat-message:nth-child(4) {
+  animation-delay: 450ms;
+}
+
+.chat-message:nth-child(5) {
+  animation-delay: 600ms;
+}
+
+.chat-message:nth-child(6) {
+  animation-delay: 750ms;
+}
+
+.chat-message:nth-child(7) {
+  animation-delay: 900ms;
+}
+
+.chat-message:nth-child(8) {
+  animation-delay: 1050ms;
+}
+
+/* For messages beyond 8, use max delay */
+.chat-message:nth-child(n+9) {
+  animation-delay: 1200ms;
+}
+
+/* New message that just appeared - immediate animation with no delay */
+.chat-message-new {
+  animation: slideInUp 0.5s ease-out;
+  animation-fill-mode: both;
+  animation-delay: 0ms;
+}
+
+/* Smooth transition for interactive elements within messages */
+.chat-message button {
+  transition: all 0.2s ease;
+}
+
+.chat-message .rounded-2xl {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}

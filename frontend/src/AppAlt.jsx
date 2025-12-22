@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import ModelComparisonViewAlt from './components/ModelComparisonViewAlt'
 import ChatPanel from './components/ChatPanel'
 import useTutorial from './hooks/useTutorial'
+import useInitialAnimation from './hooks/useInitialAnimation'
 import { formatPassengerDescription, detectComparison } from './utils/cohortPatterns'
 
 function AppAlt() {
@@ -39,6 +40,9 @@ function AppAlt() {
     setPassengerData,  // onPassengerChange
     (message) => setChatMessages(prev => [...prev, message])  // onAddChatMessage
   )
+
+  // Initial animation hook (auto-plays on first load)
+  const initialAnimation = useInitialAnimation()
 
   // Handle preset selection - update all values at once
   const handlePresetSelect = (presetValues) => {
@@ -211,6 +215,19 @@ function AppAlt() {
     ])
   }
 
+  // Determine which highlights to use (tutorial takes precedence, then initial animation)
+  const getHighlightMode = () => {
+    if (tutorial.tutorialActive) return tutorial.getHighlightMode()
+    if (initialAnimation.isAnimating) return initialAnimation.getHighlightMode()
+    return null
+  }
+
+  const getHighlightFeatures = () => {
+    if (tutorial.tutorialActive) return tutorial.getHighlightFeatures()
+    if (initialAnimation.isAnimating) return initialAnimation.getHighlightFeatures()
+    return null
+  }
+
   return (
     <Layout
       title="Explainable AI Explorer (Alternative Layout)"
@@ -218,8 +235,8 @@ function AppAlt() {
       leftContent={
         <ModelComparisonViewAlt
           passengerData={passengerData}
-          highlightMode={tutorial.getHighlightMode()}
-          highlightFeatures={tutorial.getHighlightFeatures()}
+          highlightMode={getHighlightMode()}
+          highlightFeatures={getHighlightFeatures()}
           activeComparison={activeComparison}
           hasQuery={hasQuery}
         />

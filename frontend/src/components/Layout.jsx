@@ -2,8 +2,8 @@
  * Layout - Fixed split-screen layout for the application
  *
  * Structure:
- * - Left column (80%): Header + visualizations, scrolls naturally
- * - Right column (20%): Fixed in viewport, contains controls + chat
+ * - Left column (70%): Header + visualizations, scrolls naturally
+ * - Right column (30%): Fixed in viewport, contains controls + chat
  *
  * @param {string} title - Main page title (displays in header)
  * @param {string} subtitle - Subtitle text (optional)
@@ -21,7 +21,7 @@
  * />
  *
  * COMMON CHANGES:
- * - Column widths: Change w-[80%] and w-[20%] (must add to 100%)
+ * - Column widths: Change w-[70%] and w-[30%] (must add to 100%)
  * - Spacing: Modify p-6, px-6, pt-4, pb-3 classes
  * - Colors: Change bg-[#0e1117], border-gray-800
  *
@@ -33,8 +33,8 @@ function Layout({ title, subtitle, leftContent, controlsContent, chatContent }) 
   return (
     <div className="min-h-screen bg-[#0e1117] text-[#fafafa]">
       <div className="flex">
-        {/* Left column - 80% width, includes header and scrolls naturally */}
-        <div className="w-[80%]">
+        {/* Left column - 70% width, includes header and scrolls naturally */}
+        <div className="w-[70%]">
           {/* Header - scrolls with left content */}
           <header className="border-b border-gray-800 px-6 py-4">
             <h1 className="text-2xl font-bold mb-1">{title}</h1>
@@ -49,9 +49,9 @@ function Layout({ title, subtitle, leftContent, controlsContent, chatContent }) 
           </main>
         </div>
 
-        {/* Right column - 20% width, fixed in viewport, full height */}
+        {/* Right column - 30% width, fixed in viewport, full height */}
         <aside
-          className="w-[20%] border-l border-gray-800 fixed right-0 flex flex-col bg-[#0e1117]"
+          className="w-[30%] border-l border-gray-800 fixed right-0 flex flex-col bg-[#0e1117]"
           style={{
             height: '100vh',
             top: 0
