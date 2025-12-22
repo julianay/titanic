@@ -8,22 +8,32 @@ const INITIAL_PASSENGER = {
   fare: 84
 }
 
-// Animation step definitions
+// Animation step definitions - Progressive highlighting of tree path and SHAP bars
 const ANIMATION_STEPS = [
   {
     highlight_mode: -1,             // No path highlighted (empty)
     highlight_features: null,
-    duration: 1500  // Show initial state for 1.5s
+    duration: 0  // No wait - start immediately
   },
   {
-    highlight_mode: "first_split",  // Highlight root node + first child (sex split)
-    highlight_features: ["sex"],     // Highlight sex feature
-    duration: 2000  // Show sex highlight for 2s
+    highlight_mode: 1,              // Highlight root + first split
+    highlight_features: ["sex"],    // Highlight first feature bar
+    duration: 500
   },
   {
-    highlight_mode: "full_path",    // Highlight complete path
-    highlight_features: ["sex", "pclass", "age", "fare"],  // All features
-    duration: 2500  // Show full path for 2.5s
+    highlight_mode: 2,              // Highlight root + first two splits
+    highlight_features: ["sex", "pclass"],  // Highlight first two feature bars
+    duration: 500
+  },
+  {
+    highlight_mode: 3,              // Highlight root + first three splits
+    highlight_features: ["sex", "pclass", "age"],  // Highlight first three feature bars
+    duration: 500
+  },
+  {
+    highlight_mode: 4,              // Highlight root + all four splits
+    highlight_features: ["sex", "pclass", "age", "fare"],  // Highlight all four feature bars
+    duration: 500
   },
   {
     highlight_mode: "full_path",    // Keep full path visible at end

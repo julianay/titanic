@@ -8,27 +8,41 @@ const TUTORIAL_PASSENGER = {
   fare: 84.0   // 1st class average
 }
 
-// Tutorial step definitions
+// Tutorial step definitions - Progressive highlighting
 const TUTORIAL_STEPS = {
   0: {
     message: "👋 Welcome to the Explainable AI Explorer! Let me show you how these models make predictions. We'll explore a 30-year-old woman in 1st class traveling on the Titanic.",
     whatif_values: TUTORIAL_PASSENGER,
-    highlight_mode: null,  // No highlighting yet (tree)
-    highlight_features: null,  // No highlighting yet (XGBoost)
-    button_text: "Next"
+    highlight_mode: null,  // No highlighting yet
+    highlight_features: null,
+    button_text: "Start"
   },
   1: {
     message: "Notice how both models identify **sex** as the most important feature. In the decision tree (top), women go down the left path with a 74% survival rate. In the SHAP waterfall (bottom left), being female pushes the prediction strongly toward survival (green bar).",
     whatif_values: TUTORIAL_PASSENGER,
-    highlight_mode: "first_split",  // Highlight root node + left edge (tree)
-    highlight_features: ["sex"],  // Highlight sex feature (XGBoost)
+    highlight_mode: 1,  // First split
+    highlight_features: ["sex"],
     button_text: "Next"
   },
   2: {
-    message: "Following the complete path through the tree shows a 78% survival probability for women in 1st class. The SHAP explanation shows how **sex** and **pclass** (passenger class) both contribute positively to survival. Now try exploring other passengers using the preset buttons, chat, or What-If controls!",
+    message: "Next, **pclass** (passenger class) further refines the prediction. First class passengers had better survival chances. The tree branches left for 1st class, and the SHAP bar shows this contributes positively.",
     whatif_values: TUTORIAL_PASSENGER,
-    highlight_mode: "full_path",  // Highlight complete path (tree)
-    highlight_features: ["sex", "pclass"],  // Highlight sex and pclass features (XGBoost)
+    highlight_mode: 2,  // First two splits
+    highlight_features: ["sex", "pclass"],
+    button_text: "Next"
+  },
+  3: {
+    message: "The model also considers **age**. Younger passengers in 1st class had slightly higher survival rates. See how the tree path and SHAP waterfall show each decision step.",
+    whatif_values: TUTORIAL_PASSENGER,
+    highlight_mode: 3,  // First three splits
+    highlight_features: ["sex", "pclass", "age"],
+    button_text: "Next"
+  },
+  4: {
+    message: "Finally, **fare** (ticket price) provides additional detail. Following the complete path through the tree shows a 78% survival probability. The SHAP explanation shows how all four features combine to reach this prediction. Now try exploring other passengers using the preset buttons, chat, or What-If controls!",
+    whatif_values: TUTORIAL_PASSENGER,
+    highlight_mode: 4,  // All four splits
+    highlight_features: ["sex", "pclass", "age", "fare"],
     button_text: "Finish Tutorial"
   }
 }
@@ -104,7 +118,7 @@ function useTutorial(onPassengerChange, onAddChatMessage) {
    * Advance to the next tutorial step
    */
   const advanceTutorial = () => {
-    if (tutorialStep < 2) {
+    if (tutorialStep < 4) {
       // Move to next step
       const nextStep = tutorialStep + 1
       setTutorialStep(nextStep)
@@ -116,7 +130,7 @@ function useTutorial(onPassengerChange, onAddChatMessage) {
           type: 'tutorial',
           content: getTutorialMessage(nextStep),
           step: nextStep,
-          isLastStep: nextStep >= 2
+          isLastStep: nextStep >= 4
         })
       }
     } else {
