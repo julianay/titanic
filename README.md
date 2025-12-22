@@ -46,8 +46,7 @@ cd frontend
 npm install
 npm run dev
 
-# Open http://localhost:5173 (original layout)
-# Open http://localhost:5173/index-alt.html (alternative layout)
+# Open http://localhost:5173
 ```
 
 ---
