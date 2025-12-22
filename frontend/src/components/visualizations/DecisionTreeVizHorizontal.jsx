@@ -123,14 +123,16 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
       .classed('path-shared', false)
       .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
       .classed('survived', d => {
-        if (!isTutorialMode && path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
+        // RULE: Always apply survived/died colors based on leaf value, even in tutorial mode
+        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
           const finalNode = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeId)
           return finalNode && finalNode.data.predicted_class === 1
         }
         return false
       })
       .classed('died', d => {
-        if (!isTutorialMode && path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
+        // RULE: Always apply survived/died colors based on leaf value, even in tutorial mode
+        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
           const finalNode = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeId)
           return finalNode && finalNode.data.predicted_class === 0
         }
@@ -167,6 +169,16 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     if (!svgRef.current) return
 
     const svg = svgRef.current
+
+    // Get final node IDs to determine leaf values
+    const finalNodeIdA = pathA[pathA.length - 1]
+    const finalNodeIdB = pathB[pathB.length - 1]
+    const finalNodeA = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeIdA)
+    const finalNodeB = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeIdB)
+
+    // Determine which class each path leads to (0 = died, 1 = survived)
+    const pathAClass = finalNodeA ? finalNodeA.data.predicted_class : null
+    const pathBClass = finalNodeB ? finalNodeB.data.predicted_class : null
 
     const sharedNodes = pathA.filter(id => pathB.includes(id))
     const uniqueA = pathA.filter(id => !pathB.includes(id))
@@ -227,12 +239,27 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-a', d => uniqueA.includes(d.data.id))
 
+    // RULE: Path A links are colored based on the LEAF VALUE (survived/died), not cohort
     svg.selectAll('.link')
       .classed('path-a', d => {
         const sourceInPath = pathA.includes(d.source.data.id)
         const targetInPath = pathA.includes(d.target.data.id)
         const targetUnique = uniqueA.includes(d.target.data.id)
         return sourceInPath && targetInPath && targetUnique
+      })
+      .classed('survived', d => {
+        const sourceInPath = pathA.includes(d.source.data.id)
+        const targetInPath = pathA.includes(d.target.data.id)
+        const targetUnique = uniqueA.includes(d.target.data.id)
+        // Color path A links as 'survived' if path A leads to survived (class 1)
+        return sourceInPath && targetInPath && targetUnique && pathAClass === 1
+      })
+      .classed('died', d => {
+        const sourceInPath = pathA.includes(d.source.data.id)
+        const targetInPath = pathA.includes(d.target.data.id)
+        const targetUnique = uniqueA.includes(d.target.data.id)
+        // Color path A links as 'died' if path A leads to died (class 0)
+        return sourceInPath && targetInPath && targetUnique && pathAClass === 0
       })
 
     svg.selectAll('.edge-label')
@@ -252,12 +279,27 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-b', d => uniqueB.includes(d.data.id))
 
+    // RULE: Path B links are colored based on the LEAF VALUE (survived/died), not cohort
     svg.selectAll('.link')
       .classed('path-b', d => {
         const sourceInPath = pathB.includes(d.source.data.id)
         const targetInPath = pathB.includes(d.target.data.id)
         const targetUnique = uniqueB.includes(d.target.data.id)
         return sourceInPath && targetInPath && targetUnique
+      })
+      .classed('survived', d => {
+        const sourceInPath = pathB.includes(d.source.data.id)
+        const targetInPath = pathB.includes(d.target.data.id)
+        const targetUnique = uniqueB.includes(d.target.data.id)
+        // Color path B links as 'survived' if path B leads to survived (class 1)
+        return sourceInPath && targetInPath && targetUnique && pathBClass === 1
+      })
+      .classed('died', d => {
+        const sourceInPath = pathB.includes(d.source.data.id)
+        const targetInPath = pathB.includes(d.target.data.id)
+        const targetUnique = uniqueB.includes(d.target.data.id)
+        // Color path B links as 'died' if path B leads to died (class 0)
+        return sourceInPath && targetInPath && targetUnique && pathBClass === 0
       })
 
     svg.selectAll('.edge-label')
@@ -706,8 +748,17 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         }
 
         .link.tutorial-highlight {
-          stroke: ${TREE_COLORS.tutorial} !important;
-          opacity: ${TREE_OPACITY.active} !important;
+          stroke: ${TREE_COLORS.tutorial};
+          opacity: ${TREE_OPACITY.active};
+        }
+
+        /* RULE: Leaf value colors override tutorial highlight color */
+        .link.tutorial-highlight.survived {
+          stroke: ${TREE_COLORS.survived} !important;
+        }
+
+        .link.tutorial-highlight.died {
+          stroke: ${TREE_COLORS.died} !important;
         }
 
         .node text.tutorial-highlight {
@@ -728,8 +779,17 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         }
 
         .link.path-a {
-          stroke: ${TREE_COLORS.comparisonA} !important;
-          opacity: ${TREE_OPACITY.active} !important;
+          stroke: ${TREE_COLORS.comparisonA};
+          opacity: ${TREE_OPACITY.active};
+        }
+
+        /* RULE: Leaf value colors override cohort colors */
+        .link.path-a.survived {
+          stroke: ${TREE_COLORS.survived} !important;
+        }
+
+        .link.path-a.died {
+          stroke: ${TREE_COLORS.died} !important;
         }
 
         .node text.path-a {
@@ -750,8 +810,17 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         }
 
         .link.path-b {
-          stroke: ${TREE_COLORS.comparisonB} !important;
-          opacity: ${TREE_OPACITY.active} !important;
+          stroke: ${TREE_COLORS.comparisonB};
+          opacity: ${TREE_OPACITY.active};
+        }
+
+        /* RULE: Leaf value colors override cohort colors */
+        .link.path-b.survived {
+          stroke: ${TREE_COLORS.survived} !important;
+        }
+
+        .link.path-b.died {
+          stroke: ${TREE_COLORS.died} !important;
         }
 
         .node text.path-b {

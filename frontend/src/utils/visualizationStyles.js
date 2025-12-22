@@ -75,9 +75,11 @@ export const TREE_COLORS = {
   tutorial: '#ffd700',    // Gold for tutorial mode highlighting
   hover: '#ffd700',       // Gold for hover effects
 
-  // Comparison mode colors - use survived/died colors for consistency
-  comparisonA: '#B8F06E',      // Green (survived color) for path A
-  comparisonB: '#F09A48',      // Orange (died color) for path B
+  // Comparison mode colors - IMPORTANT: These are fallback colors only
+  // RULE: Path colors ALWAYS reflect the leaf value (survived/died), not the cohort
+  // These colors are used for nodes/labels, but path links will override to use survived/died colors
+  comparisonA: '#B8F06E',      // Green (survived color) for path A (fallback)
+  comparisonB: '#F09A48',      // Orange (died color) for path B (fallback)
   comparisonShared: '#ffd700', // Gold for shared paths (stands out from both)
 
   // General UI colors

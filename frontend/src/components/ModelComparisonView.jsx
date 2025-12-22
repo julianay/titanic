@@ -54,10 +54,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
         {/* Decision Tree Section - 70% width */}
         <section className="bg-gray-800 rounded-lg p-6 shadow-lg lg:w-[70%]">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-100 mb-2">Decision Tree Explanation</h2>
-            <p className="text-sm text-gray-400">
-              Shows the decision path through the tree based on passenger characteristics
-            </p>
+            <h2 className="text-xl font-semibold text-gray-100">Decision Tree Explanation</h2>
           </div>
 
           <ErrorBoundary errorTitle="Decision Tree Visualization Error">
@@ -65,7 +62,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
               <div className="mb-6">
                 <DecisionTreeViz
                   treeData={treeData.tree}
-                  passengerValues={hasQuery || highlightMode ? passengerData : null}
+                  passengerValues={passengerData}
                   highlightMode={highlightMode}
                   comparisonData={hasQuery ? activeComparison : null}
                 />
@@ -79,10 +76,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
         {/* XGBoost SHAP Section - 30% width, stacked vertically */}
         <section className="bg-gray-800 rounded-lg p-6 shadow-lg lg:w-[30%]">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-100 mb-2">XGBoost (SHAP) Explanation</h2>
-          <p className="text-sm text-gray-400">
-            Shows how each feature contributes to the prediction
-          </p>
+          <h2 className="text-xl font-semibold text-gray-100">XGBoost (SHAP) Explanation</h2>
         </div>
 
         {/* Comparison Mode: Show 2 Waterfall Charts stacked vertically */}

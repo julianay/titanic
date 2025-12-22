@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 21, 2025 (ChatPanel Improvements)
+**Last Updated:** December 21, 2025 (Path Coloring Rule & Default State)
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -508,7 +508,31 @@ This single file exports:
 
 ## 📝 Recent Changes
 
-### December 21, 2025
+### December 21, 2025 (Afternoon)
+**Tree Path Coloring Rule - ALWAYS Reflect Leaf Values**:
+- **CRITICAL RULE**: Tree path colors now ALWAYS reflect the leaf outcome (survived/died), not cohort or mode
+  - Green paths (#B8F06E) = leads to "Survived" (class 1)
+  - Orange paths (#F09A48) = leads to "Died" (class 0)
+- Applied across ALL modes:
+  - Single-path mode: Path colored by prediction outcome ✅
+  - Comparison mode: Each cohort path colored by its leaf value (not blue/orange cohort colors) ✅
+  - Tutorial/highlight mode: Highlighted portions colored by outcome (not gold) ✅
+- Files changed:
+  - `DecisionTreeViz.jsx`: Updated `updateTreeHighlight()` and `updateDualPathHighlight()`
+  - `DecisionTreeVizHorizontal.jsx`: Same updates for horizontal layout
+  - CSS styles: Added `.link.path-a.survived/died` and `.link.tutorial-highlight.survived/died` rules
+  - `visualizationStyles.js`: Updated comments to document this rule
+- **Why**: Provides consistent visual language - users can always identify outcome by path color regardless of mode
+
+**Default State & Initial Chat Display**:
+- Changed default passenger from 30-year-old woman to **8-year-old female child in 1st class, £84 fare**
+- Reason: Differentiates from tutorial (30-year-old) and presets for better demo
+- Removed passenger info banner (was distracting from chat)
+- Added initial chat messages showing default passenger with prediction card
+- Set `hasQuery` to true by default so visualizations display immediately on load
+- Files changed: `App.jsx`, `AppAlt.jsx`, `ModelComparisonView.jsx`, `ModelComparisonViewAlt.jsx`
+
+### December 21, 2025 (Morning)
 **ChatPanel Improvements**:
 - **Fixed**: Suggestion chips no longer disappear when tutorial starts
 - **Smart Visibility**: Chips remain visible during tutorial and when clicking suggestions
@@ -540,5 +564,5 @@ This single file exports:
 
 ---
 
-**Last Updated:** December 21, 2025 (ChatPanel Improvements)
+**Last Updated:** December 21, 2025 (Path Coloring Rule & Default State)
 **Status:** Production-ready with all features complete

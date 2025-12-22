@@ -1,7 +1,7 @@
 # Coding Assistant Guide
 
 **Purpose**: Help coding assistants (GitHub Copilot, Cursor, etc.) make changes efficiently
-**Last Updated**: December 21, 2025 (ChatPanel Improvements)
+**Last Updated**: December 21, 2025 (Path Coloring Rule & Default State)
 
 This guide provides step-by-step patterns for common tasks. Follow these exactly to avoid breaking things.
 
@@ -349,7 +349,37 @@ const [isExpanded, setIsExpanded] = useState(true)
 
 ---
 
-### Task 6: Modify Slider Range
+### Task 6: Understanding Default State & Passenger Values
+
+**Default Initial State** (as of Dec 21, 2025):
+```jsx
+// App.jsx and AppAlt.jsx
+const [passengerData, setPassengerData] = useState({
+  sex: 0,       // 0 = Female, 1 = Male
+  pclass: 1,    // 1, 2, or 3 (1st class)
+  age: 8,       // 8-year-old child
+  fare: 84      // Standard 1st class fare
+})
+```
+
+**Why these values**:
+- **Age 8 (child)**: Differentiates from tutorial (30-year-old) and preset buttons
+- **Fare £84**: Standard 1st class fare (matches historical average, prevents strange SHAP values)
+- Never use unusual fares (e.g., £50 for 1st class) - causes confusing model explanations
+
+**Suggested Fares by Class** (from ControlPanel.jsx):
+- 1st class: £84
+- 2nd class: £20
+- 3rd class: £13
+
+**When changing default state**:
+1. Update both `App.jsx` and `AppAlt.jsx`
+2. Update the initial chat messages (2 messages showing passenger description)
+3. Keep fare aligned with class to avoid model confusion
+
+---
+
+### Task 7: Modify Slider Range
 
 **Example**: Change age slider from 0-80 to 0-100
 
@@ -563,6 +593,38 @@ This project uses **Tailwind CSS**. No custom CSS files.
   Chip Text
 </button>
 ```
+
+### Visualization Color System
+
+**⚠️ CRITICAL RULE: Tree Path Colors ALWAYS Reflect Leaf Values** (Dec 21, 2025):
+
+All decision tree path colors are determined by the prediction outcome, NOT by mode or cohort:
+- **Green (#B8F06E)**: Path leads to "Survived" (class 1)
+- **Orange (#F09A48)**: Path leads to "Died" (class 0)
+
+This applies across ALL modes:
+- ✅ Single-path mode - Path colored by prediction
+- ✅ Comparison mode - Each cohort path colored by its outcome (not blue/orange)
+- ✅ Tutorial/highlight mode - Highlighted portions colored by outcome (not gold)
+
+**Implementation files**:
+- `DecisionTreeViz.jsx` - Lines 132-147 (single path), 253-324 (comparison)
+- `DecisionTreeVizHorizontal.jsx` - Lines 125-140 (single path), 240-310 (comparison)
+- `visualizationStyles.js` - Color constants and documentation
+
+**Why this matters**:
+If you're modifying tree visualization or adding new highlighting modes, preserve this rule. Path colors = leaf outcome colors provides consistent visual language across the entire app.
+
+**Color Reference** (from `visualizationStyles.js`):
+- Survived/Positive: `#B8F06E` (light green)
+- Died/Negative: `#F09A48` (orange)
+- Tutorial/Highlight: `#ffd700` (gold) - for nodes/labels, NOT path strokes
+- Shared paths: `#ffd700` (gold) - for comparison mode shared segments
+
+**If you need to add new path highlighting**:
+1. Always apply both the mode class (e.g., `.path-a`) AND the outcome class (`.survived` or `.died`)
+2. CSS rules ensure outcome colors override mode colors (see `!important` rules in tree components)
+3. Test in all three modes: single, comparison, and tutorial
 
 ---
 

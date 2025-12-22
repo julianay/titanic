@@ -53,10 +53,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
       {/* Decision Tree Section - Full Width on Top */}
       <section className="bg-gray-800 rounded-lg pt-6 px-6 pb-2 shadow-lg">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-100 mb-2">Decision Tree Explanation</h2>
-          <p className="text-sm text-gray-400">
-            Shows the decision path through the tree based on passenger characteristics
-          </p>
+          <h2 className="text-xl font-semibold text-gray-100">Decision Tree Explanation</h2>
         </div>
 
         <ErrorBoundary errorTitle="Decision Tree Visualization Error">
@@ -64,7 +61,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
             <div>
               <DecisionTreeVizHorizontal
                 treeData={treeData.tree}
-                passengerValues={hasQuery || highlightMode ? passengerData : null}
+                passengerValues={passengerData}
                 highlightMode={highlightMode}
                 comparisonData={hasQuery ? activeComparison : null}
                 height={420}
@@ -79,7 +76,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
       {/* XGBoost SHAP Section - Cards in Row Layout */}
       <section className="bg-gray-800 rounded-lg p-6 shadow-lg">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-100 mb-2">
+          <h2 className="text-xl font-semibold text-gray-100">
             XGBoost (SHAP) Explanation
             {activeComparison && hasQuery && (
               <>
@@ -90,9 +87,6 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
               </>
             )}
           </h2>
-          <p className="text-sm text-gray-400">
-            Shows how each feature contributes to the prediction
-          </p>
         </div>
 
         {/* Comparison Mode: 2 waterfalls side-by-side, global underneath */}

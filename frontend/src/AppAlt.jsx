@@ -9,13 +9,25 @@ import { formatPassengerDescription, detectComparison } from './utils/cohortPatt
 function AppAlt() {
   const [passengerData, setPassengerData] = useState({
     sex: 0,       // 0 = Female, 1 = Male
-    pclass: 2,    // 1, 2, or 3
-    age: 30,      // 0-80
-    fare: 20      // 0-100
+    pclass: 1,    // 1, 2, or 3 (default: 1st class)
+    age: 8,       // 0-80 (child)
+    fare: 84      // 0-100 (standard 1st class fare)
   })
 
-  const [chatMessages, setChatMessages] = useState([])
-  const [hasQuery, setHasQuery] = useState(false) // Track if user has made a query
+  const initialPassengerDesc = formatPassengerDescription(0, 1, 8, 84)
+  const [chatMessages, setChatMessages] = useState([
+    {
+      role: 'assistant',
+      content: `Showing: ${initialPassengerDesc}`
+    },
+    {
+      role: 'assistant',
+      type: 'prediction',
+      passengerData: { sex: 0, pclass: 1, age: 8, fare: 84 },
+      label: initialPassengerDesc
+    }
+  ])
+  const [hasQuery, setHasQuery] = useState(true) // Set to true so visualizations show on load
 
   // Track active comparison for visualization
   const [activeComparison, setActiveComparison] = useState(null)
