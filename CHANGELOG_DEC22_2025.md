@@ -504,3 +504,56 @@ setTimeout(() => {
 **Problem Solved**: ComparisonCard loads predictions via API, starting small (loading skeleton) then expanding to full height. Single scroll attempt would complete before card expansion, leaving bottom content hidden.
 
 **Solution**: Progressive scrolling ensures chat scrolls to bottom even as content loads and expands asynchronously.
+
+---
+
+## Global Feature Importance Responsiveness
+
+**Changed in**: `frontend/src/components/visualizations/GlobalFeatureImportance.jsx`
+
+### Overview
+Fixed the Global Feature Importance chart overflowing its container card by making it fully responsive.
+
+### Problem
+The component had a hardcoded width of 280px, but was placed in a card that is 30% of the XGBoost section (which itself is 30% of the screen). This caused the chart to overflow the container boundaries.
+
+### Solution
+Made the chart dynamically measure and adapt to its container width:
+
+1. **Removed hardcoded width parameter**
+   - Previously: `width = 280` as component prop
+   - Now: Width measured dynamically from container
+
+2. **Added responsive sizing**
+   - New state: `const [containerWidth, setContainerWidth] = useState(0)`
+   - Measures container on mount and window resize
+   - Updates chart dimensions automatically
+
+3. **Window resize handling**
+   ```javascript
+   useEffect(() => {
+     if (!containerRef.current) return
+
+     const updateWidth = () => {
+       if (containerRef.current) {
+         setContainerWidth(containerRef.current.offsetWidth)
+       }
+     }
+
+     updateWidth()
+     window.addEventListener('resize', updateWidth)
+     return () => window.removeEventListener('resize', updateWidth)
+   }, [])
+   ```
+
+4. **Updated component structure**
+   - Added `w-full` classes to container divs
+   - Changed useEffect dependency from `width` to `containerWidth`
+   - Chart now renders only when `containerWidth > 0`
+
+### Benefits
+- Chart fits perfectly in both modes:
+  - **Single mode**: 30% of XGBoost section
+  - **Comparison mode**: Full width of card
+- Responsive to window resizing
+- No horizontal overflow or scrolling issues

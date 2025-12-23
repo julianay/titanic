@@ -4,6 +4,54 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed - Global Feature Importance Responsiveness (December 22, 2025)
+
+#### Problem
+The Global Feature Importance chart had a hardcoded width of 280px, causing it to overflow its container card (30% of XGBoost section).
+
+#### Solution
+Made the component fully responsive by dynamically measuring container width:
+
+1. **Removed hardcoded width prop**
+   - Deleted `width = 280` default parameter
+   - Added dynamic width measurement using `useState` and container ref
+
+2. **Window resize support**
+   - Added `resize` event listener
+   - Chart automatically adapts to window size changes
+   - Cleanup on component unmount
+
+3. **Container width measurement**
+   ```javascript
+   const [containerWidth, setContainerWidth] = useState(0)
+
+   useEffect(() => {
+     const updateWidth = () => {
+       if (containerRef.current) {
+         setContainerWidth(containerRef.current.offsetWidth)
+       }
+     }
+     updateWidth()
+     window.addEventListener('resize', updateWidth)
+     return () => window.removeEventListener('resize', updateWidth)
+   }, [])
+   ```
+
+4. **Full width styling**
+   - Added `w-full` Tailwind classes to wrapper divs
+   - Chart SVG uses measured `containerWidth` instead of fixed value
+
+#### Files Changed
+- `src/components/visualizations/GlobalFeatureImportance.jsx`
+
+#### Benefits
+- Chart fits perfectly in both single and comparison modes
+- Responsive to window resizing
+- No overflow or scrolling issues
+- Better mobile/responsive design support
+
+---
+
 ### Changed - Styling Refactoring (December 21, 2025)
 
 #### Centralized Styling System

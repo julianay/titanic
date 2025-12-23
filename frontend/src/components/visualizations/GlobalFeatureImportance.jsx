@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { SHAP_COLORS } from '../../utils/visualizationStyles'
 
@@ -8,19 +8,35 @@ import { SHAP_COLORS } from '../../utils/visualizationStyles'
  * Ported from src/visualizations/shap_viz.py (get_feature_importance_html)
  *
  * @param {Array} data - Array of {feature, value} objects sorted by importance
- * @param {number} width - Chart width (default: 280)
  * @param {number} height - Chart height (default: 300)
  */
-function GlobalFeatureImportance({ data, width = 280, height = 300 }) {
+function GlobalFeatureImportance({ data, height = 300 }) {
   const containerRef = useRef(null)
+  const [containerWidth, setContainerWidth] = useState(0)
+
+  // Measure container width on mount and window resize
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth)
+      }
+    }
+
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
 
   useEffect(() => {
-    if (!data || data.length === 0 || !containerRef.current) return
+    if (!data || data.length === 0 || !containerRef.current || containerWidth === 0) return
 
     // Clear existing content
     d3.select(containerRef.current).selectAll("*").remove()
 
     const margin = { top: 20, right: 30, bottom: 60, left: 80 }
+    const width = containerWidth
     const chartWidth = width - margin.left - margin.right
     const chartHeight = height - margin.top - margin.bottom
 
@@ -85,7 +101,7 @@ function GlobalFeatureImportance({ data, width = 280, height = 300 }) {
       .attr("font-size", "11px")
       .text("Mean |SHAP value|")
 
-  }, [data, width, height])
+  }, [data, containerWidth, height])
 
   if (!data || data.length === 0) {
     return (
@@ -114,9 +130,9 @@ function GlobalFeatureImportance({ data, width = 280, height = 300 }) {
         }
       `}</style>
 
-      <div>
+      <div className="w-full">
         <h3 className="text-sm font-semibold mb-3 text-gray-200">Global Feature Importance</h3>
-        <div ref={containerRef} />
+        <div ref={containerRef} className="w-full" />
       </div>
     </>
   )
