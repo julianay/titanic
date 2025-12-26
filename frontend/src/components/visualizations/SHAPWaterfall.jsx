@@ -21,6 +21,12 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(650)
 
+  // Convert log-odds to survival rate percentage
+  const logOddsToPercent = (logOdds) => {
+    const probability = 1 / (1 + Math.exp(-logOdds))
+    return Math.round(probability * 100)
+  }
+
   // Format passenger description for title
   const formatPassengerDescription = (data) => {
     if (!data) return "SHAP Waterfall"
@@ -91,7 +97,9 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
 
-    // Title with base value and final prediction
+    // Title with base value and final prediction (with survival rates)
+    const basePercent = logOddsToPercent(baseValue)
+    const finalPercent = logOddsToPercent(finalPrediction)
     svg.append("text")
       .attr("x", chartWidth / 2)
       .attr("y", -15)
@@ -99,7 +107,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .attr("fill", SHAP_COLORS.text)
       .attr("font-size", "11px")
       .attr("font-weight", "bold")
-      .text(`Base Value: ${baseValue.toFixed(3)} → Final Prediction: ${finalPrediction.toFixed(3)}`)
+      .text(`Base Value: ${baseValue.toFixed(3)} (${basePercent}%) → Final Prediction: ${finalPrediction.toFixed(3)} (${finalPercent}%)`)
 
     // Create scales - VERTICAL orientation (swapped axes)
     const x = d3.scaleBand()
@@ -298,6 +306,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       <div className="w-full">
         <h3 className="text-sm font-semibold mb-3 text-gray-200">{formatPassengerDescription(passengerData)}</h3>
         <div ref={containerRef} className="w-full" />
+        <p className="text-xs text-gray-400 mt-2 text-center">Values shown in log-odds; survival rates in parentheses</p>
       </div>
     </>
   )
