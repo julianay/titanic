@@ -169,8 +169,16 @@ def sklearn_tree_to_dict(
                 # Unusual split, shouldn't happen with pclass values
                 node_data['left_label'] = f"≤ {threshold:.1f}"
                 node_data['right_label'] = f"> {threshold:.1f}"
+        elif feature_name == 'fare':
+            # For fare, show with pound sign and round to integer
+            node_data['left_label'] = f"≤ £{int(round(threshold))}"
+            node_data['right_label'] = f"> £{int(round(threshold))}"
+        elif feature_name == 'age':
+            # For age, show with "yrs" suffix and round to integer
+            node_data['left_label'] = f"≤ {int(round(threshold))} yrs"
+            node_data['right_label'] = f"> {int(round(threshold))} yrs"
         else:
-            # For numeric features, just show the threshold
+            # For other numeric features, just show the threshold
             node_data['left_label'] = f"≤ {threshold:.1f}"
             node_data['right_label'] = f"> {threshold:.1f}"
     else:
