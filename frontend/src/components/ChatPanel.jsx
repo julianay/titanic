@@ -151,90 +151,126 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
             Ask about different passenger types to see survival statistics
           </div>
         ) : (
-          messages.map((msg, idx) => {
-            // Determine if this is a new message (for animation)
-            const isNewMessage = idx >= prevMessageCount
-            const animationClass = isNewMessage ? 'chat-message-new' : 'chat-message'
+          (() => {
+            // Group messages into sections (user request + assistant response(s))
+            const sections = []
+            let currentSection = []
 
-            return (
-              <div key={idx} className={`text-sm ${animationClass}`}>
-                {msg.role === 'user' ? (
-                <div className="flex justify-end">
-                  <div className="bg-gray-800 text-gray-300 rounded-2xl px-4 py-2 max-w-[85%] font-medium">
-                    {msg.content}
-                  </div>
+            messages.forEach((msg, idx) => {
+              if (msg.role === 'user') {
+                // Start a new section
+                if (currentSection.length > 0) {
+                  sections.push(currentSection)
+                }
+                currentSection = [msg]
+              } else {
+                // Add to current section
+                currentSection.push(msg)
+              }
+            })
+
+            // Add the last section
+            if (currentSection.length > 0) {
+              sections.push(currentSection)
+            }
+
+            return sections.map((section, sectionIdx) => {
+              const isLastSection = sectionIdx === sections.length - 1
+              const sectionBgClass = isLastSection ? 'bg-gray-800 bg-opacity-40' : 'bg-gray-900 bg-opacity-20'
+
+              return (
+                <div
+                  key={sectionIdx}
+                  className={`${sectionBgClass} rounded-lg p-3 space-y-3`}
+                >
+                  {section.map((msg, msgIdx) => {
+                    const globalIdx = messages.indexOf(msg)
+                    const isNewMessage = globalIdx >= prevMessageCount
+                    const animationClass = isNewMessage ? 'chat-message-new' : 'chat-message'
+
+                    return (
+                      <div key={msgIdx} className={`text-sm ${animationClass}`}>
+                        {msg.role === 'user' ? (
+                          <div className="flex justify-end">
+                            <div className="bg-gray-800 text-gray-300 rounded-2xl px-4 py-2 max-w-[85%] font-medium">
+                              {msg.content}
+                            </div>
+                          </div>
+                        ) : msg.type === 'comparison' ? (
+                          // Render comparison card
+                          <div className="flex gap-2">
+                            <span className="text-gray-400 text-base">✨</span>
+                            <div className="flex-1">
+                              <ComparisonCard
+                                cohortA={msg.comparison.cohortA}
+                                cohortB={msg.comparison.cohortB}
+                                labelA={msg.comparison.labelA}
+                                labelB={msg.comparison.labelB}
+                                description={msg.comparison.description}
+                              />
+                            </div>
+                          </div>
+                        ) : msg.type === 'prediction' ? (
+                          // Render single prediction card
+                          <div className="flex gap-2">
+                            <span className="text-gray-400 text-base">✨</span>
+                            <div className="flex-1">
+                              <SinglePredictionCard
+                                passengerData={msg.passengerData}
+                                label={msg.label}
+                              />
+                            </div>
+                          </div>
+                        ) : msg.type === 'tutorial' ? (
+                          // Render tutorial message with controls
+                          <div className="flex gap-2">
+                            <span className="text-gray-400 text-base">✨</span>
+                            <div className="flex-1">
+                              <div className="mb-3 text-gray-100">{msg.content}</div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={onTutorialAdvance}
+                                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                >
+                                  {msg.isLastStep ? 'Finish Tutorial' : 'Next'}
+                                </button>
+                                {!msg.isLastStep && (
+                                  <button
+                                    onClick={onTutorialSkip}
+                                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                  >
+                                    Skip
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ) : msg.type === 'whatif' ? (
+                          // Render What-If card
+                          <div className="flex gap-2">
+                            <span className="text-gray-400 text-base">✨</span>
+                            <div className="flex-1">
+                              <WhatIfCard
+                                values={msg.passengerData}
+                                onChange={onWhatIfChange}
+                                onApply={onWhatIfApply}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          // Regular text message
+                          <div className="flex gap-2">
+                            <span className="text-gray-400 text-base">✨</span>
+                            <div className="flex-1 text-gray-100">{msg.content}</div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
-              ) : msg.type === 'comparison' ? (
-                // Render comparison card
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-base">✨</span>
-                  <div className="flex-1">
-                    <ComparisonCard
-                      cohortA={msg.comparison.cohortA}
-                      cohortB={msg.comparison.cohortB}
-                      labelA={msg.comparison.labelA}
-                      labelB={msg.comparison.labelB}
-                      description={msg.comparison.description}
-                    />
-                  </div>
-                </div>
-              ) : msg.type === 'prediction' ? (
-                // Render single prediction card
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-base">✨</span>
-                  <div className="flex-1">
-                    <SinglePredictionCard
-                      passengerData={msg.passengerData}
-                      label={msg.label}
-                    />
-                  </div>
-                </div>
-              ) : msg.type === 'tutorial' ? (
-                // Render tutorial message with controls
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-base">✨</span>
-                  <div className="flex-1">
-                    <div className="mb-3 text-gray-100">{msg.content}</div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={onTutorialAdvance}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-                      >
-                        {msg.isLastStep ? 'Finish Tutorial' : 'Next'}
-                      </button>
-                      {!msg.isLastStep && (
-                        <button
-                          onClick={onTutorialSkip}
-                          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
-                        >
-                          Skip
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ) : msg.type === 'whatif' ? (
-                // Render What-If card
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-base">✨</span>
-                  <div className="flex-1">
-                    <WhatIfCard
-                      values={msg.passengerData}
-                      onChange={onWhatIfChange}
-                      onApply={onWhatIfApply}
-                    />
-                  </div>
-                </div>
-              ) : (
-                // Regular text message
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-base">✨</span>
-                  <div className="flex-1 text-gray-100">{msg.content}</div>
-                </div>
-              )}
-              </div>
-            )
-          })
+              )
+            })
+          })()
         )}
         <div ref={messagesEndRef} />
       </div>

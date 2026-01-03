@@ -9,6 +9,7 @@ import ComparisonSummary from './ComparisonSummary'
 import LoadingSkeleton from './LoadingSkeleton'
 import ErrorBoundary from './ErrorBoundary'
 import { UI_COLORS } from '../utils/uiStyles'
+import { formatPassengerDescription } from '../utils/cohortPatterns'
 
 /**
  * ModelComparisonViewAlt - Alternative layout with vertical stacking and horizontal tree
@@ -51,6 +52,19 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
 
   return (
     <div className="space-y-6 w-full">
+      {/* Current Cohort Display */}
+      <h3 className="text-lg font-semibold" style={{ color: UI_COLORS.textPrimary }}>
+        Showing: {activeComparison && hasQuery ? (
+          <>
+            <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
+            {' vs '}
+            <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
+          </>
+        ) : (
+          formatPassengerDescription(passengerData.sex, passengerData.pclass, passengerData.age, passengerData.fare)
+        )}
+      </h3>
+
       {/* Decision Tree Section - Full Width on Top */}
       <section className="rounded-lg pt-6 px-6 pb-2 shadow-lg" style={{ backgroundColor: UI_COLORS.sectionBg }}>
         <div className="mb-6">

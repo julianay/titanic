@@ -369,3 +369,205 @@ These changes transform the decision tree from broken (no donuts) to polished an
 3. **Data Clarity**: Integer rounding makes values natural and scannable
 
 The decision tree visualization is now both technically correct and highly accessible to users of all technical backgrounds.
+
+---
+
+## UI/UX Enhancements - Cohort Display and Chat Sectioning
+
+### Overview
+Added cohort display header and improved chat message grouping for better user context and visual hierarchy.
+
+---
+
+### 4. Enhancement: Cohort Display Header
+
+**Files Modified**:
+- `frontend/src/components/ModelComparisonViewAlt.jsx`
+
+**Lines Modified**: 1, 12, 55-66
+
+#### Problem
+Users couldn't easily see which passenger cohort they were currently viewing across the visualizations. The context was only available in chat messages but not prominently displayed above the visualizations.
+
+#### Solution
+- Added a prominent h3 heading above all visualizations showing the current cohort
+- Supports both single cohort and comparison mode display
+- Dynamically updates when user changes selections
+
+**Implementation**:
+```jsx
+// Import formatting utility
+import { formatPassengerDescription } from '../utils/cohortPatterns'
+
+// Display current cohort or comparison
+<h3 className="text-lg font-semibold" style={{ color: UI_COLORS.textPrimary }}>
+  Showing: {activeComparison && hasQuery ? (
+    <>
+      <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
+      {' vs '}
+      <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
+    </>
+  ) : (
+    formatPassengerDescription(passengerData.sex, passengerData.pclass, passengerData.age, passengerData.fare)
+  )}
+</h3>
+```
+
+**Display Examples**:
+- **Single mode**: "Showing: 8-year-old female in 1st class, £84 fare"
+- **Comparison mode**: "Showing: <span style="color: blue">1st class women</span> vs <span style="color: orange">3rd class men</span>"
+
+**Impact**:
+- Users always know which cohort they're analyzing
+- Color-coded comparison labels match visualization colors
+- Positioned above both Decision Tree and XGBoost sections
+- Consistent with the cohort formatting used throughout the app
+
+---
+
+### 5. Enhancement: Chat Message Sectioning
+
+**Files Modified**:
+- `frontend/src/components/ChatPanel.jsx`
+
+**Lines Modified**: 148-276
+
+#### Problem
+Chat messages appeared as a continuous stream without visual separation between different conversation exchanges. The most recent message didn't stand out from the chat history.
+
+#### Solution
+- Grouped messages into sections (user request + assistant response(s))
+- Applied distinct background styling to newest section vs previous sections
+- Added rounded corners and padding to each section for better visual separation
+
+**Implementation**:
+```jsx
+// Group messages into sections
+const sections = []
+let currentSection = []
+
+messages.forEach((msg, idx) => {
+  if (msg.role === 'user') {
+    // Start a new section
+    if (currentSection.length > 0) {
+      sections.push(currentSection)
+    }
+    currentSection = [msg]
+  } else {
+    // Add to current section
+    currentSection.push(msg)
+  }
+})
+
+// Render sections with different backgrounds
+const isLastSection = sectionIdx === sections.length - 1
+const sectionBgClass = isLastSection
+  ? 'bg-gray-800 bg-opacity-40'  // Lighter background for newest
+  : 'bg-gray-900 bg-opacity-20'  // Darker background for history
+
+<div className={`${sectionBgClass} rounded-lg p-3 space-y-3`}>
+  {/* Messages in section */}
+</div>
+```
+
+**Visual Styling**:
+- **Newest section**: `bg-gray-800 bg-opacity-40` (lighter, more prominent)
+- **Previous sections**: `bg-gray-900 bg-opacity-20` (darker, subdued)
+- **Rounded corners**: `rounded-lg` on each section container
+- **Padding**: `p-3` for spacing within sections
+- **Message spacing**: `space-y-3` between messages in a section
+
+**Impact**:
+- Clear visual hierarchy between current and past conversations
+- Easier to focus on the latest exchange
+- Better visual grouping of related messages (request + response)
+- Improved readability with section boundaries
+- Maintains chat history visibility while emphasizing current context
+
+---
+
+## Files Modified Summary
+
+### Frontend Changes
+- `frontend/src/components/ModelComparisonViewAlt.jsx`
+  - Added import for `formatPassengerDescription` utility
+  - Added cohort display header (h3) above visualizations
+  - Supports both single and comparison mode display
+
+- `frontend/src/components/ChatPanel.jsx`
+  - Implemented message grouping logic (sections)
+  - Added differential styling for newest vs previous sections
+  - Enhanced visual hierarchy with background colors and spacing
+
+---
+
+## User Experience Improvements
+
+### Before
+- **No cohort context**: Users had to scroll through chat to remember which cohort they were viewing
+- **Flat chat history**: All messages had equal visual weight, making it hard to focus on current conversation
+
+### After
+- **Always visible cohort**: Prominent header shows exactly what's being displayed
+- **Visual hierarchy**: Latest conversation stands out with lighter background
+- **Better organization**: Messages grouped into logical sections (question + answer)
+- **Consistent colors**: Comparison labels use same colors as visualizations (blue/orange)
+
+---
+
+## Design Decisions
+
+### Why h3 for Cohort Display
+- Semantic HTML hierarchy (h2 for section titles, h3 for subsection)
+- Appropriate visual weight without overpowering content
+- Consistent with overall typography scale
+
+### Why Lighter Background for Newest Section
+- Draws eye to current context naturally
+- Maintains visibility of chat history (not completely hidden)
+- Subtle enough to not be distracting
+- Common pattern in messaging interfaces
+
+### Why Section-Based Grouping
+- Mirrors natural conversation flow (question → answer)
+- Easier to scan for specific exchanges
+- Handles multiple assistant responses to one user query
+- Prevents orphaned messages
+
+---
+
+## Testing
+
+### Visual Verification
+1. Load application with default cohort
+   - ✓ Header shows "Showing: 8-year-old female in 1st class, £84 fare"
+2. Select different cohort
+   - ✓ Header updates to show new cohort
+3. Trigger comparison (e.g., "women vs men")
+   - ✓ Header shows "Showing: Women vs Men" with color coding
+4. Send multiple chat messages
+   - ✓ Each user query + response is grouped in a section
+   - ✓ Latest section has lighter background
+   - ✓ Previous sections have darker background
+
+---
+
+## Future Enhancements
+
+### Potential Additions
+
+1. **Cohort History**:
+   - Allow clicking on previous cohorts in chat to restore them
+   - Visual timeline of cohort explorations
+
+2. **Section Collapse**:
+   - Ability to collapse older sections to save space
+   - Expand on click to review past conversations
+
+3. **Section Timestamps**:
+   - Show when each conversation exchange occurred
+   - Help users track their exploration timeline
+
+4. **Copy Section**:
+   - Button to copy entire section (question + answer)
+   - Useful for sharing insights
