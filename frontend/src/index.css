@@ -23,8 +23,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #0e1117;
-  color: #fafafa;
+  background-color: #000000;  /* Centralized in UI_COLORS.bodyBg */
+  color: #ffffff;
   font-size: 14px;
 }
 

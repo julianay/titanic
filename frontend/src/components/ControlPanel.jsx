@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { UI_COLORS } from '../utils/uiStyles'
 
 /**
  * ControlPanel - Collapsible accordion with passenger parameter controls
@@ -111,7 +112,8 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
                   name="sex"
                   checked={values.sex === 0}
                   onChange={() => onChange('sex', 0)}
-                  className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                  className="w-4 h-4 cursor-pointer"
+                  style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
                 />
                 <span className="ml-2 text-sm">Female</span>
               </label>
@@ -121,7 +123,8 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
                   name="sex"
                   checked={values.sex === 1}
                   onChange={() => onChange('sex', 1)}
-                  className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                  className="w-4 h-4 cursor-pointer"
+                  style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
                 />
                 <span className="ml-2 text-sm">Male</span>
               </label>
@@ -138,7 +141,8 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
               name="pclass"
               checked={values.pclass === 1}
               onChange={() => onChange('pclass', 1)}
-              className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+              className="w-4 h-4 cursor-pointer"
+              style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
             />
             <span className="ml-2 text-sm">1st</span>
           </label>
@@ -148,7 +152,8 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
               name="pclass"
               checked={values.pclass === 2}
               onChange={() => onChange('pclass', 2)}
-              className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+              className="w-4 h-4 cursor-pointer"
+              style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
             />
             <span className="ml-2 text-sm">2nd</span>
           </label>
@@ -158,7 +163,8 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
               name="pclass"
               checked={values.pclass === 3}
               onChange={() => onChange('pclass', 3)}
-              className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+              className="w-4 h-4 cursor-pointer"
+              style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
             />
             <span className="ml-2 text-sm">3rd</span>
           </label>
@@ -171,17 +177,18 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
           <label className="text-sm font-medium">Age</label>
           <span className="text-sm font-semibold text-[#218FCE]">{values.age}</span>
         </div>
-        <input
-          type="range"
-          min="0"
-          max="80"
-          value={values.age}
-          onChange={(e) => onChange('age', parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#218FCE]"
-          style={{
-            background: `linear-gradient(to right, #218FCE 0%, #218FCE ${(values.age / 80) * 100}%, #374151 ${(values.age / 80) * 100}%, #374151 100%)`
-          }}
-        />
+            <input
+              type="range"
+              min="0"
+              max="80"
+              value={values.age}
+              onChange={(e) => onChange('age', parseInt(e.target.value))}
+              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+              style={{
+                accentColor: UI_COLORS.buttonPrimaryBg,
+                background: `linear-gradient(to right, ${UI_COLORS.buttonPrimaryBg} 0%, ${UI_COLORS.buttonPrimaryBg} ${(values.age / 80) * 100}%, #374151 ${(values.age / 80) * 100}%, #374151 100%)`
+              }}
+            />
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>0</span>
           <span>80</span>
@@ -200,9 +207,10 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
           max="100"
           value={values.fare}
           onChange={(e) => onChange('fare', parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#218FCE]"
+          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
           style={{
-            background: `linear-gradient(to right, #218FCE 0%, #218FCE ${(values.fare / 100) * 100}%, #374151 ${(values.fare / 100) * 100}%, #374151 100%)`
+            accentColor: UI_COLORS.buttonPrimaryBg,
+            background: `linear-gradient(to right, ${UI_COLORS.buttonPrimaryBg} 0%, ${UI_COLORS.buttonPrimaryBg} ${(values.fare / 100) * 100}%, #374151 ${(values.fare / 100) * 100}%, #374151 100%)`
           }}
         />
         <div className="flex justify-between text-xs text-gray-500 mt-1">

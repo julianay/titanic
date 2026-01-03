@@ -1,3 +1,5 @@
+import { UI_COLORS } from '../utils/uiStyles'
+
 /**
  * Layout - Fixed split-screen layout for the application
  *
@@ -23,7 +25,7 @@
  * COMMON CHANGES:
  * - Column widths: Change w-[70%] and w-[30%] (must add to 100%)
  * - Spacing: Modify p-6, px-6, pt-4, pb-3 classes
- * - Colors: Change bg-[#0e1117], border-gray-800
+ * - Colors: Update pageBg in UI_COLORS in uiStyles.js
  *
  * AVOID CHANGING:
  * - Fixed positioning logic (position: fixed, height: 100vh)
@@ -31,7 +33,7 @@
  */
 function Layout({ title, subtitle, leftContent, controlsContent, chatContent }) {
   return (
-    <div className="min-h-screen bg-[#0e1117] text-[#fafafa]">
+    <div className="min-h-screen text-[#fafafa]" style={{ backgroundColor: UI_COLORS.pageBg }}>
       <div className="flex">
         {/* Left column - 70% width, includes header and scrolls naturally */}
         <div className="w-[70%]">
@@ -51,10 +53,11 @@ function Layout({ title, subtitle, leftContent, controlsContent, chatContent }) 
 
         {/* Right column - 30% width, fixed in viewport, full height */}
         <aside
-          className="w-[30%] border-l border-gray-800 fixed right-0 flex flex-col bg-[#0e1117]"
+          className="w-[30%] border-l border-gray-800 fixed right-0 flex flex-col"
           style={{
             height: '100vh',
-            top: 0
+            top: 0,
+            backgroundColor: UI_COLORS.pageBg
           }}
         >
           {/* Controls section at top */}

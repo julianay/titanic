@@ -60,7 +60,7 @@ function SinglePredictionCard({ passengerData, label }) {
 
   if (loading) {
     return (
-      <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+      <div className="p-4 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBg, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
         <p className="text-sm text-gray-400">{label}</p>
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="h-32 bg-gray-700 rounded animate-pulse" />
@@ -72,7 +72,7 @@ function SinglePredictionCard({ passengerData, label }) {
 
   if (!predictions || !predictions.decision_tree || !predictions.xgboost) {
     return (
-      <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+      <div className="p-4 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBg, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
         <p className="text-sm text-red-400">Error loading prediction</p>
       </div>
     )
@@ -82,7 +82,7 @@ function SinglePredictionCard({ passengerData, label }) {
   const xgbColors = getColors(predictions.xgboost.probability_survived)
 
   return (
-    <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+    <div className="p-4 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBg, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
       <p className="text-sm mb-3" style={{ color: UI_COLORS.textSecondary }}>{label}</p>
 
       <div className="grid grid-cols-2 gap-3">

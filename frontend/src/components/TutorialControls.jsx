@@ -1,3 +1,5 @@
+import { UI_COLORS } from '../utils/uiStyles'
+
 /**
  * TutorialControls - Tutorial navigation and progress UI
  *
@@ -36,7 +38,10 @@ function TutorialControls({ tutorialActive, tutorialStep, onAdvance, onSkip }) {
       <div className="flex gap-2">
         <button
           onClick={onAdvance}
-          className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          className="flex-1 px-4 py-2 text-white font-medium rounded-lg transition-colors"
+          style={{ backgroundColor: UI_COLORS.buttonPrimaryBg }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBgHover)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
         >
           {isLastStep ? 'Finish Tutorial' : 'Next'}
         </button>
@@ -44,7 +49,10 @@ function TutorialControls({ tutorialActive, tutorialStep, onAdvance, onSkip }) {
         {!isLastStep && (
           <button
             onClick={onSkip}
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
+            className="px-4 py-2 text-white font-medium rounded-lg transition-colors"
+            style={{ backgroundColor: UI_COLORS.buttonSecondaryBg }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBgHover)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBg)}
           >
             Skip
           </button>

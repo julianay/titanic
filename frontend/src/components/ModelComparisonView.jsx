@@ -2,20 +2,23 @@ import useFetchTree from '../hooks/useFetchTree'
 import usePredictBoth from '../hooks/usePredictBoth'
 import useSHAPExplanation from '../hooks/useSHAPExplanation'
 import useGlobalImportance from '../hooks/useGlobalImportance'
-import DecisionTreeViz from './visualizations/DecisionTreeViz'
+import DecisionTreeVizHorizontal from './visualizations/DecisionTreeVizHorizontal'
 import SHAPWaterfall from './visualizations/SHAPWaterfall'
 import GlobalFeatureImportance from './visualizations/GlobalFeatureImportance'
 import ComparisonSummary from './ComparisonSummary'
 import LoadingSkeleton from './LoadingSkeleton'
 import ErrorBoundary from './ErrorBoundary'
+import { UI_COLORS } from '../utils/uiStyles'
+import { formatPassengerDescription } from '../utils/cohortPatterns'
 
 /**
- * ModelComparisonView - Unified view showing both Decision Tree and XGBoost explanations
+ * ModelComparisonView - Vertical layout with horizontal tree
  *
  * Layout:
- * - Side-by-side layout with Decision Tree (70%) and XGBoost (30%)
- * - XGBoost visualizations stack vertically (waterfall on top, global importance below)
- * - Comparison mode shows two waterfalls stacked vertically instead of side-by-side
+ * - Decision Tree on top (full width, horizontal left-to-right orientation)
+ * - XGBoost visualizations below in one row:
+ *   - No comparison: 2 cards side-by-side (waterfall + global)
+ *   - Comparison: 2 comparison waterfalls side-by-side, global underneath
  *
  * @param {Object} passengerData - Current passenger values
  * @param {string|number} highlightMode - Tutorial highlight mode for decision tree
@@ -49,43 +52,65 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
 
   return (
     <div className="space-y-6 w-full">
-      {/* Decision Tree (70%) and XGBoost (30%) Side by Side */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Decision Tree Section - 70% width */}
-        <section className="bg-gray-800 rounded-lg p-6 shadow-lg lg:w-[70%]">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-100">Decision Tree Explanation</h2>
-          </div>
+      {/* Current Cohort Display */}
+      <h3 className="text-lg font-semibold" style={{ color: UI_COLORS.textPrimary }}>
+        Showing: {activeComparison && hasQuery ? (
+          <>
+            <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
+            {' vs '}
+            <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
+          </>
+        ) : (
+          formatPassengerDescription(passengerData.sex, passengerData.pclass, passengerData.age, passengerData.fare)
+        )}
+      </h3>
 
-          <ErrorBoundary errorTitle="Decision Tree Visualization Error">
-            {treeData ? (
-              <div className="mb-6">
-                <DecisionTreeViz
-                  treeData={treeData.tree}
-                  passengerValues={passengerData}
-                  highlightMode={highlightMode}
-                  comparisonData={hasQuery ? activeComparison : null}
-                />
-              </div>
-            ) : (
-              <LoadingSkeleton variant="tree" className="mb-6" />
-            )}
-          </ErrorBoundary>
-        </section>
-
-        {/* XGBoost SHAP Section - 30% width, stacked vertically */}
-        <section className="bg-gray-800 rounded-lg p-6 shadow-lg lg:w-[30%]">
+      {/* Decision Tree Section - Full Width on Top */}
+      <section className="rounded-lg pt-6 px-6 pb-2 shadow-lg" style={{ backgroundColor: UI_COLORS.sectionBg }}>
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-100">XGBoost (SHAP) Explanation</h2>
+          <h2 className="text-xl font-semibold" style={{ color: UI_COLORS.textPrimary }}>Decision Tree Explanation</h2>
         </div>
 
-        {/* Comparison Mode: Show 2 Waterfall Charts stacked vertically */}
+        <ErrorBoundary errorTitle="Decision Tree Visualization Error">
+          {treeData ? (
+            <div>
+              <DecisionTreeVizHorizontal
+                treeData={treeData.tree}
+                passengerValues={passengerData}
+                highlightMode={highlightMode}
+                comparisonData={hasQuery ? activeComparison : null}
+                height={420}
+              />
+            </div>
+          ) : (
+            <LoadingSkeleton variant="tree" className="mb-6" />
+          )}
+        </ErrorBoundary>
+      </section>
+
+      {/* XGBoost SHAP Section - Cards in Row Layout */}
+      <section className="rounded-lg p-6 shadow-lg" style={{ backgroundColor: UI_COLORS.sectionBg }}>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold" style={{ color: UI_COLORS.textPrimary }}>
+            XGBoost (SHAP) Explanation
+            {activeComparison && hasQuery && (
+              <>
+                {' '}
+                <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
+                {' vs '}
+                <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
+              </>
+            )}
+          </h2>
+        </div>
+
+        {/* Comparison Mode: 2 waterfalls side-by-side, global underneath */}
         {activeComparison && hasQuery ? (
           <>
-            <div className="space-y-6 mb-6">
+            {/* Two comparison waterfalls side by side */}
+            <div className="grid grid-cols-2 gap-6 mb-6">
               {/* Cohort A Waterfall */}
-              <div className="bg-gray-900 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-blue-400 mb-3">{activeComparison.labelA}</h3>
+              <div className="rounded-lg p-4" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
                 <ErrorBoundary errorTitle="SHAP Waterfall Error (Cohort A)">
                   {shapLoadingA ? (
                     <LoadingSkeleton variant="chart" />
@@ -95,6 +120,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
                       baseValue={shapDataA.base_value}
                       finalPrediction={shapDataA.final_prediction}
                       highlightFeatures={highlightFeatures}
+                      passengerData={activeComparison?.cohortA}
                     />
                   ) : (
                     <LoadingSkeleton variant="chart" />
@@ -103,8 +129,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
               </div>
 
               {/* Cohort B Waterfall */}
-              <div className="bg-gray-900 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-orange-400 mb-3">{activeComparison.labelB}</h3>
+              <div className="rounded-lg p-4" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
                 <ErrorBoundary errorTitle="SHAP Waterfall Error (Cohort B)">
                   {shapLoadingB ? (
                     <LoadingSkeleton variant="chart" />
@@ -114,6 +139,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
                       baseValue={shapDataB.base_value}
                       finalPrediction={shapDataB.final_prediction}
                       highlightFeatures={highlightFeatures}
+                      passengerData={activeComparison?.cohortB}
                     />
                   ) : (
                     <LoadingSkeleton variant="chart" />
@@ -122,9 +148,8 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
               </div>
             </div>
 
-            {/* Global Feature Importance (stacked below waterfalls in comparison mode) */}
-            <div className="bg-gray-900 rounded-lg p-4 mb-6">
-              <h3 className="text-sm font-medium text-gray-300 mb-3">Global Feature Importance</h3>
+            {/* Global Feature Importance (full width below comparisons) */}
+            <div className="rounded-lg p-4" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
               <ErrorBoundary errorTitle="Feature Importance Error">
                 {globalLoading ? (
                   <LoadingSkeleton variant="chart" />
@@ -142,10 +167,10 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             </div>
           </>
         ) : (
-          /* Single Mode: Show 1 Waterfall (70%) + Global Importance (30%) side-by-side */
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          /* Single Mode: Waterfall (70%) and global (30%) side-by-side */
+          <div className="flex gap-6">
             {/* SHAP Waterfall - 70% */}
-            <div className="bg-gray-900 rounded-lg p-4 lg:w-[70%]">
+            <div className="rounded-lg p-4 w-[70%]" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
               <ErrorBoundary errorTitle="SHAP Waterfall Error">
                 {shapLoading ? (
                   <LoadingSkeleton variant="chart" />
@@ -155,6 +180,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
                     baseValue={shapData.base_value}
                     finalPrediction={shapData.final_prediction}
                     highlightFeatures={highlightFeatures}
+                    passengerData={passengerData}
                   />
                 ) : (
                   <LoadingSkeleton variant="chart" />
@@ -163,7 +189,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             </div>
 
             {/* Global Feature Importance - 30% */}
-            <div className="bg-gray-900 rounded-lg p-4 lg:w-[30%]">
+            <div className="rounded-lg p-4 w-[30%]" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
               <ErrorBoundary errorTitle="Feature Importance Error">
                 {globalLoading ? (
                   <LoadingSkeleton variant="chart" />
@@ -181,11 +207,10 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             </div>
           </div>
         )}
-        </section>
-      </div>
+      </section>
 
       {/* Model Comparison Summary */}
-      <section className="bg-gray-800 rounded-lg p-6 shadow-lg">
+      <section className="rounded-lg p-6 shadow-lg" style={{ backgroundColor: UI_COLORS.sectionBg }}>
         <ErrorBoundary errorTitle="Comparison Error">
           <ComparisonSummary
             decisionTreePred={predictions?.decision_tree}

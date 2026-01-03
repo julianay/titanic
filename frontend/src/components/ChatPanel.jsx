@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { parsePassengerQuery } from '../utils/cohortPatterns'
+import { UI_COLORS } from '../utils/uiStyles'
 import ComparisonCard from './ComparisonCard'
 import SinglePredictionCard from './SinglePredictionCard'
 import WhatIfCard from './WhatIfCard'
@@ -140,7 +141,7 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
   const shouldShowChips = !hasTypedMessage
 
   return (
-    <div className="flex flex-col h-full p-6">
+    <div className="flex flex-col h-full p-6" style={{ backgroundColor: UI_COLORS.chatAreaBg }}>
       {/* Chat Title */}
       <h2 className="text-lg font-semibold mb-4 text-gray-100">Ask about cohorts</h2>
 
@@ -176,12 +177,13 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
 
             return sections.map((section, sectionIdx) => {
               const isLastSection = sectionIdx === sections.length - 1
-              const sectionBgClass = isLastSection ? 'bg-gray-800 bg-opacity-40' : 'bg-gray-900 bg-opacity-20'
+              const sectionBg = isLastSection ? UI_COLORS.chatSectionBgLatest : UI_COLORS.chatSectionBgPrevious
 
               return (
                 <div
                   key={sectionIdx}
-                  className={`${sectionBgClass} rounded-lg p-3 space-y-3`}
+                  className="rounded-lg p-3 space-y-3"
+                  style={{ backgroundColor: sectionBg }}
                 >
                   {section.map((msg, msgIdx) => {
                     const globalIdx = messages.indexOf(msg)
@@ -199,7 +201,16 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                         ) : msg.type === 'comparison' ? (
                           // Render comparison card
                           <div className="flex gap-2">
-                            <span className="text-gray-400 text-base">✨</span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="w-6 h-6"
+                              style={{ color: UI_COLORS.chatIconColor }}
+                              aria-hidden="true"
+                            >
+                              <path fillRule="evenodd" d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5ZM18 1.5a.75.75 0 0 1 .728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5ZM16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0 1 16.5 15Z" clipRule="evenodd" />
+                            </svg>
                             <div className="flex-1">
                               <ComparisonCard
                                 cohortA={msg.comparison.cohortA}
@@ -213,7 +224,16 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                         ) : msg.type === 'prediction' ? (
                           // Render single prediction card
                           <div className="flex gap-2">
-                            <span className="text-gray-400 text-base">✨</span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="w-6 h-6"
+                              style={{ color: UI_COLORS.chatIconColor }}
+                              aria-hidden="true"
+                            >
+                              <path fillRule="evenodd" d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5ZM18 1.5a.75.75 0 0 1 .728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5ZM16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0 1 16.5 15Z" clipRule="evenodd" />
+                            </svg>
                             <div className="flex-1">
                               <SinglePredictionCard
                                 passengerData={msg.passengerData}
@@ -224,20 +244,35 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                         ) : msg.type === 'tutorial' ? (
                           // Render tutorial message with controls
                           <div className="flex gap-2">
-                            <span className="text-gray-400 text-base">✨</span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="w-6 h-6"
+                              style={{ color: UI_COLORS.chatIconColor }}
+                              aria-hidden="true"
+                            >
+                              <path fillRule="evenodd" d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5ZM18 1.5a.75.75 0 0 1 .728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5ZM16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0 1 16.5 15Z" clipRule="evenodd" />
+                            </svg>
                             <div className="flex-1">
                               <div className="mb-3 text-gray-100">{msg.content}</div>
                               <div className="flex gap-2">
                                 <button
                                   onClick={onTutorialAdvance}
-                                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                  className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors"
+                                  style={{ backgroundColor: UI_COLORS.buttonPrimaryBg, color: UI_COLORS.buttonPrimaryText }}
+                                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBgHover)}
+                                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
                                 >
                                   {msg.isLastStep ? 'Finish Tutorial' : 'Next'}
                                 </button>
                                 {!msg.isLastStep && (
                                   <button
                                     onClick={onTutorialSkip}
-                                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                    className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors"
+                                    style={{ backgroundColor: UI_COLORS.buttonTertiaryBg, color: UI_COLORS.buttonTertiaryText }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonTertiaryBgHover)}
+                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonTertiaryBg)}
                                   >
                                     Skip
                                   </button>
@@ -311,13 +346,19 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
               <div className="flex gap-2">
                 <button
                   onClick={onTutorialStart}
-                  className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
+                  className="px-3 py-1.5 text-xs text-white rounded-full transition-colors"
+                  style={{ backgroundColor: UI_COLORS.buttonPrimaryBg }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBgHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
                 >
                   📚 Start Tutorial
                 </button>
                 <button
                   onClick={onWhatIfStart}
-                  className="px-3 py-1.5 text-xs bg-[#218FCE] hover:bg-[#1a7ab8] text-white rounded-full transition-colors"
+                  className="px-3 py-1.5 text-xs text-white rounded-full transition-colors"
+                  style={{ backgroundColor: UI_COLORS.buttonSecondaryBg }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBgHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBg)}
                 >
                   🔮 What If?
                 </button>
@@ -334,12 +375,26 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Ask about a passenger type..."
-          className="flex-1 px-3 py-2 text-sm bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-[#218FCE] text-gray-100 placeholder-gray-500"
+          className="flex-1 px-3 py-2 text-sm rounded outline-none"
+          style={{
+            backgroundColor: UI_COLORS.inputBg,
+            borderWidth: '1px',
+            borderStyle: 'solid',
+            borderColor: UI_COLORS.inputBorder,
+            color: UI_COLORS.inputText
+          }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = UI_COLORS.inputBorderFocus)}
+          onBlur={(e) => (e.currentTarget.style.borderColor = UI_COLORS.inputBorder)}
         />
         <button
           type="submit"
           disabled={!inputValue.trim()}
-          className="px-4 py-2 text-sm bg-[#218FCE] text-white rounded hover:bg-[#1a7ab8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            backgroundColor: UI_COLORS.buttonPrimaryBg
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBgHover)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
         >
           Send
         </button>

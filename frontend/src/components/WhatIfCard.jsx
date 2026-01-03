@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { UI_COLORS } from '../utils/uiStyles'
 
 /**
  * WhatIfCard - Interactive card for adjusting passenger parameters within chat
@@ -87,7 +88,8 @@ function WhatIfCard({ values, onChange, onApply }) {
                 name="sex"
                 checked={values.sex === 0}
                 onChange={() => onChange('sex', 0)}
-                className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                className="w-4 h-4 cursor-pointer"
+                style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
               <span className="ml-2 text-xs">Female</span>
             </label>
@@ -97,7 +99,8 @@ function WhatIfCard({ values, onChange, onApply }) {
                 name="sex"
                 checked={values.sex === 1}
                 onChange={() => onChange('sex', 1)}
-                className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                className="w-4 h-4 cursor-pointer"
+                style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
               <span className="ml-2 text-xs">Male</span>
             </label>
@@ -114,27 +117,30 @@ function WhatIfCard({ values, onChange, onApply }) {
                 name="pclass"
                 checked={values.pclass === 1}
                 onChange={() => onChange('pclass', 1)}
-                className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                className="w-4 h-4 cursor-pointer"
+                style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
               <span className="ml-2 text-xs">1st</span>
             </label>
             <label className="flex items-center cursor-pointer">
-              <input
+                <input
                 type="radio"
                 name="pclass"
                 checked={values.pclass === 2}
                 onChange={() => onChange('pclass', 2)}
-                className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                className="w-4 h-4 cursor-pointer"
+                style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
               <span className="ml-2 text-xs">2nd</span>
             </label>
             <label className="flex items-center cursor-pointer">
-              <input
+                <input
                 type="radio"
                 name="pclass"
                 checked={values.pclass === 3}
                 onChange={() => onChange('pclass', 3)}
-                className="w-4 h-4 accent-[#218FCE] cursor-pointer"
+                className="w-4 h-4 cursor-pointer"
+                style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
               <span className="ml-2 text-xs">3rd</span>
             </label>
@@ -153,9 +159,10 @@ function WhatIfCard({ values, onChange, onApply }) {
             max="80"
             value={values.age}
             onChange={(e) => onChange('age', parseFloat(e.target.value))}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#218FCE]"
+            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, #218FCE 0%, #218FCE ${(values.age / 80) * 100}%, #374151 ${(values.age / 80) * 100}%, #374151 100%)`
+              accentColor: UI_COLORS.buttonPrimaryBg,
+              background: `linear-gradient(to right, ${UI_COLORS.buttonPrimaryBg} 0%, ${UI_COLORS.buttonPrimaryBg} ${(values.age / 80) * 100}%, #374151 ${(values.age / 80) * 100}%, #374151 100%)`
             }}
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -176,9 +183,10 @@ function WhatIfCard({ values, onChange, onApply }) {
             max="100"
             value={values.fare}
             onChange={(e) => onChange('fare', parseFloat(e.target.value))}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#218FCE]"
+            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, #218FCE 0%, #218FCE ${(values.fare / 100) * 100}%, #374151 ${(values.fare / 100) * 100}%, #374151 100%)`
+              accentColor: UI_COLORS.buttonPrimaryBg,
+              background: `linear-gradient(to right, ${UI_COLORS.buttonPrimaryBg} 0%, ${UI_COLORS.buttonPrimaryBg} ${(values.fare / 100) * 100}%, #374151 ${(values.fare / 100) * 100}%, #374151 100%)`
             }}
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -213,7 +221,10 @@ function WhatIfCard({ values, onChange, onApply }) {
           {/* Apply Changes Button */}
           <button
             onClick={onApply}
-            className="w-full px-4 py-2 text-xs bg-[#218FCE] text-white rounded hover:bg-[#1a7ab8] transition-colors font-medium"
+            className="w-full px-4 py-2 text-xs text-white rounded transition-colors font-medium"
+            style={{ backgroundColor: UI_COLORS.buttonSecondaryBg }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBgHover)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBg)}
           >
             Apply Changes
           </button>

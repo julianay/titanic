@@ -51,15 +51,19 @@ export const FONT_WEIGHTS = {
 
 // UI colors - used throughout the application
 export const UI_COLORS = {
+  // Page & layout backgrounds
+  pageBg: '#000000',              // Main page background (near-black)
+  bodyBg: '#000000',              // Body fallback background
+
   // Survived colors (high probability)
   survivedText: '#02AE9B',        // Same as survived in visualizations
-  survivedBg: 'rgba(184, 240, 110, 0.15)',
-  survivedBorder: 'rgba(184, 240, 110, 0.5)',
+  survivedBg: 'rgba(184, 240, 110, 0)',
+  survivedBorder: 'rgba(184, 240, 110, 0)',
 
   // Died colors (low probability)
   diedText: '#85785B',            // Same as died in visualizations
-  diedBg: 'rgba(240, 154, 72, 0.15)',
-  diedBorder: 'rgba(240, 154, 72, 0.5)',
+  diedBg: 'rgba(240, 154, 72, 0)',
+  diedBorder: 'rgba(240, 154, 72, 0)',
 
   // Uncertain colors (medium probability)
   uncertainText: '#fbbf24',       // Yellow/amber
@@ -67,16 +71,16 @@ export const UI_COLORS = {
   uncertainBorder: 'rgba(251, 191, 36, 0.5)',
 
   // Section backgrounds
-  sectionBg: '#1f2937',           // Main section background (gray-800)
-  sectionBgDark: '#111827',       // Darker sections/cards (gray-900)
+  sectionBg: '#000000',           // Main section background (gray-800)
+  sectionBgDark: '#000000',       // Darker sections/cards (gray-900)
 
   // Card states
-  cardBg: 'rgba(31, 41, 55, 0.5)',       // Default card background (gray-800 with opacity)
+  cardBg: 'rgba(30, 30, 30, 0)',              // Card background (gray-800) - used for prediction/comparison cards
   cardBgLoading: 'rgba(31, 41, 55, 0.5)', // Loading state background
   cardBgError: 'rgba(127, 29, 29, 0.2)',  // Error state background (red-900 with opacity)
 
   // Borders
-  cardBorder: '#374151',          // Default border (gray-700)
+  cardBorder: '#313131',          // Default border (gray-700)
   cardBorderError: '#991b1b',     // Error border (red-700)
   cardBorderDivider: '#1f2937',   // Subtle divider (gray-800)
 
@@ -93,7 +97,10 @@ export const UI_COLORS = {
   chartNoData: '#9ca3af',         // No data message (gray-400)
 
   // Chat area
-  chatTitle: '#f3f4f6',           // Chat section title (gray-100)
+  chatAreaBg: '#1e1e1e',          // Chat panel background (separate from page)
+  chatTitle: '#ffffff',           // Chat section title (gray-100)
+  chatSectionBgLatest: '#000000',    // Latest message section (gray-800 at 40%)
+  chatSectionBgPrevious: '#1e1e1e',  // Previous message sections (gray-900 at 20%)
   chatBubbleUser: '#1f2937',      // User message bubble background (gray-800)
   chatBubbleUserText: '#d1d5db',  // User message text (gray-300)
   chatBubbleAssistant: 'transparent', // Assistant message (no background)
@@ -110,13 +117,13 @@ export const UI_COLORS = {
   inputPlaceholder: '#6b7280',    // Placeholder text (gray-500)
 
   // Buttons - Primary (main action)
-  buttonPrimaryBg: '#218FCE',     // Primary button background
+  buttonPrimaryBg: '#3F6192',     // Primary button background
   buttonPrimaryBgHover: '#1a7ab8', // Primary button hover
   buttonPrimaryText: '#ffffff',   // Primary button text
 
   // Buttons - Secondary (less emphasis)
-  buttonSecondaryBg: '#2563eb',   // Secondary button background (blue-600)
-  buttonSecondaryBgHover: '#1d4ed8', // Secondary button hover (blue-700)
+  buttonSecondaryBg: '#3F6192',   // Secondary button background (blue-600)
+  buttonSecondaryBgHover: '#354163ff', // Secondary button hover (blue-700)
   buttonSecondaryText: '#ffffff', // Secondary button text
 
   // Buttons - Tertiary (minimal emphasis)
@@ -128,20 +135,20 @@ export const UI_COLORS = {
   chipBg: '#1f2937',              // Chip background (gray-800)
   chipBgHover: 'rgba(33, 143, 206, 0.2)', // Chip hover background (primary with opacity)
   chipText: '#d1d5db',            // Chip text (gray-300)
-  chipTextHover: '#218FCE',       // Chip text on hover (primary blue)
+  chipTextHover: '#3F6192',       // Chip text on hover (primary blue)
 
   // Tutorial/Special states
   tutorialBg: 'rgba(30, 64, 175, 0.2)',    // Tutorial highlight background (blue-900 with opacity)
   tutorialBorder: 'rgba(59, 130, 246, 0.3)', // Tutorial border (blue-500 with opacity)
-  tutorialActive: '#3b82f6',      // Active tutorial indicator (blue-500)
+  tutorialActive: '#3F6192',      // Active tutorial indicator (blue-500)
   tutorialInactive: '#4b5563',    // Inactive tutorial indicator (gray-600)
 
   // Sliders and controls
   sliderBg: '#374151',            // Slider track background (gray-700)
-  sliderThumb: '#218FCE',         // Slider thumb color (primary blue)
+  sliderThumb: '#3F6192',         // Slider thumb color (primary blue)
 
   // Links
-  linkColor: '#218FCE',           // Link color (primary blue)
+  linkColor: '#3F6192',           // Link color (primary blue)
   linkColorHover: '#1a7ab8',      // Link hover color
 
   // Disabled states
@@ -157,7 +164,7 @@ export const UI_COLORS = {
 export const SPACING = {
   // Section spacing
   sectionGap: '24px',             // Gap between sections
-  sectionPadding: '24px',         // Padding inside sections
+  sectionPadding: '12px',         // Padding inside sections
 
   // Card spacing
   cardPadding: '16px',            // Padding inside cards

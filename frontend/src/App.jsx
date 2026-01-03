@@ -18,10 +18,6 @@ function App() {
   const [chatMessages, setChatMessages] = useState([
     {
       role: 'assistant',
-      content: `Showing: ${initialPassengerDesc}`
-    },
-    {
-      role: 'assistant',
       type: 'prediction',
       passengerData: { sex: 0, pclass: 1, age: 8, fare: 84 },
       label: initialPassengerDesc
@@ -230,8 +226,8 @@ function App() {
 
   return (
     <Layout
-      title="Explainable AI Explorer"
-      subtitle="Interactively compare how two models reason about the same prediction task"
+      title="Explainable AI Explorer - How two models predict survival (Titanic dataset)"
+      subtitle="Vertical layout: Decision Tree on top, XGBoost visualizations in a row below"
       leftContent={
         <ModelComparisonView
           passengerData={passengerData}

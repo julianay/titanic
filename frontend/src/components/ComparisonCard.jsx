@@ -75,7 +75,7 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
 
   if (loading) {
     return (
-      <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+      <div className="p-4 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBg, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
         <p className="text-sm text-gray-400">{description}</p>
         <div className="mt-3 flex gap-3">
           <div className="flex-1 h-24 bg-gray-700 rounded animate-pulse" />
@@ -87,7 +87,7 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
 
   if (!predictionsA || !predictionsB || !predictionsA.xgboost || !predictionsB.xgboost) {
     return (
-      <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+      <div className="p-4 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBg, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
         <p className="text-sm text-red-400">Error loading comparison predictions</p>
       </div>
     )
@@ -104,7 +104,7 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
   const xgbColorsB = getColors(predictionsB.xgboost.probability_survived)
 
   return (
-    <div className="p-4 bg-gray-800 rounded-lg border border-gray-700">
+    <div className="p-4 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBg, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
       <p className="text-sm mb-3" style={{ color: UI_COLORS.textPrimary }}>{description}</p>
 
       <div className="grid grid-cols-2 gap-3 mb-3">
