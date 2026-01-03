@@ -8,6 +8,7 @@ import GlobalFeatureImportance from './visualizations/GlobalFeatureImportance'
 import ComparisonSummary from './ComparisonSummary'
 import LoadingSkeleton from './LoadingSkeleton'
 import ErrorBoundary from './ErrorBoundary'
+import { UI_COLORS } from '../utils/uiStyles'
 
 /**
  * ModelComparisonViewAlt - Alternative layout with vertical stacking and horizontal tree
@@ -51,9 +52,9 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
   return (
     <div className="space-y-6 w-full">
       {/* Decision Tree Section - Full Width on Top */}
-      <section className="bg-gray-800 rounded-lg pt-6 px-6 pb-2 shadow-lg">
+      <section className="rounded-lg pt-6 px-6 pb-2 shadow-lg" style={{ backgroundColor: UI_COLORS.sectionBg }}>
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-100">Decision Tree Explanation</h2>
+          <h2 className="text-xl font-semibold" style={{ color: UI_COLORS.textPrimary }}>Decision Tree Explanation</h2>
         </div>
 
         <ErrorBoundary errorTitle="Decision Tree Visualization Error">
@@ -74,16 +75,16 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
       </section>
 
       {/* XGBoost SHAP Section - Cards in Row Layout */}
-      <section className="bg-gray-800 rounded-lg p-6 shadow-lg">
+      <section className="rounded-lg p-6 shadow-lg" style={{ backgroundColor: UI_COLORS.sectionBg }}>
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-100">
+          <h2 className="text-xl font-semibold" style={{ color: UI_COLORS.textPrimary }}>
             XGBoost (SHAP) Explanation
             {activeComparison && hasQuery && (
               <>
                 {' '}
-                <span className="text-blue-400">{activeComparison.labelA}</span>
+                <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
                 {' vs '}
-                <span className="text-orange-400">{activeComparison.labelB}</span>
+                <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
               </>
             )}
           </h2>
@@ -95,7 +96,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
             {/* Two comparison waterfalls side by side */}
             <div className="grid grid-cols-2 gap-6 mb-6">
               {/* Cohort A Waterfall */}
-              <div className="bg-gray-900 rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
                 <ErrorBoundary errorTitle="SHAP Waterfall Error (Cohort A)">
                   {shapLoadingA ? (
                     <LoadingSkeleton variant="chart" />
@@ -114,7 +115,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
               </div>
 
               {/* Cohort B Waterfall */}
-              <div className="bg-gray-900 rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
                 <ErrorBoundary errorTitle="SHAP Waterfall Error (Cohort B)">
                   {shapLoadingB ? (
                     <LoadingSkeleton variant="chart" />
@@ -134,7 +135,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
             </div>
 
             {/* Global Feature Importance (full width below comparisons) */}
-            <div className="bg-gray-900 rounded-lg p-4">
+            <div className="rounded-lg p-4" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
               <ErrorBoundary errorTitle="Feature Importance Error">
                 {globalLoading ? (
                   <LoadingSkeleton variant="chart" />
@@ -155,7 +156,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
           /* Single Mode: Waterfall (70%) and global (30%) side-by-side */
           <div className="flex gap-6">
             {/* SHAP Waterfall - 70% */}
-            <div className="bg-gray-900 rounded-lg p-4 w-[70%]">
+            <div className="rounded-lg p-4 w-[70%]" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
               <ErrorBoundary errorTitle="SHAP Waterfall Error">
                 {shapLoading ? (
                   <LoadingSkeleton variant="chart" />
@@ -174,7 +175,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
             </div>
 
             {/* Global Feature Importance - 30% */}
-            <div className="bg-gray-900 rounded-lg p-4 w-[30%]">
+            <div className="rounded-lg p-4 w-[30%]" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
               <ErrorBoundary errorTitle="Feature Importance Error">
                 {globalLoading ? (
                   <LoadingSkeleton variant="chart" />
@@ -195,7 +196,7 @@ function ModelComparisonViewAlt({ passengerData, highlightMode = null, highlight
       </section>
 
       {/* Model Comparison Summary */}
-      <section className="bg-gray-800 rounded-lg p-6 shadow-lg">
+      <section className="rounded-lg p-6 shadow-lg" style={{ backgroundColor: UI_COLORS.sectionBg }}>
         <ErrorBoundary errorTitle="Comparison Error">
           <ComparisonSummary
             decisionTreePred={predictions?.decision_tree}

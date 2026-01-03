@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import LoadingSpinner from './LoadingSpinner'
-import { UI_COLORS } from '../utils/visualizationStyles'
+import { UI_COLORS } from '../utils/uiStyles'
 
 function PredictionCard({ prediction, loading, error, modelName }) {
   // Get colors based on survival probability
@@ -29,7 +29,7 @@ function PredictionCard({ prediction, loading, error, modelName }) {
   // Loading state
   if (loading) {
     return (
-      <div className="p-6 bg-gray-800 bg-opacity-50 border border-gray-700 rounded-lg">
+      <div className="p-6 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBgLoading, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
         <LoadingSpinner message={`Calculating ${modelName} prediction...`} />
       </div>
     )
@@ -38,10 +38,10 @@ function PredictionCard({ prediction, loading, error, modelName }) {
   // Error state
   if (error) {
     return (
-      <div className="p-6 bg-red-900 bg-opacity-20 border border-red-700 rounded-lg">
-        <p className="text-red-400 font-medium mb-2">{modelName} Error</p>
-        <p className="text-red-300 text-sm">{error.message || 'Failed to get prediction'}</p>
-        <p className="text-gray-400 text-xs mt-2">
+      <div className="p-6 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBgError, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorderError }}>
+        <p className="font-medium mb-2" style={{ color: UI_COLORS.textErrorTitle }}>{modelName} Error</p>
+        <p className="text-sm" style={{ color: UI_COLORS.textError }}>{error.message || 'Failed to get prediction'}</p>
+        <p className="text-xs mt-2" style={{ color: UI_COLORS.textMuted }}>
           Make sure the backend is running on port 8000
         </p>
       </div>
@@ -51,8 +51,8 @@ function PredictionCard({ prediction, loading, error, modelName }) {
   // No data state
   if (!prediction) {
     return (
-      <div className="p-6 bg-gray-800 bg-opacity-50 border border-gray-700 rounded-lg">
-        <p className="text-gray-400 text-sm text-center">No prediction data available</p>
+      <div className="p-6 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBgLoading, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
+        <p className="text-sm text-center" style={{ color: UI_COLORS.textMuted }}>No prediction data available</p>
       </div>
     )
   }
@@ -97,7 +97,7 @@ function PredictionCard({ prediction, loading, error, modelName }) {
       </div>
 
       {/* Death Probability (subtle) */}
-      <div className="text-center mt-3 pt-3 border-t border-gray-800">
+      <div className="text-center mt-3 pt-3 border-t" style={{ borderColor: UI_COLORS.cardBorderDivider }}>
         <p className="text-xs" style={{ color: UI_COLORS.textMuted }}>
           Death Probability: {Math.round(prediction.probability_died * 100)}%
         </p>

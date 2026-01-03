@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { SHAP_COLORS } from '../../utils/visualizationStyles'
+import { UI_COLORS } from '../../utils/uiStyles'
 
 /**
  * SHAPWaterfall - Alternative waterfall chart with floating bars and connector lines
@@ -250,7 +251,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
 
   if (!waterfallData || waterfallData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400">
+      <div className="flex items-center justify-center h-full" style={{ color: UI_COLORS.chartNoData }}>
         Loading SHAP explanation...
       </div>
     )
@@ -304,9 +305,9 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       `}</style>
 
       <div className="w-full">
-        <h3 className="text-sm font-semibold mb-3 text-gray-200">{formatPassengerDescription(passengerData)}</h3>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: UI_COLORS.chartTitle }}>{formatPassengerDescription(passengerData)}</h3>
         <div ref={containerRef} className="w-full" />
-        <p className="text-xs text-gray-400 mt-2 text-center">Values shown in log-odds; survival rates in parentheses</p>
+        <p className="text-xs mt-2 text-center" style={{ color: UI_COLORS.chartHelper }}>Values shown in log-odds; survival rates in parentheses</p>
       </div>
     </>
   )

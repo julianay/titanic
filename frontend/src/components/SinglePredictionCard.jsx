@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UI_COLORS } from '../utils/visualizationStyles'
+import { UI_COLORS } from '../utils/uiStyles'
 
 /**
  * SinglePredictionCard - Shows survival predictions for a single passenger in chat

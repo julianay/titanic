@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { TREE_COLORS, TREE_EFFECTS, TREE_OPACITY, TREE_STROKE, TREE_SIZING } from '../../utils/visualizationStyles'
+import { FONTS, FONT_WEIGHTS, TREE_COLORS, TREE_EFFECTS, TREE_OPACITY, TREE_STROKE, TREE_SIZING } from '../../utils/visualizationStyles'
 
 /**
  * DecisionTreeViz - Interactive D3.js decision tree visualization with donut chart nodes
@@ -712,11 +712,11 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         /* Prediction labels - hidden by default, shown when highlighted */
         .node text.prediction-label {
-          font-size: 12px;
+          font-size: ${FONTS.tree.predictionLabel};
           font-weight: 500;
           fill: ${TREE_COLORS.textDefault};
           opacity: 0;
-          transition: opacity 0.3s ease;
+          transition: all 0.3s ease;
         }
 
         .node text.prediction-label.active,
@@ -725,7 +725,11 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         .node text.prediction-label.path-b,
         .node text.prediction-label.path-shared {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.predictionLabelHighlight};
+          font-size: ${FONTS.tree.predictionLabelHighlight};
+          fill: white;
+          transform: translateY(${TREE_SIZING.labelOffset.leafHighlight}px);
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         .node text.prediction-label.tutorial-highlight {
@@ -780,12 +784,17 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .edge-label.active {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         .edge-label.hover-active {
           opacity: ${TREE_OPACITY.hover};
           fill: ${TREE_COLORS.hover};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         /* Tutorial/selective highlighting styles */
@@ -817,8 +826,10 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .edge-label.tutorial-highlight {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
           fill: ${TREE_COLORS.tutorial};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         /* Comparison mode - Path A */
@@ -849,8 +860,10 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .edge-label.path-a {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
           fill: ${TREE_COLORS.comparisonA};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         /* Comparison mode - Path B */
@@ -881,8 +894,10 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .edge-label.path-b {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
           fill: ${TREE_COLORS.comparisonB};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         /* Comparison mode - Shared path - nodes in both paths */
@@ -904,8 +919,10 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .edge-label.path-shared {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
           fill: ${TREE_COLORS.comparisonShared};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
       `}</style>
 

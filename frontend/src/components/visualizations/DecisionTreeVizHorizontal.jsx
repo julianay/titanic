@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { TREE_COLORS, TREE_EFFECTS, TREE_OPACITY, TREE_STROKE, TREE_SIZING } from '../../utils/visualizationStyles'
+import { FONTS, FONT_WEIGHTS, TREE_COLORS, TREE_EFFECTS, TREE_OPACITY, TREE_STROKE, TREE_SIZING } from '../../utils/visualizationStyles'
 
 /**
  * DecisionTreeVizHorizontal - Horizontal (left-to-right) decision tree visualization
@@ -667,11 +667,11 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
 
         /* Prediction labels - hidden by default, shown when highlighted */
         .node text.prediction-label {
-          font-size: 12px;
+          font-size: ${FONTS.tree.predictionLabel};
           font-weight: 500;
           fill: ${TREE_COLORS.textDefault};
           opacity: 0;
-          transition: opacity 0.3s ease;
+          transition: all 0.3s ease;
         }
 
         .node text.prediction-label.active,
@@ -680,7 +680,11 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         .node text.prediction-label.path-b,
         .node text.prediction-label.path-shared {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.predictionLabelHighlight};
+          font-size: ${FONTS.tree.predictionLabelHighlight};
+          fill: white;
+          transform: translateY(${TREE_SIZING.labelOffset.leafHighlight}px);
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         .node text.prediction-label.tutorial-highlight {
@@ -734,12 +738,17 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
 
         .edge-label.active {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         .edge-label.hover-active {
           opacity: ${TREE_OPACITY.hover};
           fill: ${TREE_COLORS.hover};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         .pie-chart.tutorial-highlight path {
@@ -769,8 +778,10 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
 
         .edge-label.tutorial-highlight {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
           fill: ${TREE_COLORS.tutorial};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         .pie-chart.path-a path {
@@ -800,8 +811,10 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
 
         .edge-label.path-a {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
           fill: ${TREE_COLORS.comparisonA};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         .pie-chart.path-b path {
@@ -831,8 +844,10 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
 
         .edge-label.path-b {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
           fill: ${TREE_COLORS.comparisonB};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
 
         .pie-chart.path-shared path {
@@ -853,8 +868,10 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
 
         .edge-label.path-shared {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
           fill: ${TREE_COLORS.comparisonShared};
+          font-size: ${FONTS.tree.edgeLabelHighlight};
+          filter: ${TREE_EFFECTS.labelShadow};
         }
       `}</style>
 

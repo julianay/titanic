@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { SHAP_COLORS } from '../../utils/visualizationStyles'
+import { UI_COLORS } from '../../utils/uiStyles'
 
 /**
  * GlobalFeatureImportance - Horizontal bar chart showing mean absolute SHAP values
@@ -105,7 +106,7 @@ function GlobalFeatureImportance({ data, height = 300 }) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400">
+      <div className="flex items-center justify-center h-full" style={{ color: UI_COLORS.chartNoData }}>
         Loading global importance...
       </div>
     )
@@ -131,7 +132,7 @@ function GlobalFeatureImportance({ data, height = 300 }) {
       `}</style>
 
       <div className="w-full">
-        <h3 className="text-sm font-semibold mb-3 text-gray-200">Global Feature Importance</h3>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: UI_COLORS.chartTitle }}>Global Feature Importance</h3>
         <div ref={containerRef} className="w-full" />
       </div>
     </>

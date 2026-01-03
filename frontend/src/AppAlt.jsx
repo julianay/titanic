@@ -230,7 +230,7 @@ function AppAlt() {
 
   return (
     <Layout
-      title="Explainable AI Explorer (Alternative Layout)"
+      title="Explainable AI Explorer - How two models predict survival (Titanic dataset)"
       subtitle="Vertical layout: Decision Tree on top, XGBoost visualizations in a row below"
       leftContent={
         <ModelComparisonViewAlt
