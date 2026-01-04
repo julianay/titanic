@@ -95,13 +95,44 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .append("svg")
       .attr("width", containerWidth)
       .attr("height", height)
-      .append("g")
+
+    // Define arrow markers for positive (up) and negative (down) changes
+    const defs = svg.append("defs")
+
+    // Up arrow for positive changes
+    defs.append("marker")
+      .attr("id", "arrow-up")
+      .attr("markerWidth", 10)
+      .attr("markerHeight", 10)
+      .attr("refX", 5)
+      .attr("refY", 5)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M 2 7 L 5 2 L 8 7 Z")
+      .attr("fill", SHAP_COLORS.positive)
+
+    // Down arrow for negative changes
+    defs.append("marker")
+      .attr("id", "arrow-down")
+      .attr("markerWidth", 10)
+      .attr("markerHeight", 10)
+      .attr("refX", 5)
+      .attr("refY", 5)
+      .attr("orient", "auto")
+      .append("path")
+      .attr("d", "M 2 3 L 5 8 L 8 3 Z")
+      .attr("fill", SHAP_COLORS.negative)
+
+    const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
+
+    // Use 'g' instead of 'svg' for all subsequent elements
+    const chart = g
 
     // Title with base value and final prediction (with survival rates)
     const basePercent = logOddsToPercent(baseValue)
     const finalPercent = logOddsToPercent(finalPrediction)
-    svg.append("text")
+    chart.append("text")
       .attr("x", chartWidth / 2)
       .attr("y", -15)
       .attr("text-anchor", "middle")
@@ -124,12 +155,12 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .nice()
 
     // Add Y axis
-    svg.append("g")
+    chart.append("g")
       .attr("class", "axis")
       .call(d3.axisLeft(y).ticks(5))
 
     // Add Y axis label
-    svg.append("text")
+    chart.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -chartHeight / 2)
       .attr("y", -45)
@@ -144,7 +175,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       const current = dataToRender[i]
       const next = dataToRender[i + 1]
 
-      svg.append("line")
+      chart.append("line")
         .attr("class", "connector-line")
         .attr("x1", x(i) + x.bandwidth())  // Right edge of current bar
         .attr("y1", y(current.end))        // Vertical position of current bar's end value
@@ -153,7 +184,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     }
 
     // Draw floating bars (vertical)
-    svg.selectAll(".bar")
+    chart.selectAll(".bar")
       .data(dataToRender)
       .enter()
       .append("rect")
@@ -188,11 +219,61 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       })
       .attr("rx", 2)
 
+    // Add vertical lines to bars (skip base bar)
+    // Lines extend the full height of each bar
+    chart.selectAll(".bar-line")
+      .data(dataToRender.filter((d, i) => i > 0))
+      .enter()
+      .append("line")
+      .attr("class", "bar-line")
+      .attr("x1", (d, i) => x(i + 1) + x.bandwidth() / 2)
+      .attr("x2", (d, i) => x(i + 1) + x.bandwidth() / 2)
+      .attr("y1", d => y(d.start))
+      .attr("y2", d => y(d.end))
+      .attr("stroke", d => d.value >= 0 ? SHAP_COLORS.positiveStroke : SHAP_COLORS.negativeStroke)
+      .attr("stroke-width", 2)
+      .attr("opacity", 0.5)
+
+    // Add arrows to bars (skip base bar)
+    // Up arrow for positive values, down arrow for negative values
+    const arrowSize = 8
+    chart.selectAll(".bar-arrow")
+      .data(dataToRender.filter((d, i) => i > 0))
+      .enter()
+      .append("path")
+      .attr("class", "bar-arrow")
+      .attr("d", d => {
+        // Create triangle path: up for positive, down for negative
+        if (d.value >= 0) {
+          // Up arrow (pointing up)
+          return `M 0 ${arrowSize} L ${arrowSize/2} 0 L ${arrowSize} ${arrowSize} Z`
+        } else {
+          // Down arrow (pointing down)
+          return `M 0 0 L ${arrowSize/2} ${arrowSize} L ${arrowSize} 0 Z`
+        }
+      })
+      .attr("transform", (d, i) => {
+        const barX = x(i + 1) + x.bandwidth() / 2 - arrowSize / 2
+        let arrowY
+
+        if (d.value >= 0) {
+          // Position inside the bar at the top
+          arrowY = y(d.end) + 5
+        } else {
+          // Position inside the bar at the bottom
+          arrowY = y(d.end) - arrowSize - 5
+        }
+
+        return `translate(${barX}, ${arrowY})`
+      })
+      .attr("fill", d => d.value >= 0 ? SHAP_COLORS.positiveStroke : SHAP_COLORS.negativeStroke)
+      .attr("opacity", 0.5)
+
     // Add value labels on bars (skip base value, smaller font)
     // Position labels inside bars when they fit, otherwise outside
     const minHeightForLabel = 18 // Minimum bar height needed to fit label inside
 
-    svg.selectAll(".value-label")
+    chart.selectAll(".value-label")
       .data(dataToRender.filter((d, i) => i > 0))
       .enter()
       .append("text")
@@ -233,7 +314,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .text(d => (d.value >= 0 ? "+" : "") + d.value.toFixed(2))
 
     // Add X axis with feature labels (feature names only, no values)
-    svg.append("g")
+    chart.append("g")
       .attr("class", "axis")
       .attr("transform", `translate(0,${chartHeight})`)
       .call(d3.axisBottom(x).tickFormat((d, i) => {
