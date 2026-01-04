@@ -5,7 +5,7 @@ import ChatPanel from './components/ChatPanel'
 import WhatIfModal from './components/WhatIfModal'
 import useTutorial from './hooks/useTutorial'
 import useInitialAnimation from './hooks/useInitialAnimation'
-import { formatPassengerDescription, detectComparison } from './utils/cohortPatterns'
+import { formatPassengerDescription, detectComparison, generateCohortLabel } from './utils/cohortPatterns'
 
 function App() {
   const [passengerData, setPassengerData] = useState({
@@ -32,6 +32,7 @@ function App() {
   // Track what-if mode (temporary state while adjusting parameters)
   const [whatIfData, setWhatIfData] = useState(null)
   const [isWhatIfModalOpen, setIsWhatIfModalOpen] = useState(false)
+  const [initialComparisonData, setInitialComparisonData] = useState(null)
 
   // Tutorial hook
   const tutorial = useTutorial(
@@ -73,8 +74,19 @@ function App() {
 
   // Handle What-If chip click - open modal
   const handleWhatIfStart = () => {
-    // Initialize what-if data with current passenger data
-    setWhatIfData({ ...passengerData })
+    // Check if we're editing a comparison
+    if (activeComparison) {
+      // Initialize with comparison data
+      setInitialComparisonData({
+        cohortA: { ...activeComparison.cohortA },
+        cohortB: { ...activeComparison.cohortB }
+      })
+      setWhatIfData(null) // Clear single mode data
+    } else {
+      // Initialize with current passenger data
+      setWhatIfData({ ...passengerData })
+      setInitialComparisonData(null) // Clear comparison mode data
+    }
     setIsWhatIfModalOpen(true)
   }
 
@@ -117,6 +129,38 @@ function App() {
   const closeWhatIfModal = () => {
     setIsWhatIfModalOpen(false)
     setWhatIfData(null)
+    setInitialComparisonData(null)
+  }
+
+  // Handle what-if compare - compare two scenarios from the modal
+  const handleWhatIfCompare = (cohortAData, cohortBData) => {
+    // Create comparison object from the two cohorts
+    const comparisonResult = {
+      isComparison: true,
+      cohortA: { ...cohortAData },
+      cohortB: { ...cohortBData },
+      labelA: generateCohortLabel(cohortAData),
+      labelB: generateCohortLabel(cohortBData),
+      description: `Comparing ${generateCohortLabel(cohortAData)} vs ${generateCohortLabel(cohortBData)}`
+    }
+
+    setHasQuery(true)
+    setActiveComparison(comparisonResult)
+
+    // Add comparison card to chat
+    setChatMessages(prev => [
+      ...prev,
+      { role: 'user', content: 'Compare these scenarios' },
+      {
+        role: 'assistant',
+        type: 'comparison',
+        comparison: comparisonResult
+      }
+    ])
+
+    // Clear what-if mode
+    setWhatIfData(null)
+    setInitialComparisonData(null)
   }
 
   // Handle chat message submission
@@ -201,6 +245,7 @@ function App() {
             highlightFeatures={getHighlightFeatures()}
             activeComparison={activeComparison}
             hasQuery={hasQuery}
+            onEditClick={handleWhatIfStart}
           />
         }
         chatContent={
@@ -223,6 +268,8 @@ function App() {
         values={whatIfData || passengerData}
         onChange={handleWhatIfChange}
         onApply={handleWhatIfApply}
+        onCompare={handleWhatIfCompare}
+        initialComparisonData={initialComparisonData}
       />
     </>
   )

@@ -541,6 +541,20 @@ React displays predictions with intuitive colors:
   - Icon color driven by UI_COLORS.chatIconColor
 
 ### January 4, 2026
+**What-If Comparison Mode & Smart Editing**:
+- Added comparison mode to What If modal for side-by-side scenario comparison
+  - Click "compare scenarios" link (blue, bold) to enable comparison mode
+  - Two-column layout with Scenario A and Scenario B independent controls
+  - Compare button creates comparison visualization
+- Added Edit link with pencil icon to cohort header ("Showing: ...")
+  - Opens What If modal pre-populated with current state
+  - Smart initialization: detects if editing single passenger or comparison
+  - Preserves all parameter values when editing
+- Automatic fare updates when changing passenger class
+  - 1st class → £84, 2nd class → £20, 3rd class → £13
+  - Users can still manually adjust, with suggestion badge if unusual
+- Files changed: `WhatIfCard.jsx`, `WhatIfModal.jsx`, `App.jsx`, `ModelComparisonView.jsx`, `cohortPatterns.js`
+
 **What-If Modal Conversion**:
 - Converted What-If feature from in-chat card to modal dialog
 - Created WhatIfModal.jsx component with backdrop and close button

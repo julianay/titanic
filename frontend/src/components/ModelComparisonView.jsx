@@ -25,8 +25,9 @@ import { formatPassengerDescription } from '../utils/cohortPatterns'
  * @param {Array<string>} highlightFeatures - Tutorial features to highlight in SHAP
  * @param {Object} activeComparison - Active comparison data (cohortA, cohortB) or null
  * @param {boolean} hasQuery - Whether user has made a query (hides predictions on first load)
+ * @param {Function} onEditClick - Callback when Edit link is clicked
  */
-function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null, activeComparison = null, hasQuery = false }) {
+function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null, activeComparison = null, hasQuery = false, onEditClick = null }) {
   const { data: treeData, loading: treeLoading } = useFetchTree()
   const { data: predictions, loading: predictionsLoading, error: predictionsError } = usePredictBoth(passengerData)
   const { data: shapData, loading: shapLoading } = useSHAPExplanation(passengerData)
@@ -53,15 +54,29 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
   return (
     <div className="space-y-6 w-full">
       {/* Current Cohort Display */}
-      <h3 className="text-lg font-semibold" style={{ color: UI_COLORS.textPrimary }}>
-        Showing: {activeComparison && hasQuery ? (
-          <>
-            <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
-            {' vs '}
-            <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
-          </>
-        ) : (
-          formatPassengerDescription(passengerData.sex, passengerData.pclass, passengerData.age, passengerData.fare)
+      <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: UI_COLORS.textPrimary }}>
+        <span>
+          Showing: {activeComparison && hasQuery ? (
+            <>
+              <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
+              {' vs '}
+              <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
+            </>
+          ) : (
+            formatPassengerDescription(passengerData.sex, passengerData.pclass, passengerData.age, passengerData.fare)
+          )}
+        </span>
+        {onEditClick && (
+          <button
+            onClick={onEditClick}
+            className="flex items-center gap-1 text-sm hover:underline"
+            style={{ color: UI_COLORS.buttonPrimaryBg }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+            </svg>
+            Edit
+          </button>
         )}
       </h3>
 

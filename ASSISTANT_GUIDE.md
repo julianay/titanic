@@ -155,7 +155,15 @@ The app has a **fixed split-screen layout**:
 └──────────────────────────────┴──────────┘
 ```
 
-**What-If controls** appear in a modal overlay when user clicks "🔮 What If?" chip.
+**What-If controls** appear in a modal overlay when user:
+- Clicks "🔮 What If?" chip in chat
+- Clicks "Edit" link next to "Showing: ..." in visualization header
+
+**Modal has two modes**:
+- **Single mode**: Adjust one passenger's parameters, then Apply
+- **Comparison mode**: Click "compare scenarios" link to create side-by-side scenarios (Scenario A vs Scenario B)
+
+**Smart initialization**: Modal automatically detects current context and opens in the appropriate mode with current values pre-populated.
 
 ### 3. Test After Changes
 

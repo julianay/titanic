@@ -111,7 +111,7 @@ export function formatPassengerDescription(sex, pclass, age, fare) {
  * @param {Object} params - Parsed passenger parameters
  * @returns {string} Short label like "1st class women" or "3rd class men (age 8)"
  */
-function generateCohortLabel(params) {
+export function generateCohortLabel(params) {
   const { sex, pclass, age, fare } = params
 
   // Determine primary identifiers

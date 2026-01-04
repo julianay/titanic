@@ -14,16 +14,22 @@ import { UI_COLORS } from '../utils/uiStyles'
  * @param {number} values.fare - Ticket fare in pounds (0-100)
  * @param {Function} onChange - Callback when control changes: (field, value) => void
  * @param {Function} onApply - Callback when "Apply Changes" button clicked
+ * @param {Function} onCompare - Optional callback when "Compare" button clicked
+ * @param {Object} initialComparisonData - Optional initial comparison data {cohortA, cohortB}
  *
  * @example
  * <WhatIfCard
  *   values={{ sex: 0, pclass: 2, age: 30, fare: 20 }}
  *   onChange={(field, value) => setPassengerData(prev => ({ ...prev, [field]: value }))}
  *   onApply={() => handleApply()}
+ *   onCompare={() => handleCompare()}
  * />
  */
-function WhatIfCard({ values, onChange, onApply }) {
+function WhatIfCard({ values, onChange, onApply, onCompare, initialComparisonData }) {
   const [showFareSuggestion, setShowFareSuggestion] = useState(false)
+  const [isComparisonMode, setIsComparisonMode] = useState(!!initialComparisonData)
+  const [cohortA, setCohortA] = useState(initialComparisonData?.cohortA || { ...values })
+  const [cohortB, setCohortB] = useState(initialComparisonData?.cohortB || { ...values })
 
   // Suggested fares for each class (historical averages)
   const suggestedFares = {
@@ -33,13 +39,13 @@ function WhatIfCard({ values, onChange, onApply }) {
   }
 
   // Check if fare is unusual for the class (more than 30% different from suggested)
-  const getFareSuggestion = () => {
-    const suggested = suggestedFares[values.pclass]
-    const difference = Math.abs(values.fare - suggested)
+  const getFareSuggestion = (cohortValues) => {
+    const suggested = suggestedFares[cohortValues.pclass]
+    const difference = Math.abs(cohortValues.fare - suggested)
     const percentDiff = (difference / suggested) * 100
 
     if (percentDiff > 30) {
-      return `Usually £${suggested} for ${getClassLabel(values.pclass)}`
+      return `Usually £${suggested} for ${getClassLabel(cohortValues.pclass)}`
     }
     return null
   }
@@ -49,34 +55,54 @@ function WhatIfCard({ values, onChange, onApply }) {
     return labels[pclass]
   }
 
-  // When pclass changes, suggest new fare
+  // Initialize state when initialComparisonData changes (modal reopens)
   useEffect(() => {
-    setShowFareSuggestion(true)
-    const timer = setTimeout(() => setShowFareSuggestion(false), 3000)
-    return () => clearTimeout(timer)
-  }, [values.pclass])
+    if (initialComparisonData) {
+      setIsComparisonMode(true)
+      setCohortA({ ...initialComparisonData.cohortA })
+      setCohortB({ ...initialComparisonData.cohortB })
+    } else {
+      setIsComparisonMode(false)
+      setCohortA({ ...values })
+      setCohortB({ ...values })
+    }
+  }, [initialComparisonData])
 
-  const handleFareUpdate = () => {
-    onChange('fare', suggestedFares[values.pclass])
+  // Note: Fare now auto-updates when pclass changes, but users can still manually adjust
+  // Show fare suggestion if they manually set an unusual fare for the class
+  useEffect(() => {
+    if (values.fare !== suggestedFares[values.pclass]) {
+      setShowFareSuggestion(true)
+      const timer = setTimeout(() => setShowFareSuggestion(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [values.fare, values.pclass])
+
+  const handleFareUpdate = (cohortValues, updateCohort) => {
+    const newFare = suggestedFares[cohortValues.pclass]
+    updateCohort({ ...cohortValues, fare: newFare })
     setShowFareSuggestion(false)
   }
 
   // Generate passenger description
-  const getDescription = () => {
-    const sexLabel = values.sex === 0 ? 'female' : 'male'
-    const classLabel = getClassLabel(values.pclass)
-    return `${values.age}-year-old ${sexLabel} in ${classLabel}, £${values.fare} fare`
+  const getDescription = (cohortValues) => {
+    const sexLabel = cohortValues.sex === 0 ? 'female' : 'male'
+    const classLabel = getClassLabel(cohortValues.pclass)
+    return `${cohortValues.age}-year-old ${sexLabel} in ${classLabel}, £${cohortValues.fare} fare`
   }
 
-  const fareSuggestion = getFareSuggestion()
+  // Handle comparison button click
+  const handleCompareClick = () => {
+    if (onCompare && isComparisonMode) {
+      onCompare(cohortA, cohortB)
+    }
+  }
 
-  return (
-    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-      <div className="mb-4">
-        <h3 className="text-sm font-semibold text-[#218FCE] mb-1">What If?</h3>
-        <p className="text-xs text-gray-400">Adjust parameters to explore different scenarios</p>
-      </div>
+  // Render parameter controls for a cohort
+  const renderControls = (cohortValues, updateCohort, radioNameSuffix = '') => {
+    const fareSuggestion = getFareSuggestion(cohortValues)
 
+    return (
       <div className="space-y-4">
         {/* Sex */}
         <div>
@@ -85,9 +111,9 @@ function WhatIfCard({ values, onChange, onApply }) {
             <label className="flex items-center cursor-pointer">
               <input
                 type="radio"
-                name="sex"
-                checked={values.sex === 0}
-                onChange={() => onChange('sex', 0)}
+                name={`sex${radioNameSuffix}`}
+                checked={cohortValues.sex === 0}
+                onChange={() => updateCohort({ ...cohortValues, sex: 0 })}
                 className="w-4 h-4 cursor-pointer"
                 style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
@@ -96,9 +122,9 @@ function WhatIfCard({ values, onChange, onApply }) {
             <label className="flex items-center cursor-pointer">
               <input
                 type="radio"
-                name="sex"
-                checked={values.sex === 1}
-                onChange={() => onChange('sex', 1)}
+                name={`sex${radioNameSuffix}`}
+                checked={cohortValues.sex === 1}
+                onChange={() => updateCohort({ ...cohortValues, sex: 1 })}
                 className="w-4 h-4 cursor-pointer"
                 style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
@@ -114,31 +140,31 @@ function WhatIfCard({ values, onChange, onApply }) {
             <label className="flex items-center cursor-pointer">
               <input
                 type="radio"
-                name="pclass"
-                checked={values.pclass === 1}
-                onChange={() => onChange('pclass', 1)}
+                name={`pclass${radioNameSuffix}`}
+                checked={cohortValues.pclass === 1}
+                onChange={() => updateCohort({ ...cohortValues, pclass: 1, fare: suggestedFares[1] })}
                 className="w-4 h-4 cursor-pointer"
                 style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
               <span className="ml-2 text-xs">1st</span>
             </label>
             <label className="flex items-center cursor-pointer">
-                <input
+              <input
                 type="radio"
-                name="pclass"
-                checked={values.pclass === 2}
-                onChange={() => onChange('pclass', 2)}
+                name={`pclass${radioNameSuffix}`}
+                checked={cohortValues.pclass === 2}
+                onChange={() => updateCohort({ ...cohortValues, pclass: 2, fare: suggestedFares[2] })}
                 className="w-4 h-4 cursor-pointer"
                 style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
               <span className="ml-2 text-xs">2nd</span>
             </label>
             <label className="flex items-center cursor-pointer">
-                <input
+              <input
                 type="radio"
-                name="pclass"
-                checked={values.pclass === 3}
-                onChange={() => onChange('pclass', 3)}
+                name={`pclass${radioNameSuffix}`}
+                checked={cohortValues.pclass === 3}
+                onChange={() => updateCohort({ ...cohortValues, pclass: 3, fare: suggestedFares[3] })}
                 className="w-4 h-4 cursor-pointer"
                 style={{ accentColor: UI_COLORS.buttonPrimaryBg }}
               />
@@ -151,18 +177,18 @@ function WhatIfCard({ values, onChange, onApply }) {
         <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-xs font-medium">Age</label>
-            <span className="text-xs font-semibold text-[#218FCE]">{values.age}</span>
+            <span className="text-xs font-semibold text-[#218FCE]">{cohortValues.age}</span>
           </div>
           <input
             type="range"
             min="0"
             max="80"
-            value={values.age}
-            onChange={(e) => onChange('age', parseFloat(e.target.value))}
+            value={cohortValues.age}
+            onChange={(e) => updateCohort({ ...cohortValues, age: parseFloat(e.target.value) })}
             className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
             style={{
               accentColor: UI_COLORS.buttonPrimaryBg,
-              background: `linear-gradient(to right, ${UI_COLORS.buttonPrimaryBg} 0%, ${UI_COLORS.buttonPrimaryBg} ${(values.age / 80) * 100}%, #374151 ${(values.age / 80) * 100}%, #374151 100%)`
+              background: `linear-gradient(to right, ${UI_COLORS.buttonPrimaryBg} 0%, ${UI_COLORS.buttonPrimaryBg} ${(cohortValues.age / 80) * 100}%, #374151 ${(cohortValues.age / 80) * 100}%, #374151 100%)`
             }}
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -175,18 +201,18 @@ function WhatIfCard({ values, onChange, onApply }) {
         <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-xs font-medium">Fare</label>
-            <span className="text-xs font-semibold text-[#218FCE]">£{values.fare}</span>
+            <span className="text-xs font-semibold text-[#218FCE]">£{cohortValues.fare}</span>
           </div>
           <input
             type="range"
             min="0"
             max="100"
-            value={values.fare}
-            onChange={(e) => onChange('fare', parseFloat(e.target.value))}
+            value={cohortValues.fare}
+            onChange={(e) => updateCohort({ ...cohortValues, fare: parseFloat(e.target.value) })}
             className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
             style={{
               accentColor: UI_COLORS.buttonPrimaryBg,
-              background: `linear-gradient(to right, ${UI_COLORS.buttonPrimaryBg} 0%, ${UI_COLORS.buttonPrimaryBg} ${(values.fare / 100) * 100}%, #374151 ${(values.fare / 100) * 100}%, #374151 100%)`
+              background: `linear-gradient(to right, ${UI_COLORS.buttonPrimaryBg} 0%, ${UI_COLORS.buttonPrimaryBg} ${(cohortValues.fare / 100) * 100}%, #374151 ${(cohortValues.fare / 100) * 100}%, #374151 100%)`
             }}
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -202,7 +228,7 @@ function WhatIfCard({ values, onChange, onApply }) {
               </span>
               {showFareSuggestion && (
                 <button
-                  onClick={handleFareUpdate}
+                  onClick={() => handleFareUpdate(cohortValues, updateCohort)}
                   className="text-xs text-[#218FCE] hover:underline"
                 >
                   Update
@@ -211,25 +237,102 @@ function WhatIfCard({ values, onChange, onApply }) {
             </div>
           )}
         </div>
-
-        {/* Current Passenger Description */}
-        <div className="pt-4 border-t border-gray-700">
-          <p className="text-xs text-gray-400 leading-relaxed mb-3">
-            {getDescription()}
-          </p>
-
-          {/* Apply Changes Button */}
-          <button
-            onClick={onApply}
-            className="w-full px-4 py-2 text-xs text-white rounded transition-colors font-medium"
-            style={{ backgroundColor: UI_COLORS.buttonSecondaryBg }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBgHover)}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBg)}
-          >
-            Apply Changes
-          </button>
-        </div>
       </div>
+    )
+  }
+
+  return (
+    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-[#218FCE] mb-1">What If?</h3>
+        <p className="text-xs text-gray-400">
+          Adjust parameters to explore different scenarios
+          {onCompare && !isComparisonMode && (
+            <>
+              , or{' '}
+              <button
+                onClick={() => setIsComparisonMode(true)}
+                className="font-bold text-[#218FCE] hover:underline"
+              >
+                compare scenarios
+              </button>
+            </>
+          )}
+        </p>
+      </div>
+
+      {isComparisonMode ? (
+        // Comparison mode: Two side-by-side sections
+        <>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            {/* Cohort A */}
+            <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
+              <h4 className="text-xs font-semibold text-[#218FCE] mb-3">Scenario A</h4>
+              {renderControls(cohortA, setCohortA, '-a')}
+            </div>
+
+            {/* Cohort B */}
+            <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
+              <h4 className="text-xs font-semibold text-[#218FCE] mb-3">Scenario B</h4>
+              {renderControls(cohortB, setCohortB, '-b')}
+            </div>
+          </div>
+
+          {/* Comparison Action Buttons */}
+          <div className="pt-4 border-t border-gray-700">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsComparisonMode(false)}
+                className="flex-1 px-4 py-2 text-xs text-white rounded transition-colors font-medium"
+                style={{ backgroundColor: UI_COLORS.buttonSecondaryBg }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBgHover)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBg)}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCompareClick}
+                className="flex-1 px-4 py-2 text-xs text-white rounded transition-colors font-medium"
+                style={{ backgroundColor: UI_COLORS.buttonPrimaryBg }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBgHover)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
+              >
+                Compare
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        // Single mode: One set of controls
+        <>
+          {renderControls(values, (newValues) => {
+            // Update each field individually through onChange
+            Object.keys(newValues).forEach(key => {
+              if (newValues[key] !== values[key]) {
+                onChange(key, newValues[key])
+              }
+            })
+          })}
+
+          {/* Current Passenger Description */}
+          <div className="pt-4 border-t border-gray-700 mt-4">
+            <p className="text-xs text-gray-400 leading-relaxed mb-3">
+              {getDescription(values)}
+            </p>
+
+            {/* Apply Changes Button */}
+            <button
+              onClick={onApply}
+              className="w-full px-4 py-2 text-xs text-white rounded transition-colors font-medium"
+              style={{ backgroundColor: UI_COLORS.buttonSecondaryBg }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBgHover)}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBg)}
+            >
+              Apply Changes
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }

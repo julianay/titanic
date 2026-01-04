@@ -11,6 +11,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2026-01-04] - What If Comparison Mode & Smart Editing
+
+### Added
+- **Comparison Mode in What If Modal** - Create side-by-side scenario comparisons
+  - Click "compare scenarios" link in header to enable comparison mode
+  - Two-column layout: Scenario A and Scenario B with independent controls
+  - Compare button creates comparison visualization
+  - File: frontend/src/components/WhatIfCard.jsx
+
+- **Edit Link in Cohort Header** - Quick access to modify current passenger/comparison
+  - Edit link with pencil icon appears next to "Showing: ..." text
+  - Opens What If modal pre-populated with current state
+  - File: frontend/src/components/ModelComparisonView.jsx
+
+- **Smart Modal Initialization** - Modal detects and displays current context
+  - Editing single passenger: Opens in single mode with current values
+  - Editing comparison: Opens in comparison mode with both cohorts
+  - Preserves all parameter values when editing
+  - Files: App.jsx, WhatIfCard.jsx, WhatIfModal.jsx
+
+### Changed
+- **Automatic Fare Updates** - Fare now auto-adjusts when changing passenger class
+  - 1st class → £84, 2nd class → £20, 3rd class → £13
+  - Users can still manually adjust fare if needed
+  - Fare suggestion appears if manually set to unusual value
+  - File: frontend/src/components/WhatIfCard.jsx
+
+- **Comparison Flow** - Streamlined comparison creation
+  - Changed from Compare button to "compare scenarios" text link
+  - Link styled in blue and bold for visibility
+  - Side-by-side layout makes it clear you're comparing two scenarios
+  - Files: WhatIfCard.jsx, App.jsx
+
+---
+
 ## [2026-01-04] - What If Modal & UI Cleanup
 
 ### Added

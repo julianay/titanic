@@ -10,13 +10,22 @@ import WhatIfCard from './WhatIfCard'
  * @param {Object} values - Current passenger parameter values
  * @param {Function} onChange - Callback when control changes
  * @param {Function} onApply - Callback when Apply button clicked
+ * @param {Function} onCompare - Optional callback when Compare button clicked
+ * @param {Object} initialComparisonData - Optional initial comparison data {cohortA, cohortB}
  */
-function WhatIfModal({ isOpen, onClose, values, onChange, onApply }) {
+function WhatIfModal({ isOpen, onClose, values, onChange, onApply, onCompare, initialComparisonData }) {
   if (!isOpen) return null
 
   const handleApply = () => {
     onApply()
     onClose()
+  }
+
+  const handleCompare = (...args) => {
+    if (onCompare) {
+      onCompare(...args)
+      onClose()
+    }
   }
 
   const handleBackdropClick = (e) => {
@@ -30,7 +39,7 @@ function WhatIfModal({ isOpen, onClose, values, onChange, onApply }) {
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       onClick={handleBackdropClick}
     >
-      <div className="max-w-md w-full mx-4">
+      <div className="max-w-lg w-full mx-4">
         <div className="relative">
           {/* Close button */}
           <button
@@ -46,6 +55,8 @@ function WhatIfModal({ isOpen, onClose, values, onChange, onApply }) {
             values={values}
             onChange={onChange}
             onApply={handleApply}
+            onCompare={onCompare ? handleCompare : undefined}
+            initialComparisonData={initialComparisonData}
           />
         </div>
       </div>
