@@ -86,7 +86,8 @@ It doesn't:
 ├── components/
 │   ├── Layout.jsx              # Fixed split-screen layout
 │   ├── ChatPanel.jsx           # Chat interface with smart chip visibility
-│   ├── WhatIfCard.jsx          # Interactive what-if controls (appears in chat)
+│   ├── WhatIfCard.jsx          # Interactive what-if parameter controls
+│   ├── WhatIfModal.jsx         # Modal wrapper for WhatIfCard
 │   ├── ComparisonCard.jsx      # Side-by-side cohort comparison
 │   ├── ModelComparisonView.jsx # Main visualization layout
 │   ├── TutorialControls.jsx    # Tutorial UI (legacy - no longer used)
@@ -113,8 +114,9 @@ It doesn't:
 
 **Key Files You'll Touch Most**:
 - `Layout.jsx` - Layout structure
-- `ChatPanel.jsx` - Chat UI and what-if integration
+- `ChatPanel.jsx` - Chat UI
 - `WhatIfCard.jsx` - Interactive parameter controls
+- `WhatIfModal.jsx` - Modal wrapper for what-if controls
 - `App.jsx` - State management (be careful!)
 
 **Files to Avoid Unless Necessary**:
@@ -153,7 +155,7 @@ The app has a **fixed split-screen layout**:
 └──────────────────────────────┴──────────┘
 ```
 
-**What-If controls** appear as interactive cards within chat when user clicks "🔮 What If?" chip.
+**What-If controls** appear in a modal overlay when user clicks "🔮 What If?" chip.
 
 ### 3. Test After Changes
 
@@ -941,8 +943,9 @@ className="text-lg"  // ✓ Clear
 |------|---------|----------------|
 | `App.jsx` | State management, prop wiring | Add new state, wire props |
 | `Layout.jsx` | Page layout structure (80/20 split) | Column widths, spacing |
-| `ChatPanel.jsx` | Chat with smart chip visibility | Suggestions, visibility logic, toggle, what-if integration |
-| `WhatIfCard.jsx` | Interactive parameter controls (in chat) | Sliders, ranges, labels |
+| `ChatPanel.jsx` | Chat with smart chip visibility | Suggestions, visibility logic, toggle |
+| `WhatIfCard.jsx` | Interactive parameter controls | Sliders, ranges, labels |
+| `WhatIfModal.jsx` | Modal wrapper for what-if controls | Modal styling, backdrop behavior |
 | `ComparisonCard.jsx` | Cohort comparison display | Styling, layout |
 | `ModelComparisonView.jsx` | Main visualization layout | Tree/SHAP positioning |
 | `visualizationStyles.js` | Centralized visualization styling | Color values, sizes, fonts (changes affect all visualizations) |

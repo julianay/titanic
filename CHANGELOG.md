@@ -11,6 +11,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2026-01-04] - What If Modal & UI Cleanup
+
+### Added
+- **WhatIfModal Component** - New modal wrapper for What If parameter controls
+  - Displays WhatIfCard in a centered overlay with backdrop
+  - Closes on backdrop click, X button, or Apply
+  - File: frontend/src/components/WhatIfModal.jsx
+
+### Changed
+- **What If UI Pattern** - Converted from in-chat card to modal dialog
+  - Previously: WhatIfCard appeared as a message in ChatPanel
+  - Now: Opens in modal overlay when "What If?" chip clicked
+  - Simplified state management in App.jsx (no more chat message updates)
+  - Removed whatif message type from ChatPanel rendering
+
+### Removed
+- **Hidden UI Elements** - Edge thickness message and zoom controls
+  - Added `hidden` class to edge thickness explanation text
+  - Added `hidden` class to zoom controls (+, −, Reset buttons)
+  - Elements remain in code for easy restoration
+  - Files: DecisionTreeViz.jsx:930,935 and DecisionTreeVizHorizontal.jsx:879,884
+
+---
+
 ## [2026-01-03] - Codebase Cleanup & UI Refinements
 
 ### Changed

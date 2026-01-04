@@ -272,6 +272,7 @@ frontend/src/utils/
 - `ChatPanel.jsx` (ready to use)
 - `TutorialControls.jsx` (ready to use)
 - `WhatIfCard.jsx` (ready to use)
+- `WhatIfModal.jsx` (ready to use)
 
 ---
 

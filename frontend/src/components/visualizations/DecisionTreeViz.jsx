@@ -927,12 +927,12 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       `}</style>
 
       <div className="mb-2 flex items-center justify-between">
-        <div className="text-xs text-gray-400">
+        <div className="text-xs text-gray-400 hidden">
           <strong>Edge thickness</strong> represents the number of passengers following that path
         </div>
 
         {/* Zoom controls */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 hidden">
           <button
             onClick={handleZoomIn}
             className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-200 rounded transition-colors"

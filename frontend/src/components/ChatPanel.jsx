@@ -3,7 +3,6 @@ import { parsePassengerQuery } from '../utils/cohortPatterns'
 import { UI_COLORS } from '../utils/uiStyles'
 import ComparisonCard from './ComparisonCard'
 import SinglePredictionCard from './SinglePredictionCard'
-import WhatIfCard from './WhatIfCard'
 import './ChatPanel.css'
 
 /**
@@ -26,8 +25,6 @@ import './ChatPanel.css'
  * @param {Function} onTutorialSkip - Callback when tutorial Skip button clicked
  * @param {Function} onTutorialStart - Callback when tutorial Start button clicked
  * @param {Function} onWhatIfStart - Callback when What If chip clicked
- * @param {Function} onWhatIfChange - Callback when what-if controls change: (field, value) => void
- * @param {Function} onWhatIfApply - Callback when what-if Apply button clicked
  *
  * @example
  * <ChatPanel
@@ -58,7 +55,7 @@ import './ChatPanel.css'
  * - Comparisons: "compare women vs men", "1st class vs 3rd class"
  * - Parsed by parsePassengerQuery() in cohortPatterns.js
  */
-function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTutorialAdvance, onTutorialSkip, onTutorialStart, onWhatIfStart, onWhatIfChange, onWhatIfApply }) {
+function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTutorialAdvance, onTutorialSkip, onTutorialStart, onWhatIfStart }) {
   const [inputValue, setInputValue] = useState('')
   const [hasTypedMessage, setHasTypedMessage] = useState(false) // Track if user has typed their own message
   const [chipsVisible, setChipsVisible] = useState(true) // Track if chips are shown/hidden
@@ -278,18 +275,6 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                                   </button>
                                 )}
                               </div>
-                            </div>
-                          </div>
-                        ) : msg.type === 'whatif' ? (
-                          // Render What-If card
-                          <div className="flex gap-2">
-                            <span className="text-gray-400 text-base">✨</span>
-                            <div className="flex-1">
-                              <WhatIfCard
-                                values={msg.passengerData}
-                                onChange={onWhatIfChange}
-                                onApply={onWhatIfApply}
-                              />
                             </div>
                           </div>
                         ) : (

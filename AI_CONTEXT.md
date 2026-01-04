@@ -122,7 +122,8 @@ titanic/
 │   │   ├── components/
 │   │   │   ├── Layout.jsx         # Two-column responsive layout
 │   │   │   ├── ChatPanel.jsx      # Natural language chat
-│   │   │   ├── WhatIfCard.jsx     # Interactive what-if controls (appears in chat)
+│   │   │   ├── WhatIfCard.jsx     # Interactive what-if parameter controls
+│   │   │   ├── WhatIfModal.jsx    # Modal wrapper for WhatIfCard
 │   │   │   ├── ModelComparisonView.jsx  # Main visualization layout
 │   │   │   ├── PredictionCard.jsx # Prediction display
 │   │   │   ├── ComparisonSummary.jsx  # Agreement summary
@@ -538,6 +539,21 @@ React displays predictions with intuitive colors:
 - Icon improvements:
   - Replaced ✨ emoji with Heroicons SVG sparkles icon
   - Icon color driven by UI_COLORS.chatIconColor
+
+### January 4, 2026
+**What-If Modal Conversion**:
+- Converted What-If feature from in-chat card to modal dialog
+- Created WhatIfModal.jsx component with backdrop and close button
+- Simplified App.jsx state management (removed chat message updates for what-if)
+- Removed whatif message type from ChatPanel rendering
+- Modal opens when "What If?" chip clicked, closes on backdrop/X button/Apply
+- Files changed: `WhatIfModal.jsx` (new), `App.jsx`, `ChatPanel.jsx`
+
+**UI Cleanup**:
+- Hidden edge thickness explanation message in tree visualizations
+- Hidden zoom controls (+, −, Reset buttons)
+- Elements remain in code with `hidden` class for easy restoration
+- Files changed: `DecisionTreeViz.jsx`, `DecisionTreeVizHorizontal.jsx`
 
 ### January 2, 2026
 **Decision Tree Critical Fixes & UX Enhancements**:

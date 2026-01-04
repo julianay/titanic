@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Layout from './components/Layout'
 import ModelComparisonView from './components/ModelComparisonView'
 import ChatPanel from './components/ChatPanel'
+import WhatIfModal from './components/WhatIfModal'
 import useTutorial from './hooks/useTutorial'
 import useInitialAnimation from './hooks/useInitialAnimation'
 import { formatPassengerDescription, detectComparison } from './utils/cohortPatterns'
@@ -30,6 +31,7 @@ function App() {
 
   // Track what-if mode (temporary state while adjusting parameters)
   const [whatIfData, setWhatIfData] = useState(null)
+  const [isWhatIfModalOpen, setIsWhatIfModalOpen] = useState(false)
 
   // Tutorial hook
   const tutorial = useTutorial(
@@ -69,62 +71,19 @@ function App() {
     ])
   }
 
-  // Handle What-If chip click - show what-if card in chat
+  // Handle What-If chip click - open modal
   const handleWhatIfStart = () => {
     // Initialize what-if data with current passenger data
     setWhatIfData({ ...passengerData })
-
-    // Add what-if card to chat
-    setChatMessages(prev => [
-      ...prev,
-      { role: 'user', content: 'What if?' },
-      {
-        role: 'assistant',
-        type: 'whatif',
-        passengerData: { ...passengerData }
-      }
-    ])
+    setIsWhatIfModalOpen(true)
   }
 
   // Handle what-if control changes (update temporary state)
   const handleWhatIfChange = (field, value) => {
-    // Update the what-if card in chat with new values
-    setChatMessages(prevMessages => {
-      // Find the last what-if message
-      let lastWhatIfIndex = -1
-      let currentData = null
-      for (let i = prevMessages.length - 1; i >= 0; i--) {
-        if (prevMessages[i].type === 'whatif') {
-          lastWhatIfIndex = i
-          currentData = prevMessages[i].passengerData
-          break
-        }
-      }
-
-      if (lastWhatIfIndex === -1 || !currentData) {
-        return prevMessages // No whatif message found
-      }
-
-      // Create updated data from the current message data (not state)
-      const updated = {
-        ...currentData,
-        [field]: value
-      }
-
-      // Update whatIfData state
-      setWhatIfData(updated)
-
-      // Update only the last what-if message
-      return prevMessages.map((msg, index) => {
-        if (index === lastWhatIfIndex) {
-          return {
-            ...msg,
-            passengerData: updated
-          }
-        }
-        return msg
-      })
-    })
+    setWhatIfData(prev => ({
+      ...prev,
+      [field]: value
+    }))
   }
 
   // Handle what-if apply - update main passenger data and show results
@@ -151,6 +110,12 @@ function App() {
     ])
 
     // Clear what-if mode
+    setWhatIfData(null)
+  }
+
+  // Close what-if modal
+  const closeWhatIfModal = () => {
+    setIsWhatIfModalOpen(false)
     setWhatIfData(null)
   }
 
@@ -225,33 +190,41 @@ function App() {
   }
 
   return (
-    <Layout
-      title="Explainable AI Explorer - How two models predict survival (Titanic dataset)"
-      subtitle="Vertical layout: Decision Tree on top, XGBoost visualizations in a row below"
-      leftContent={
-        <ModelComparisonView
-          passengerData={passengerData}
-          highlightMode={getHighlightMode()}
-          highlightFeatures={getHighlightFeatures()}
-          activeComparison={activeComparison}
-          hasQuery={hasQuery}
-        />
-      }
-      chatContent={
-        <ChatPanel
-          messages={chatMessages}
-          onSendMessage={handleSendMessage}
-          onPresetSelect={handlePresetSelect}
-          onPresetChat={handlePresetChat}
-          onTutorialAdvance={tutorial.advanceTutorial}
-          onTutorialSkip={tutorial.skipTutorial}
-          onTutorialStart={tutorial.startTutorial}
-          onWhatIfStart={handleWhatIfStart}
-          onWhatIfChange={handleWhatIfChange}
-          onWhatIfApply={handleWhatIfApply}
-        />
-      }
-    />
+    <>
+      <Layout
+        title="Explainable AI Explorer - How two models predict survival (Titanic dataset)"
+        subtitle="Vertical layout: Decision Tree on top, XGBoost visualizations in a row below"
+        leftContent={
+          <ModelComparisonView
+            passengerData={passengerData}
+            highlightMode={getHighlightMode()}
+            highlightFeatures={getHighlightFeatures()}
+            activeComparison={activeComparison}
+            hasQuery={hasQuery}
+          />
+        }
+        chatContent={
+          <ChatPanel
+            messages={chatMessages}
+            onSendMessage={handleSendMessage}
+            onPresetSelect={handlePresetSelect}
+            onPresetChat={handlePresetChat}
+            onTutorialAdvance={tutorial.advanceTutorial}
+            onTutorialSkip={tutorial.skipTutorial}
+            onTutorialStart={tutorial.startTutorial}
+            onWhatIfStart={handleWhatIfStart}
+          />
+        }
+      />
+
+      <WhatIfModal
+        isOpen={isWhatIfModalOpen}
+        onClose={closeWhatIfModal}
+        values={whatIfData || passengerData}
+        onChange={handleWhatIfChange}
+        onApply={handleWhatIfApply}
+      />
+    </>
   )
 }
 
