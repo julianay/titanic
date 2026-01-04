@@ -56,7 +56,7 @@ function GlobalFeatureImportance({ data, height = 300 }) {
 
     const x = d3.scaleLinear()
       .domain([0, d3.max(data, d => d.value)])
-      .range([0, chartWidth])
+      .range([0, chartWidth - 50])  // Reserve 50px on right for labels
 
     // Add bars
     svg.selectAll(".bar")
@@ -87,11 +87,12 @@ function GlobalFeatureImportance({ data, height = 300 }) {
       .attr("class", "axis")
       .call(d3.axisLeft(y))
 
-    // Add X axis
+    // Add X axis with responsive tick count based on width
+    const tickCount = chartWidth < 400 ? 3 : chartWidth < 600 ? 4 : 5
     svg.append("g")
       .attr("class", "axis")
       .attr("transform", `translate(0,${chartHeight})`)
-      .call(d3.axisBottom(x).ticks(5))
+      .call(d3.axisBottom(x).ticks(tickCount))
 
     // Add X axis label
     svg.append("text")

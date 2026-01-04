@@ -388,7 +388,6 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       <div className="w-full">
         <h3 className="text-sm font-semibold mb-3" style={{ color: UI_COLORS.chartTitle }}>{formatPassengerDescription(passengerData)}</h3>
         <div ref={containerRef} className="w-full" />
-        <p className="text-xs mt-2 text-center" style={{ color: UI_COLORS.chartHelper }}>Values shown in log-odds; survival rates in parentheses</p>
       </div>
     </>
   )

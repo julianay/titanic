@@ -117,6 +117,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
               </>
             )}
           </h2>
+          <p className="text-xs mt-2" style={{ color: UI_COLORS.chartHelper }}>Values shown in log-odds; survival rates in parentheses</p>
         </div>
 
         {/* Comparison Mode: 2 waterfalls side-by-side, global underneath */}

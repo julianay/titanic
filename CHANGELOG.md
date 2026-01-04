@@ -11,6 +11,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2026-01-04] - SHAP Waterfall Visualization Enhancement
+
+### Added
+- **Directional Arrows and Lines** - Visual indicators for feature contributions in SHAP waterfall chart
+  - Vertical lines extending the full height of each bar
+  - Up arrows (↑) for positive contributions that increase survival probability
+  - Down arrows (↓) for negative contributions that decrease survival probability
+  - Arrows and lines match bar outline colors (green for positive, red/pink for negative)
+  - 50% opacity for better label readability
+  - Arrows positioned inside bars for cleaner appearance
+  - File: frontend/src/components/visualizations/SHAPWaterfall.jsx
+
+### Changed
+- **Log-odds Helper Text Position** - Improved visibility of SHAP value explanation
+  - Moved "Values shown in log-odds; survival rates in parentheses" from bottom of waterfall chart to section level
+  - Now appears directly under "XGBoost (SHAP) Explanation" title
+  - Applies to entire SHAP section rather than individual charts
+  - File: frontend/src/components/ModelComparisonView.jsx
+
+### Fixed
+- **Global Feature Importance Chart** - Resolved label clipping and overlap issues
+  - Reserved 50px on right side of chart for value labels to prevent clipping
+  - Made x-axis tick count responsive to chart width (3 ticks for narrow, 4 for medium, 5 for wide)
+  - Prevents tick label overlap when chart is displayed at smaller widths
+  - File: frontend/src/components/visualizations/GlobalFeatureImportance.jsx
+
+---
+
 ## [2026-01-04] - What If Comparison Mode & Smart Editing
 
 ### Added
