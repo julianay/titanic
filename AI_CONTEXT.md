@@ -2,7 +2,7 @@
 
 > **Purpose:** Comprehensive project documentation and coding conventions for AI assistants (Claude Code, GitHub Copilot, Cursor, etc.)
 
-**Last Updated:** December 22, 2025 (What-If Chat Integration & Tree Label Improvements)
+**Last Updated:** January 3, 2026 (Codebase Cleanup & UI Refinements)
 **Live Demo:** https://huggingface.co/spaces/bigpixel/titanic (React + FastAPI)
 **Status:** ✅ Production - React frontend with all features deployed
 
@@ -123,7 +123,7 @@ titanic/
 │   │   │   ├── Layout.jsx         # Two-column responsive layout
 │   │   │   ├── ChatPanel.jsx      # Natural language chat
 │   │   │   ├── WhatIfCard.jsx     # Interactive what-if controls (appears in chat)
-│   │   │   ├── ModelComparisonView.jsx  # Side-by-side comparison
+│   │   │   ├── ModelComparisonView.jsx  # Main visualization layout
 │   │   │   ├── PredictionCard.jsx # Prediction display
 │   │   │   ├── ComparisonSummary.jsx  # Agreement summary
 │   │   │   ├── LoadingSkeleton.jsx # Loading states
@@ -135,11 +135,14 @@ titanic/
 │   │   │       └── GlobalFeatureImportance.jsx
 │   │   ├── hooks/
 │   │   │   ├── usePredict.js      # API integration (500ms debounce)
-│   │   │   └── useTutorial.js     # Tutorial state management
+│   │   │   ├── useTutorial.js     # Tutorial state management
+│   │   │   └── useInitialAnimation.js  # Initial page animation
 │   │   ├── utils/
 │   │   │   ├── cohortPatterns.js  # NL query parsing
-│   │   │   └── visualizationColors.js  # Centralized color system
+│   │   │   ├── visualizationStyles.js  # Centralized styling (colors, sizes, fonts)
+│   │   │   └── uiStyles.js        # UI component styles
 │   │   ├── App.jsx                # Main component
+│   │   ├── main.jsx               # Entry point
 │   │   └── index.css              # Tailwind + dark theme
 │   ├── .env                       # VITE_API_URL (empty for production)
 │   ├── package.json
@@ -385,16 +388,27 @@ React displays predictions with intuitive colors:
 
 ## 🎨 Design System & Centralized Colors
 
-### Centralized Color System
+### Centralized Styling System
 
-**All colors are defined in**: `frontend/src/utils/visualizationColors.js`
+**All visualization styles are defined in**: `frontend/src/utils/visualizationStyles.js`
+**All UI styles are defined in**: `frontend/src/utils/uiStyles.js`
 
-This single file exports:
+**visualizationStyles.js** exports:
 - `TREE_COLORS` - Decision tree visualization colors
 - `SHAP_COLORS` - SHAP visualization colors (aligned with tree colors)
 - `UI_COLORS` - UI card colors (prediction results)
 - `TREE_EFFECTS` - Drop shadow effects for different states
 - `TREE_OPACITY` - Opacity values for inactive/hover/active states
+- `FONTS` - Typography settings for all visualizations
+- `FONT_WEIGHTS` - Standard weight values
+- `TREE_STROKE`, `TREE_SIZING`, `SHAP_SIZING` - Layout constants
+
+**uiStyles.js** exports:
+- `UI_COLORS` - General UI element colors (buttons, inputs, chat)
+- `SPACING` - Consistent spacing values
+- `BORDER_RADIUS` - Border radius values
+- `UI_EFFECTS` - Transitions and animations
+- `ANIMATIONS` - Keyframe animations
 
 **Core Color Palette**:
 - **Survived/Positive**: `#B8F06E` (light green) - Tree survived class, SHAP positive impact, high probability UI
@@ -510,6 +524,35 @@ This single file exports:
 
 ## 📝 Recent Changes
 
+### January 3, 2026
+**Codebase Cleanup & UI Refinements**:
+- Removed redundant initial chat message (only shows prediction card on load)
+- Consolidated "Alt" files into main files:
+  - Deleted AppAlt.jsx, ModelComparisonViewAlt.jsx, main-alt.jsx
+  - Updated index.html to load main.jsx
+  - Standard React naming conventions now followed
+- UI styling centralization:
+  - Chat input and Send button now use UI_COLORS constants
+  - Replaced hardcoded Tailwind classes with inline styles + hover handlers
+  - Tutorial buttons use UI_COLORS.buttonPrimaryBg
+- Icon improvements:
+  - Replaced ✨ emoji with Heroicons SVG sparkles icon
+  - Icon color driven by UI_COLORS.chatIconColor
+
+### January 2, 2026
+**Decision Tree Critical Fixes & UX Enhancements**:
+- **CRITICAL FIX**: Donut charts not rendering (class count calculation bug)
+  - sklearn tree_.value returns proportions, not counts
+  - Fixed: `int(value[0] * samples)` instead of `int(value[0])`
+  - Restores all donut visualizations
+- Edge label improvements:
+  - Fare values now show £ symbol: "≤ £29" instead of "≤ 28.9"
+  - Age values now show "yrs" suffix: "≤ 16 yrs" instead of "≤ 16.5"
+  - Both rounded to integers for cleaner display
+- Cohort display header added above visualizations
+- Chat message sectioning with visual hierarchy (newest section lighter background)
+- Files changed: `backend/models/decision_tree.py`, `frontend/src/components/ModelComparisonView.jsx`, `frontend/src/components/ChatPanel.jsx`
+
 ### December 22, 2025
 **What-If Feature - Chat Integration**:
 - Removed ControlPanel accordion from right sidebar
@@ -587,5 +630,5 @@ This single file exports:
 
 ---
 
-**Last Updated:** December 22, 2025 (What-If Chat Integration & Tree Label Improvements)
+**Last Updated:** January 3, 2026 (Codebase Cleanup & UI Refinements)
 **Status:** Production-ready with all features complete

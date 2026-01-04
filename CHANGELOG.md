@@ -2,467 +2,256 @@
 
 All notable changes to the Titanic Explainable AI project.
 
----
-
-## December 22, 2025
-
-### What-If Feature - Chat Integration
-
-**Overview:**
-Converted the "What If?" accordion from the right sidebar into an interactive card that appears in the chat when triggered by a suggestion chip. This frees up sidebar space and provides a more contextual, conversational experience.
-
-**New Component: WhatIfCard.jsx**
-- Interactive card component that appears in chat with all passenger controls
-- Compact design optimized for chat display
-- All controls from original accordion: sex, pclass, age, fare
-- Real-time fare suggestions based on passenger class
-- Passenger description preview
-- "Apply Changes" button to commit updates
-
-**Updated: ChatPanel.jsx**
-- Added "🔮 What If?" suggestion chip
-- Rendering for whatif message type
-- Props: `onWhatIfStart`, `onWhatIfChange`, `onWhatIfApply`
-
-**Updated: App.jsx & AppAlt.jsx**
-- Added `whatIfData` state management
-- Handlers: `handleWhatIfStart()`, `handleWhatIfChange()`, `handleWhatIfApply()`
-- Fixed race condition by using message data as source of truth
-- Removed ControlPanel integration
-
-**Technical Fixes:**
-- Fixed race condition in slider updates (using message state instead of component state)
-- Changed slider value parsing from `parseInt` to `parseFloat` for backend compatibility
-- Replaced ES2023 `findLastIndex()` with manual loop for broader browser support
-
-**User Flow:**
-1. User clicks "🔮 What If?" chip
-2. WhatIfCard appears in chat with current passenger parameters
-3. User adjusts controls (sex, class, age, fare)
-4. Changes update in real-time in the card
-5. User clicks "Apply Changes"
-6. System updates main passenger data
-7. New prediction card appears in chat with results
-8. Visualizations update to show the new scenario
-
-**Benefits:**
-- More chat space (removed accordion from sidebar)
-- Contextual exploration within conversation flow
-- Cleaner UI (controls only appear when needed)
-- Consistent with tutorial and comparison chip patterns
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-### Tree Label Improvements
-
-**Decision Tree Split Labels:**
-Updated passenger class (pclass) split labels to be more user-friendly instead of showing technical threshold values.
-
-**Changed in:** `backend/models/decision_tree.py`
-
-**Before:**
-- Left branch: "≤ 1.5"
-- Right branch: "> 1.5"
-
-**After:**
-- Split at 1.5: "1st class" vs "2nd & 3rd class"
-- Split at 2.5: "1st & 2nd class" vs "3rd class"
-
-**Implementation:**
-```python
-elif feature_name == 'pclass':
-    # For passenger class, show meaningful class names
-    if threshold <= 1.5:
-        node_data['left_label'] = '1st class'
-        node_data['right_label'] = '2nd & 3rd class'
-    elif threshold <= 2.5:
-        node_data['left_label'] = '1st & 2nd class'
-        node_data['right_label'] = '3rd class'
-```
+## [Unreleased]
 
 ---
 
-### Layout Improvements
+## [2026-01-03] - Codebase Cleanup & UI Refinements
 
-**SHAP Waterfall / Global Importance Ratio:**
-Adjusted the width distribution in the XGBoost section for better readability.
+### Changed
+- **Removed redundant initial chat message** - Only displays prediction card on initial load, removed duplicate "Showing: ..." text message
+- **Consolidated "Alt" files into main files** - Removed AppAlt.jsx, ModelComparisonViewAlt.jsx, and main-alt.jsx
+  - Updated index.html to load main.jsx instead of main-alt.jsx
+  - Replaced old App.jsx with the active version
+  - Standard naming now follows React conventions
 
-**Changed in:**
-- `frontend/src/components/ModelComparisonView.jsx`
-- `frontend/src/components/ModelComparisonViewAlt.jsx`
+### Fixed
+- **UI Styling - Centralized Colors**
+  - Chat input and Send button now use `UI_COLORS` constants instead of hardcoded Tailwind classes
+  - Added onFocus/onBlur handlers for input border color using `UI_COLORS.inputBorderFocus`
+  - Send button uses `UI_COLORS.buttonPrimaryBg` with hover handlers
+- **Tutorial Buttons** - Replaced hardcoded bg-blue-600/bg-blue-700 with `UI_COLORS.buttonPrimaryBg` and hover handlers
+- **Sparkles Icon** - Replaced ✨ emoji with Heroicons SVG for consistent sizing and color control
+  - Icon color driven by `UI_COLORS.chatIconColor`
+  - Applied to all assistant message types
 
-**Single Mode** (no comparison):
-- SHAP Waterfall: 70% width (increased from 50%)
-- Global Feature Importance: 30% width (decreased from 50%)
-- Layout: Side-by-side
-
-**Comparison Mode** (two waterfalls):
-- Two waterfalls: 50/50 split (unchanged)
-- Layout: Stacked vertically with Global Importance below
-
-**Rationale:** The waterfall chart contains more detailed information (feature values, impacts) and benefits from more horizontal space, while the global importance is a simpler bar chart.
-
----
-
-## December 21, 2025
-
-### Alternative Layout Implementation
-
-**Overview:**
-Created an alternative page layout to compare side-by-side with the original 80/20 split layout. This allows users to view both layouts simultaneously in different browser tabs/windows.
-
-**Multi-Page Setup:**
-- Added `index-alt.html` - Alternative layout entry point
-- Added `main-alt.jsx` - Alternative entry point script
-- Added `AppAlt.jsx` - Alternative app component
-- Updated `vite.config.js` - Multi-page configuration
-
-**Alternative Layout Features:**
-
-**Layout Structure:**
-- Decision Tree: Full width at top with horizontal (left-to-right) orientation
-- XGBoost Section: Cards displayed in a row below the tree
-  - No comparison mode: 2 cards side-by-side (Feature Contributions + Global Importance)
-  - Comparison mode: 2 comparison waterfalls side-by-side, Global Importance full-width underneath
-
-**New Components:**
-- `ModelComparisonViewAlt.jsx` - Vertical stacking layout
-- `DecisionTreeVizHorizontal.jsx` - Horizontal tree orientation with disabled scroll wheel zoom
-
-**Styling Changes:**
-- Tree Card: Height 420px (20% taller), reduced bottom padding
-- XGBoost Cards: Removed h3 sub-headers, cohort labels moved to main section title
-
-**Accessing Both Layouts:**
-- Original Layout: `http://localhost:5176/`
-- Alternative Layout: `http://localhost:5176/index-alt.html`
+### Removed
+- frontend/src/AppAlt.jsx
+- frontend/src/main-alt.jsx
+- frontend/src/components/ModelComparisonViewAlt.jsx
+- Redundant welcome message on initial chat load
 
 ---
 
-### Chat Panel Improvements
+## [2026-01-02] - Decision Tree Critical Fixes & UX Enhancements
 
-**Preset Chips Redesign:**
-- Changed "Try asking" suggestion buttons to chip-style (rounded-full pills)
-- Removed redundant preset chips (Women's path, Men's path, etc.)
-- Added "📚 Start Tutorial" chip for easy testing
+### Fixed
+- **CRITICAL: Donut Charts Not Rendering** (Class Count Calculation Bug)
+  - sklearn's tree_.value returns proportions, not counts
+  - Fixed by multiplying proportions by samples: `int(value[0] * samples)`
+  - Restores all donut chart visualizations across the decision tree
+  - File: backend/models/decision_tree.py:117-119
 
-**Suggestion Chips Visibility Behavior:**
-- Fixed: Chips no longer disappear when tutorial starts
-- Smart Hide: Chips remain visible during tutorial and when clicking suggestions
-- Chips only disappear after user types and submits their own custom message
-- Added show/hide toggle link next to "Try asking" label
-- Toggle state persists during session
+### Added
+- **Currency Symbols for Fare Values**
+  - Added £ prefix to all fare edge labels
+  - Rounded to nearest integer for cleaner display
+  - Example: "≤ 28.9" → "≤ £29"
+  - File: backend/models/decision_tree.py:172-175
 
-**Implementation Details:**
-- `hasTypedMessage` state: Tracks if user has typed their own message
-- `chipsVisible` state: Controls show/hide toggle
-- `shouldShowChips = !hasTypedMessage`: Visibility logic
+- **Age Units with "yrs" Suffix**
+  - Added "yrs" suffix to all age edge labels
+  - Rounded to nearest integer for natural age representation
+  - Example: "≤ 16.5" → "≤ 16 yrs"
+  - File: backend/models/decision_tree.py:176-179
 
----
+- **Cohort Display Header**
+  - Added prominent h3 heading above visualizations showing current cohort
+  - Supports both single cohort and comparison mode display
+  - Color-coded comparison labels match visualization colors
+  - File: frontend/src/components/ModelComparisonView.jsx
 
-### Tutorial Improvements
+- **Chat Message Sectioning**
+  - Grouped messages into sections (user request + assistant response)
+  - Distinct background styling for newest section vs previous sections
+  - Newest: bg-gray-800 bg-opacity-40 (lighter)
+  - Previous: bg-gray-900 bg-opacity-20 (darker)
+  - File: frontend/src/components/ChatPanel.jsx
 
-**Inline Tutorial Controls:**
-- Removed `TutorialControls.jsx` blue box component
-- Tutorial controls now appear inline in chat messages
-- Added tutorial message type with step metadata
-
-**Tutorial Flow:**
-- Tutorial messages appear as regular chat messages
-- Next/Skip buttons display directly below tutorial message text
-- No separate blue box or progress indicator
-- Cleaner, more integrated user experience
-
-**Testing Support:**
-- Added "📚 Start Tutorial" chip in empty chat state
-- Easy to trigger tutorial for testing on platforms like Hugging Face
-
----
-
-### Centralized Color System
-
-**Overview:**
-Refactored all visualization and UI colors into a single centralized configuration file.
-
-**Created:** `frontend/src/utils/visualizationColors.js`
-- Single source of truth for all colors
-- Comprehensive documentation and quick reference
-- Used by 7 components (4 visualizations + 3 UI cards)
-
-**Color Scheme:**
-- Survived/Positive: Light Green `#B8F06E`
-- Died/Negative: Orange `#F09A48`
-- Tutorial/Highlight: Gold `#ffd700`
-- Uncertain (UI only): Yellow `#fbbf24`
-
-**Exported Constants:**
-- `TREE_COLORS` - Decision tree visualization colors
-- `SHAP_COLORS` - SHAP visualization colors (aligned with tree)
-- `UI_COLORS` - UI card colors
-- `TREE_EFFECTS` - Drop shadow effects
-- `TREE_OPACITY` - Opacity values for states
-
-**Key Changes:**
-1. Comparison Mode Colors: Changed from blue/coral to green/orange (semantically meaningful)
-2. SHAP Color Alignment: Positive/negative bars match survived/died colors
-3. UI Card Consistency: All cards use same colors as visualizations
-
-**Benefits:**
-- Easy maintenance (change in one place)
-- Semantic consistency (green = survived, orange = died)
-- Comprehensive documentation
+### Changed
+- **Edge Label Format** - Complete decision tree labels now display as:
+  - sex: "female" / "male"
+  - pclass: "1st class" / "2nd & 3rd class"
+  - fare: "≤ £149" / "> £149"
+  - age: "≤ 16 yrs" / "> 16 yrs"
 
 ---
 
-### SHAP Waterfall Chart Improvements
+## [2025-12-22] - What-If Feature & Tree Label Improvements
 
-**Overview:**
-Redesigned the SHAP waterfall chart to use vertical bars with horizontal feature labels.
+### Added
+- **What-If Feature - Chat Integration**
+  - New WhatIfCard.jsx component - Interactive card that appears in chat with all passenger controls
+  - Added "🔮 What If?" suggestion chip to ChatPanel
+  - All controls from original accordion: sex, pclass, age, fare
+  - Real-time fare suggestions based on passenger class
+  - "Apply Changes" button to commit updates
+  - Removed ControlPanel accordion from right sidebar
 
-**Visual Changes:**
+### Fixed
+- **Race Condition in Slider Updates**
+  - Changed handleWhatIfChange to use chat message as source of truth instead of state
+  - Prevents incomplete data from being sent to API
+  - Replaced ES2023 findLastIndex() with manual loop for browser compatibility
 
-**Axis Orientation:**
-- Before: Horizontal bars with features on Y-axis
-- After: Vertical bars with features on X-axis
-- Benefit: Matches standard waterfall chart pattern
+- **Data Type Parsing**
+  - Changed slider value parsing from parseInt to parseFloat
+  - Matches backend Pydantic validation expecting floats for age and fare
 
-**Feature Labels:**
-- Removed feature values from axis labels (e.g., "sex=0" → "sex")
-- Rotated labels at -45° to prevent overlap
-- Specific values shown in chart title instead
+### Changed
+- **Tree Label Improvements**
+  - Updated passenger class split labels to be user-friendly
+  - "≤ 1.5" → "1st class" vs "2nd & 3rd class"
+  - "≤ 2.5" → "1st & 2nd class" vs "3rd class"
+  - File: backend/models/decision_tree.py
 
-**Chart Title:**
-- Before: Generic "SHAP Waterfall" title
-- After: Descriptive passenger information (e.g., "8-year-old female in 1st class, £84 fare")
-- Added `passengerData` prop to component
-
-**Value Label Positioning:**
-- Smart positioning based on bar height
-- Inside bars when height ≥ 18px (black text)
-- Outside bars when height < 18px (colored text, positioned above/below)
-
-**Technical Implementation:**
-
-**Data Normalization:**
-- Added normalization step to ensure perfect bar continuity
-- Each bar starts exactly where previous bar ended
-- Prevents gaps in waterfall flow
-
-**Connector Lines:**
-- Flow vertically between bars
-- Connect from right edge of one bar to left edge of next
-
-**Layout Changes:**
-- Alternative Layout: Waterfall and Global Importance side-by-side in single mode
-- Comparison mode: Two waterfalls side-by-side, Global Importance full-width below
+- **Layout Ratio Adjustments**
+  - SHAP Waterfall: 70% width (increased from 50%)
+  - Global Feature Importance: 30% width (decreased from 50%)
+  - More space for detailed waterfall chart information
 
 ---
 
-### Tree Path Coloring Rule
+## [2025-12-21] - Alternative Layout & Centralized Styling
 
-**CRITICAL RULE:** Tree path colors ALWAYS reflect the leaf outcome (survived/died), not cohort or mode.
+### Added
+- **Alternative Layout Implementation**
+  - New multi-page setup with index-alt.html
+  - DecisionTreeVizHorizontal.jsx - Horizontal (left-to-right) tree orientation
+  - ModelComparisonViewAlt.jsx - Vertical stacking layout
+  - Decision tree full width at top, XGBoost cards in row below
 
-**Applied across ALL modes:**
-- Green paths `#B8F06E` = leads to "Survived" (class 1)
-- Orange paths `#F09A48` = leads to "Died" (class 0)
+- **Centralized Color System**
+  - Created frontend/src/utils/visualizationColors.js
+  - Single source of truth for all colors across 7 components
+  - Survived/Positive: #B8F06E (light green)
+  - Died/Negative: #F09A48 (orange)
+  - Tutorial/Highlight: #ffd700 (gold)
 
-**Modes:**
-- Single-path mode: Path colored by prediction outcome
-- Comparison mode: Each cohort path colored by its leaf value (not blue/orange cohort colors)
-- Tutorial/highlight mode: Highlighted portions colored by outcome (not gold)
+- **SHAP Waterfall Improvements**
+  - Redesigned to use vertical bars with horizontal feature labels
+  - Removed feature values from axis labels (e.g., "sex=0" → "sex")
+  - Rotated labels at -45° to prevent overlap
+  - Descriptive chart title with passenger information
+  - Smart value label positioning (inside/outside bars based on height)
 
-**Files changed:**
-- `DecisionTreeViz.jsx`: Updated `updateTreeHighlight()` and `updateDualPathHighlight()`
-- `DecisionTreeVizHorizontal.jsx`: Same updates for horizontal layout
-- `visualizationStyles.js`: Updated comments
+### Changed
+- **Chat Panel Improvements**
+  - Suggestion chips now styled as rounded pills
+  - Smart visibility: chips stay visible until user types custom message
+  - Added show/hide toggle link
+  - Removed redundant preset chips
 
-**Why:** Provides consistent visual language - users can always identify outcome by path color regardless of mode.
+- **Tutorial Improvements**
+  - Removed TutorialControls.jsx blue box component
+  - Tutorial controls now appear inline in chat messages
+  - Next/Skip buttons display directly below tutorial text
 
----
+- **Tree Path Coloring Rule (CRITICAL)**
+  - Tree path colors ALWAYS reflect leaf outcome (survived/died), not cohort or mode
+  - Green (#B8F06E) = leads to "Survived" (class 1)
+  - Orange (#F09A48) = leads to "Died" (class 0)
+  - Applied across all modes: single-path, comparison, tutorial
 
-### Default State & Initial Chat Display
+- **Default Passenger State**
+  - Changed from 30-year-old woman to 8-year-old female child in 1st class, £84 fare
+  - Differentiates from tutorial (30-year-old) and presets
 
-**Changed default passenger:**
-- From: 30-year-old woman
-- To: 8-year-old female child in 1st class, £84 fare
+### Fixed
+- **Styling Refactoring**
+  - Renamed visualizationColors.js → visualizationStyles.js
+  - Added comprehensive styling constants (typography, sizing, spacing)
+  - FONTS, FONT_WEIGHTS, TREE_STROKE, TREE_SIZING, SHAP_SIZING constants
+  - Replaced all hard-coded "magic numbers" in D3 visualizations
 
-**Reason:** Differentiates from tutorial (30-year-old) and presets for better demo
+- **Leaf Node Labels**
+  - Removed "Survived"/"Died" labels from leaf nodes by default
+  - Labels only appear when path is highlighted (tutorial/comparison mode)
+  - Label colors match highlight state
 
-**UI Changes:**
-- Removed passenger info banner (was distracting)
-- Added initial chat messages showing default passenger with prediction card
-- Set `hasQuery` to true by default so visualizations display immediately on load
-
-**Files changed:** `App.jsx`, `AppAlt.jsx`, `ModelComparisonView.jsx`, `ModelComparisonViewAlt.jsx`
-
----
-
-## December 20, 2025
-
-### Bug Fixes
-
-#### 1. Comparison Detection Not Working for "kids vs elderly" (Late Evening)
-
-**Issue:** Comparison queries using "kids vs elderly" were not being detected.
-
-**Root Cause:** Hardcoded fallback pattern only recognized "child/children" and "adults", not "kids" or "elderly".
-
-**Fix:** Extended pattern to recognize all age-related keywords:
-- "kids" or "children" → age 8
-- "elderly" or "seniors" → age 65
-- "adults" → age 35
-
-**Updated regex:**
-```javascript
-/\b(child(ren)?|kids?)\s+(vs\.?|versus|against|and|or)\s+(adults?|elderly|seniors?)\b/i
-```
-
-**Impact:** All comparison variations now work (kids vs elderly, children vs seniors, etc.)
-
----
-
-#### 2. Tutorial Highlighting Not Working on Decision Tree
-
-**Issue:** Decision tree was not highlighting the tutorial cohort's path during tutorial steps.
-
-**Root Cause:** `passengerValues` prop was only passed when `hasQuery` was true, but tutorial starts with `hasQuery=false`.
-
-**Fix:** Updated `ModelComparisonView.jsx:61`:
-```javascript
-passengerValues={hasQuery || highlightMode ? passengerData : null}
-```
-
-**Impact:** Tutorial now properly highlights decision tree path in all steps.
+- **Global Feature Importance Responsiveness**
+  - Removed hardcoded 280px width
+  - Dynamically measures container width
+  - Window resize support with event listener
+  - Chart fits perfectly in both single and comparison modes
 
 ---
 
-#### 3. Sex Feature Missing from SHAP Waterfall Chart
+## [2025-12-20] - Layout Restructuring & Critical Bug Fixes
 
-**Issue:** The "sex" feature (most important) was not appearing in SHAP waterfall chart.
+### Fixed
+- **Comparison Detection for "kids vs elderly"**
+  - Extended pattern to recognize "kids", "children", "elderly", "seniors"
+  - Fixed regex: `/\b(child(ren)?|kids?)\s+(vs\.?|versus|against|and|or)\s+(adults?|elderly|seniors?)\b/i`
+  - File: frontend/src/utils/cohortPatterns.js:211-225
 
-**Root Cause:** Backend returned feature data without a "Base" entry, causing frontend to mislabel first feature (sex) as "Base".
+- **Tutorial Highlighting on Decision Tree**
+  - Decision tree now receives passengerValues when tutorial is active
+  - Updated condition: `passengerValues={hasQuery || highlightMode ? passengerData : null}`
+  - File: frontend/src/components/ModelComparisonView.jsx:61
 
-**Fix:** Added explicit "Base" item to waterfall data in `backend/models/xgboost_model.py:138-161`:
-```python
-# Add base value as first item
-waterfall_data.append({
-    "feature": "Base",
-    "value": 0.0,
-    "start": float(base_value),
-    "end": float(base_value),
-    "feature_value": ""
-})
+- **Sex Feature Missing from SHAP Waterfall**
+  - Backend now returns explicit "Base" entry in waterfall data
+  - Fixed mislabeling where "sex" was shown as "Base"
+  - File: backend/models/xgboost_model.py:138-161
 
-# Sort features by absolute SHAP value (keep Base at index 0)
-base_item = waterfall_data[0]
-feature_items = waterfall_data[1:]
-feature_items_sorted = sorted(feature_items, key=lambda x: abs(x['value']), reverse=True)
-waterfall_data_sorted = [base_item] + feature_items_sorted
-```
+### Added
+- **Interactive Zoom and Pan for Decision Tree**
+  - Mouse scroll wheel to zoom (30-300% range)
+  - Click and drag to pan
+  - Control buttons: +, −, Reset
+  - Cursor feedback (grab/grabbing)
+  - Compatible with tutorial, comparison, and hover effects
 
-**Impact:** SHAP waterfall now correctly displays all features in order of contribution.
+### Changed
+- **Layout Restructuring**
+  - Main layout: 70/30 → 80/20 split (visualizations get 80%)
+  - Left column: Decision Tree (70%) + XGBoost (30%) side-by-side
+  - XGBoost visualizations stack vertically (waterfall on top, global importance below)
+  - Comparison mode: dual waterfalls stack vertically
 
----
-
-### New Features
-
-#### 4. Layout Restructuring for Better Space Utilization (Late Evening)
-
-**Main Layout** (`Layout.jsx`):
-- Changed column split from 70/30 to 80/20
-- Visualizations: 80% (was 70%)
-- Chat/controls: 20% (was 30%)
-
-**Visualization Layout** (`ModelComparisonView.jsx`):
-- Left column split into two sections side-by-side:
-  - Decision Tree: 70% (left)
-  - XGBoost Section: 30% (right)
-- XGBoost visualizations stacked vertically:
-  - SHAP waterfall chart (top)
-  - Global feature importance (bottom)
-
-**Comparison Mode:**
-- Dual SHAP waterfalls stack vertically instead of side-by-side
-- Fits better in narrower 30% column
-
-**Impact:** More screen space for complex visualizations while maintaining all functionality.
+- **Decision Tree Orientation**
+  - Changed from horizontal (left-to-right) to vertical (top-to-bottom)
+  - Root node at top, leaf nodes at bottom
+  - Changed from d3.linkHorizontal() to d3.linkVertical()
+  - Updated margins and coordinate mappings
 
 ---
 
-#### 5. Interactive Zoom and Pan for Decision Tree
+## Earlier Changes (Pre-December 2025)
 
-**Mouse Interaction:**
-- Scroll wheel to zoom in/out (centered on cursor position)
-- Click and drag to pan
-- Cursor feedback (grab/grabbing)
+### Added
+- React + FastAPI architecture (deployed December 16, 2025)
+- D3.js decision tree visualization with donut chart nodes
+- SHAP waterfall charts
+- Global feature importance visualization
+- Model comparison (Decision Tree vs XGBoost)
+- Natural language chat interface
+- Cohort comparison feature with dual path visualization
+- Tutorial system with progressive highlighting
+- Docker multi-stage build for Hugging Face Spaces
+- Dual git remotes (GitHub + HuggingFace)
 
-**Control Buttons:**
-- **+** button: Zoom in by 30%
-- **−** button: Zoom out by ~23%
-- **Reset** button: Return to default view
-
-**Zoom Limits:**
-- Minimum: 30% (0.3x scale)
-- Maximum: 300% (3x scale)
-
-**Implementation:**
-- D3.js zoom behavior with `d3.zoom()`
-- Separate zoom group to preserve margin transforms
-- Three zoom control functions
-
-**Compatibility:**
-- Works with tutorial highlighting
-- Works with comparison mode
-- Preserves hover effects and tooltips
-- Maintains variable stroke widths
-
----
-
-### Feature Changes
-
-#### 6. Decision Tree Orientation Changed from Horizontal to Vertical
-
-**Change:** Converted decision tree from left-to-right to top-to-bottom orientation.
-
-**Motivation:** Vertical tree layouts are more conventional and easier to read.
-
-**Implementation:**
-1. Changed margins to accommodate vertical layout
-2. Swapped width/height dimensions
-3. Changed from `d3.linkHorizontal()` to `d3.linkVertical()`
-4. Swapped x/y coordinate mappings
-5. Repositioned edge labels (left/right of branches)
-6. Repositioned node labels (internal above, leaves below)
-
-**Impact:**
-- Tree flows top to bottom
-- Root node at top
-- Leaf nodes (outcomes) at bottom
-- All features preserved
-
----
-
-## Testing Notes
-
-### Tutorial Highlighting Fix
-- Verify tutorial auto-starts with decision tree path highlighting
-- Test all 3 tutorial steps show correct highlighting
-
-### SHAP Waterfall Fix
-- Clear browser cache to see changes
-- Verify "sex" appears as second row (after Base)
-- Verify all 4 features appear
-
-### Tree Orientation Change
-- Verify tree renders correctly in vertical orientation
-- Test hover effects, tutorial, and comparison mode
-- Verify responsive behavior
+### Core Features
+- Prediction cards with color coding
+- Comparison summary showing model agreement
+- Loading skeletons and error boundaries
+- Natural language query parsing with cohort patterns
+- Educational responses with survival statistics
+- Variable stroke widths for decision tree edges
+- Selective path highlighting modes
 
 ---
 
 ## API Changes
 
-### `/api/explain/shap` Response Format Change
+### [2025-12-20] - SHAP Waterfall Response Format
+**Breaking Change**: /api/explain/shap response now includes explicit "Base" entry
 
 **Before:**
 ```json
@@ -485,18 +274,39 @@ waterfall_data_sorted = [base_item] + feature_items_sorted
 }
 ```
 
-**Breaking Change:** Yes - waterfall_data array now has 5 elements instead of 4 (Base + 4 features)
+---
 
-**Backwards Compatibility:** The frontend already expected this format, so no frontend changes needed beyond backend fix.
+## Documentation
+
+- **AI_CONTEXT.md** - Comprehensive project reference
+- **ASSISTANT_GUIDE.md** - Step-by-step task patterns for coding assistants
+- **STYLE_CENTRALIZATION.md** - Centralized styling documentation
+- **COHORT_COMPARISON_FEATURE.md** - Natural language comparison system
+- **docs/API.md** - API endpoint reference
+- **docs/BACKEND.md** - FastAPI backend guide
+- **frontend/README.md** - React frontend setup
 
 ---
 
-## Related Documentation
+## Deployment
 
-- **AI_CONTEXT.md** - Comprehensive project reference
-- **ASSISTANT_GUIDE.md** - Step-by-step task patterns
-- **DOCUMENTATION_INDEX.md** - Central navigation hub
-- **Feature Documentation:**
-  - DECISION_TREE_FEATURES.md - Decision tree visualization features
-  - COHORT_COMPARISON_FEATURE.md - Natural language comparison system
-  - TUTORIAL_FEATURE.md - Interactive tutorial system
+**Live Demo:** https://huggingface.co/spaces/bigpixel/titanic
+
+**Git Remotes:**
+- GitHub (source): https://github.com/julianay/titanic
+- Hugging Face Spaces (production): https://huggingface.co/spaces/bigpixel/titanic
+
+**Deployment Workflow:**
+```bash
+git push origin main         # Push to GitHub
+git push huggingface main    # Deploy to HF → triggers auto-rebuild
+```
+
+---
+
+[Unreleased]: https://github.com/julianay/titanic/compare/main...HEAD
+[2026-01-03]: https://github.com/julianay/titanic/compare/2026-01-02...2026-01-03
+[2026-01-02]: https://github.com/julianay/titanic/compare/2025-12-22...2026-01-02
+[2025-12-22]: https://github.com/julianay/titanic/compare/2025-12-21...2025-12-22
+[2025-12-21]: https://github.com/julianay/titanic/compare/2025-12-20...2025-12-21
+[2025-12-20]: https://github.com/julianay/titanic/releases/tag/2025-12-20

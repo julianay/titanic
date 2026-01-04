@@ -1,7 +1,7 @@
 # Coding Assistant Guide
 
 **Purpose**: Help coding assistants (GitHub Copilot, Cursor, etc.) make changes efficiently
-**Last Updated**: December 22, 2025 (What-If Chat Integration & Tree Label Improvements)
+**Last Updated**: January 3, 2026 (Codebase Cleanup & UI Refinements)
 
 This guide provides step-by-step patterns for common tasks. Follow these exactly to avoid breaking things.
 
@@ -82,13 +82,13 @@ It doesn't:
 ```
 /frontend/src/
 ├── App.jsx                      # Main app, state management
+├── main.jsx                     # Application entry point
 ├── components/
 │   ├── Layout.jsx              # Fixed split-screen layout
 │   ├── ChatPanel.jsx           # Chat interface with smart chip visibility
 │   ├── WhatIfCard.jsx          # Interactive what-if controls (appears in chat)
 │   ├── ComparisonCard.jsx      # Side-by-side cohort comparison
-│   ├── ModelComparisonView.jsx # Main visualization layout (80/20)
-│   ├── ModelComparisonViewAlt.jsx # Alternative layout (vertical)
+│   ├── ModelComparisonView.jsx # Main visualization layout
 │   ├── TutorialControls.jsx    # Tutorial UI (legacy - no longer used)
 │   └── visualizations/
 │       ├── DecisionTreeViz.jsx # Vertical D3 tree visualization
@@ -99,9 +99,12 @@ It doesn't:
 │       ├── SinglePredictionCard.jsx # Chat prediction card
 │       └── ComparisonCard.jsx  # Cohort comparison card
 ├── hooks/
-│   └── useTutorial.js          # Tutorial state management
+│   ├── useTutorial.js          # Tutorial state management
+│   └── useInitialAnimation.js  # Initial page animation
 └── utils/
-    └── cohortPatterns.js       # Natural language parsing
+    ├── cohortPatterns.js       # Natural language parsing
+    ├── visualizationStyles.js  # Centralized visualization styling
+    └── uiStyles.js             # Centralized UI styling
 
 /backend/
 ├── app.py                       # Flask API server
@@ -362,7 +365,7 @@ Read: /Users/julyamas/Documents/Projects/hf/titanic/frontend/src/components/What
 
 **Default Initial State** (as of Dec 21, 2025):
 ```jsx
-// App.jsx and AppAlt.jsx
+// App.jsx
 const [passengerData, setPassengerData] = useState({
   sex: 0,       // 0 = Female, 1 = Male
   pclass: 1,    // 1, 2, or 3 (1st class)
@@ -382,8 +385,8 @@ const [passengerData, setPassengerData] = useState({
 - 3rd class: £13
 
 **When changing default state**:
-1. Update both `App.jsx` and `AppAlt.jsx`
-2. Update the initial chat messages (2 messages showing passenger description)
+1. Update `App.jsx`
+2. Update the initial chat messages (showing passenger description)
 3. Keep fare aligned with class to avoid model confusion
 
 ---
@@ -942,8 +945,8 @@ className="text-lg"  // ✓ Clear
 | `WhatIfCard.jsx` | Interactive parameter controls (in chat) | Sliders, ranges, labels |
 | `ComparisonCard.jsx` | Cohort comparison display | Styling, layout |
 | `ModelComparisonView.jsx` | Main visualization layout | Tree/SHAP positioning |
-| `ModelComparisonViewAlt.jsx` | Alternative vertical layout | Tree/SHAP positioning |
-| `visualizationColors.js` | Centralized color system | Color values (changes affect all components) |
+| `visualizationStyles.js` | Centralized visualization styling | Color values, sizes, fonts (changes affect all visualizations) |
+| `uiStyles.js` | Centralized UI styling | UI colors, spacing, animations |
 
 ---
 

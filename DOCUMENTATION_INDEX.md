@@ -2,7 +2,7 @@
 
 > **Purpose:** Central navigation hub for all project documentation
 
-**Last Updated:** December 22, 2025
+**Last Updated:** January 3, 2026
 
 ---
 
@@ -64,12 +64,14 @@ All notable changes in a single, consolidated file:
 
 | File | Coverage | Summary |
 |------|----------|---------|
-| **[CHANGELOG.md](CHANGELOG.md)** | Dec 20-22, 2025 | Consolidated changelog with all recent changes organized by date |
+| **[CHANGELOG.md](CHANGELOG.md)** | Dec 20, 2025 - Jan 3, 2026 | Consolidated changelog with all changes organized by date (follows Keep a Changelog format) |
 
-**Legacy** (individual files - now consolidated):
-- CHANGELOG_DEC22_2025.md - Tree label improvements, What-If chat integration
-- CHANGELOG_DEC21_2025.md - Alternative layout, ChatPanel improvements
-- CHANGELOG_DEC20_2025.md - Layout restructuring, tree layout, tutorial fixes
+**Archived** (individual date files - content moved to CHANGELOG.md):
+- CHANGELOG_JAN02_2026.md → Now in CHANGELOG.md [2026-01-02]
+- CHANGELOG_DEC22_2025.md → Now in CHANGELOG.md [2025-12-22]
+- CHANGELOG_DEC21_2025.md → Now in CHANGELOG.md [2025-12-21]
+- CHANGELOG_DEC20_2025.md → Now in CHANGELOG.md [2025-12-20]
+- docs/CHANGELOG_JAN03_2026.md → Now in CHANGELOG.md [2026-01-03]
 
 ---
 
@@ -91,9 +93,10 @@ All notable changes in a single, consolidated file:
 3. Reference implementation in source code
 
 ### "I want to know what changed recently"
-1. Check [CHANGELOG.md](CHANGELOG.md) - All changes from Dec 20-22, 2025 in one place
-2. Changes are organized by date (newest first)
+1. Check [CHANGELOG.md](CHANGELOG.md) - All changes from Dec 20, 2025 to present in one place
+2. Changes are organized by date (newest first) following Keep a Changelog format
 3. Each section includes technical details and impact
+4. Latest changes: Jan 3, 2026 (Codebase Cleanup), Jan 2, 2026 (Critical Fixes)
 
 ### "I want to add a new feature"
 1. Read [AI_CONTEXT.md](AI_CONTEXT.md) - Understand current architecture
@@ -101,10 +104,11 @@ All notable changes in a single, consolidated file:
 3. Check [docs/FRONTEND.md](docs/FRONTEND.md) for component patterns
 4. Update appropriate changelog when done
 
-### "I want to understand the color system"
-1. Read [docs/FRONTEND.md - Color System](docs/FRONTEND.md#color-system)
+### "I want to understand the styling system"
+1. Read [STYLE_CENTRALIZATION.md](STYLE_CENTRALIZATION.md) - Complete styling guide
 2. Check [AI_CONTEXT.md - Design System](AI_CONTEXT.md#-design-system--centralized-colors)
-3. Look at `frontend/src/utils/visualizationColors.js`
+3. Look at `frontend/src/utils/visualizationStyles.js` (visualizations)
+4. Look at `frontend/src/utils/uiStyles.js` (UI components)
 
 ### "I want to deploy or work with git"
 1. Read [AI_CONTEXT.md - Git Repositories & Deployment](AI_CONTEXT.md#-git-repositories--deployment)
@@ -121,38 +125,46 @@ titanic/
 ├── AI_CONTEXT.md                # Comprehensive AI assistant reference
 ├── ASSISTANT_GUIDE.md           # Step-by-step task patterns
 │
-├── CHANGELOG.md                 # Consolidated changelog (Dec 20-22, 2025)
+├── CHANGELOG.md                 # Consolidated changelog (Dec 20, 2025 - present)
+│
+├── Styling Documentation
+│   └── STYLE_CENTRALIZATION.md        # Complete styling guide
 │
 ├── Feature Documentation
 │   ├── DECISION_TREE_FEATURES.md      # Tree visualization features
 │   ├── COHORT_COMPARISON_FEATURE.md   # Comparison system
-│   ├── TUTORIAL_FEATURE.md            # Tutorial system
-│   └── FIXED_CHAT_LAYOUT.md           # Archived - see changelog
+│   └── TUTORIAL_FEATURE.md            # Tutorial system
 │
-├── Legacy Changelogs (now consolidated in CHANGELOG.md)
-│   ├── CHANGELOG_DEC22_2025.md        # Latest changes
-│   ├── CHANGELOG_DEC21_2025.md        # Previous changes
-│   └── CHANGELOG_DEC20_2025.md        # Older changes
+├── Archived Changelogs (moved to docs/archive/)
+│   ├── CHANGELOG_JAN02_2026.md        → CHANGELOG.md [2026-01-02]
+│   ├── CHANGELOG_DEC22_2025.md        → CHANGELOG.md [2025-12-22]
+│   ├── CHANGELOG_DEC21_2025.md        → CHANGELOG.md [2025-12-21]
+│   └── CHANGELOG_DEC20_2025.md        → CHANGELOG.md [2025-12-20]
 │
 └── docs/                              # Technical documentation
     ├── FRONTEND.md                    # React frontend guide
     ├── BACKEND.md                     # FastAPI backend guide
     ├── API.md                         # API reference
-    └── archive/                       # Old documentation
+    ├── CHANGELOG_JAN03_2026.md        → CHANGELOG.md [2026-01-03]
+    └── archive/                       # Archived documentation
         ├── IMPLEMENTATION_PROGRESS.md
         ├── DECISION_TREE_HIGHLIGHT_MODES.md
-        └── STROKE_WIDTH_FIX.md
+        ├── STROKE_WIDTH_FIX.md
+        └── FIXED_CHAT_LAYOUT.md
 ```
 
 ---
 
 ## 🔑 Key Concepts
 
-### Centralized Color System
-- **File:** `frontend/src/utils/visualizationColors.js`
-- **Purpose:** Single source of truth for all colors
-- **Components:** TREE_COLORS, SHAP_COLORS, UI_COLORS, TREE_EFFECTS, TREE_OPACITY
-- **Documentation:** [docs/FRONTEND.md - Color System](docs/FRONTEND.md#color-system)
+### Centralized Styling System
+- **Visualization Styles:** `frontend/src/utils/visualizationStyles.js`
+  - Purpose: All visualization colors, sizes, fonts
+  - Components: TREE_COLORS, SHAP_COLORS, FONTS, TREE_STROKE, TREE_SIZING, etc.
+- **UI Styles:** `frontend/src/utils/uiStyles.js`
+  - Purpose: All UI component colors, spacing, animations
+  - Components: UI_COLORS, SPACING, BORDER_RADIUS, UI_EFFECTS, ANIMATIONS
+- **Documentation:** [STYLE_CENTRALIZATION.md](STYLE_CENTRALIZATION.md)
 
 ### ChatPanel Smart Visibility
 - **Feature:** Suggestion chips with intelligent show/hide behavior
@@ -161,10 +173,10 @@ titanic/
 - **Documentation:** [ASSISTANT_GUIDE.md - Task 8](ASSISTANT_GUIDE.md#task-8-modify-chatpanel-chip-visibility-behavior)
 
 ### Layout
-- **Current Layout:** `index.html` - Vertical stacking with horizontal tree (uses `main-alt.jsx`)
-- **Backup Layout:** `index-backup.html` - Former 80/20 split layout (uses `main.jsx`, not built)
-- **Note:** Alternative layout became the default on Dec 22, 2025
-- **Documentation:** [CHANGELOG_DEC21_2025.md](CHANGELOG_DEC21_2025.md)
+- **Current Layout:** 80/20 split (visualizations 80%, chat 20%)
+- **Decision Tree:** Vertical (top-to-bottom) orientation
+- **Note:** Alternative layout files (AppAlt.jsx, etc.) removed on Jan 3, 2026
+- **Documentation:** [CHANGELOG.md](CHANGELOG.md)
 
 ### Natural Language Processing
 - **File:** `frontend/src/utils/cohortPatterns.js`
@@ -182,7 +194,8 @@ titanic/
    - Gold = tutorial/highlight
 
 2. **Single Source of Truth**
-   - All colors in `visualizationColors.js`
+   - All visualization styles in `visualizationStyles.js`
+   - All UI styles in `uiStyles.js`
    - All API types in `docs/API.md`
    - All git workflows in `AI_CONTEXT.md`
 
@@ -227,5 +240,5 @@ titanic/
 
 ---
 
-**Last Updated:** December 22, 2025
+**Last Updated:** January 3, 2026
 **Maintained By:** AI Assistants (Claude Code, GitHub Copilot, Cursor)
