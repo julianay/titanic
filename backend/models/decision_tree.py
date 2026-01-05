@@ -114,9 +114,19 @@ def sklearn_tree_to_dict(
     samples = int(tree_.n_node_samples[node_id])
 
     # Determine majority class and probability
-    # Note: value contains proportions (not counts) - multiply by samples to get counts
-    class_0_count = int(value[0] * samples)
-    class_1_count = int(value[1] * samples)
+    # Note: sklearn behavior varies by version - value may contain counts or proportions
+    # Check if values are already counts (sum equals samples) or proportions (sum ~= 1)
+    value_sum = value[0] + value[1]
+
+    if abs(value_sum - 1.0) < 0.01:
+        # Values are proportions - multiply by samples to get counts
+        class_0_count = int(value[0] * samples)
+        class_1_count = int(value[1] * samples)
+    else:
+        # Values are already counts
+        class_0_count = int(value[0])
+        class_1_count = int(value[1])
+
     predicted_class = 1 if class_1_count > class_0_count else 0
     probability = class_1_count / samples if samples > 0 else 0
 
