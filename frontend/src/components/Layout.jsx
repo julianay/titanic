@@ -36,7 +36,7 @@ function Layout({ title, subtitle, leftContent, controlsContent, chatContent }) 
     <div className="min-h-screen text-[#fafafa]" style={{ backgroundColor: UI_COLORS.pageBg }}>
       <div className="flex">
         {/* Left column - 70% width, includes header and scrolls naturally */}
-        <div className="w-[70%]">
+        <div className="w-[75%]">
           {/* Header - scrolls with left content */}
           <header className="border-b border-gray-800 px-6 py-4">
             <h1 className="text-2xl font-bold mb-1">{title}</h1>
@@ -53,7 +53,7 @@ function Layout({ title, subtitle, leftContent, controlsContent, chatContent }) 
 
         {/* Right column - 30% width, fixed in viewport, full height */}
         <aside
-          className="w-[30%] border-l border-gray-800 fixed right-0 flex flex-col"
+          className="w-[25%] border-l border-gray-800 fixed right-0 flex flex-col"
           style={{
             height: '100vh',
             top: 0,

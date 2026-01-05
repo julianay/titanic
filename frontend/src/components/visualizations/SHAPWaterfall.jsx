@@ -18,7 +18,7 @@ import { UI_COLORS } from '../../utils/uiStyles'
  * @param {Object} passengerData - Passenger data for description (sex, pclass, age, fare)
  * @param {number} height - Chart height (default: 300)
  */
-function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFeatures = null, passengerData = null, height = 300 }) {
+function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFeatures = null, passengerData = null, height = 250 }) {
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(650)
 
@@ -425,7 +425,12 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       `}</style>
 
       <div className="w-full">
-        <h3 className="text-sm font-semibold mb-3" style={{ color: UI_COLORS.chartTitle }}>
+        <h3 className="text-sm mb-0" style={{ color: UI_COLORS.chartTitle }}>
+          {passengerData && (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 inline-block mr-2" style={{ color: UI_COLORS.chartTitle }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+          )}
           {formatPassengerDescription(passengerData)}
           {' — '}
           {logOddsToPercent(finalPrediction) >= 50 ? 'Survived' : 'Died'}{' '}

@@ -11,7 +11,7 @@ import { UI_COLORS } from '../../utils/uiStyles'
  * @param {Array} data - Array of {feature, value} objects sorted by importance
  * @param {number} height - Chart height (default: 300)
  */
-function GlobalFeatureImportance({ data, height = 300 }) {
+function GlobalFeatureImportance({ data, height = 250 }) {
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
 
@@ -133,7 +133,7 @@ function GlobalFeatureImportance({ data, height = 300 }) {
       `}</style>
 
       <div className="w-full">
-        <h3 className="text-sm font-semibold mb-3" style={{ color: UI_COLORS.chartTitle }}>Global Feature Importance</h3>
+        <h3 className="text-sm mb-0" style={{ color: UI_COLORS.chartTitle }}>Global Feature Importance</h3>
         <div ref={containerRef} className="w-full" />
       </div>
     </>
