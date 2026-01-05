@@ -236,8 +236,8 @@ function App() {
   return (
     <>
       <Layout
-        title="Explainable AI Explorer - How two models predict survival (Titanic dataset)"
-        subtitle="Vertical layout: Decision Tree on top, XGBoost visualizations in a row below"
+        title="Explainable AI Explorer"
+        subtitle="How two models predict survival (Titanic dataset)"
         leftContent={
           <ModelComparisonView
             passengerData={passengerData}

@@ -8,7 +8,7 @@ import GlobalFeatureImportance from './visualizations/GlobalFeatureImportance'
 import ComparisonSummary from './ComparisonSummary'
 import LoadingSkeleton from './LoadingSkeleton'
 import ErrorBoundary from './ErrorBoundary'
-import { UI_COLORS } from '../utils/uiStyles'
+import { UI_COLORS, SPACING, FONT_WEIGHTS } from '../utils/uiStyles';
 import { formatPassengerDescription } from '../utils/cohortPatterns'
 
 /**
@@ -54,23 +54,25 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
   return (
     <div className="space-y-6 w-full">
       {/* Current Cohort Display */}
-      <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: UI_COLORS.textPrimary }}>
+      <h3 className="text-lg font-normal flex items-center gap-2" style={{ color: UI_COLORS.textPrimary }}>
         <span>
-          Showing: {activeComparison && hasQuery ? (
+          Show {activeComparison && hasQuery ? (
             <>
-              <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
+              <span style={{ color: UI_COLORS.textPrimary, fontWeight: FONT_WEIGHTS.bold }}>{activeComparison.labelA}</span>
               {' vs '}
-              <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
+              <span style={{ color: UI_COLORS.textPrimary, fontWeight: FONT_WEIGHTS.bold }}>{activeComparison.labelB}</span>
             </>
           ) : (
-            formatPassengerDescription(passengerData.sex, passengerData.pclass, passengerData.age, passengerData.fare)
+            <span style={{ color: UI_COLORS.textPrimary }} className="font-bold">
+              {formatPassengerDescription(passengerData.sex, passengerData.pclass, passengerData.age, passengerData.fare)}
+            </span>
           )}
         </span>
         {onEditClick && (
           <button
             onClick={onEditClick}
             className="flex items-center gap-1 text-sm hover:underline"
-            style={{ color: UI_COLORS.buttonPrimaryBg }}
+            style={{ color: UI_COLORS.linkColor }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
@@ -106,25 +108,24 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
       {/* XGBoost SHAP Section - Cards in Row Layout */}
       <section className="rounded-lg p-6 shadow-lg" style={{ backgroundColor: UI_COLORS.sectionBg }}>
         <div className="mb-6">
-          <h2 className="text-xl font-semibold" style={{ color: UI_COLORS.textPrimary }}>
+            <h2 className="text-xl" style={{ color: UI_COLORS.textPrimary, fontWeight: FONT_WEIGHTS.semibold }}>
             XGBoost (SHAP) Explanation
-            {activeComparison && hasQuery && (
-              <>
-                {' '}
-                <span style={{ color: '#60a5fa' }}>{activeComparison.labelA}</span>
-                {' vs '}
-                <span style={{ color: '#fb923c' }}>{activeComparison.labelB}</span>
-              </>
-            )}
           </h2>
-          <p className="text-xs mt-2" style={{ color: UI_COLORS.chartHelper }}>Values shown in log-odds; survival rates in parentheses</p>
+          <p className="text-xs mt-2" style={{ color: UI_COLORS.chartHelper }}>
+            {(shapData || shapDataA) && (() => {
+              const baseValue = shapData?.base_value || shapDataA?.base_value
+              const basePercent = Math.round((1 / (1 + Math.exp(-baseValue))) * 100)
+              return `Base value: ${baseValue.toFixed(3)} (${basePercent}%). `
+            })()}
+            Values shown in log-odds; survival rates in parentheses
+          </p>
         </div>
 
         {/* Comparison Mode: 2 waterfalls side-by-side, global underneath */}
         {activeComparison && hasQuery ? (
           <>
             {/* Two comparison waterfalls side by side */}
-            <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className={`grid grid-cols-2 ${SPACING.cardGap} mb-6`}>
               {/* Cohort A Waterfall */}
               <div className="rounded-lg p-4" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
                 <ErrorBoundary errorTitle="SHAP Waterfall Error (Cohort A)">
@@ -184,7 +185,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
           </>
         ) : (
           /* Single Mode: Waterfall (70%) and global (30%) side-by-side */
-          <div className="flex gap-6">
+          <div className={`flex ${SPACING.cardGap}`}>
             {/* SHAP Waterfall - 70% */}
             <div className="rounded-lg p-4 w-[70%]" style={{ backgroundColor: UI_COLORS.sectionBgDark }}>
               <ErrorBoundary errorTitle="SHAP Waterfall Error">

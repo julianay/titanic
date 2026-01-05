@@ -86,7 +86,8 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
       {/* Accordion Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between py-3 text-left hover:text-[#218FCE] transition-colors"
+        className="w-full flex items-center justify-between py-3 text-left transition-colors"
+        // keep default color; hover accent was previously applied via Tailwind
       >
         <span className="text-sm font-medium">What if?</span>
         <svg
@@ -175,7 +176,7 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
       <div>
         <div className="flex justify-between items-center mb-2">
           <label className="text-sm font-medium">Age</label>
-          <span className="text-sm font-semibold text-[#218FCE]">{values.age}</span>
+          <span className="text-sm font-semibold" style={{ color: UI_COLORS.accent }}>{values.age}</span>
         </div>
             <input
               type="range"
@@ -199,7 +200,7 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
       <div>
         <div className="flex justify-between items-center mb-2">
           <label className="text-sm font-medium">Fare</label>
-          <span className="text-sm font-semibold text-[#218FCE]">£{values.fare}</span>
+          <span className="text-sm font-semibold" style={{ color: UI_COLORS.accent }}>£{values.fare}</span>
         </div>
         <input
           type="range"
@@ -221,16 +222,17 @@ function ControlPanel({ values, onChange, onPresetSelect, onPresetChat }) {
         {/* Fare suggestion badge */}
         {fareSuggestion && (
           <div className="mt-2 flex items-center gap-2">
-            <span className="text-xs bg-[#218FCE] bg-opacity-20 text-[#218FCE] px-2 py-1 rounded">
+            <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: UI_COLORS.accentBg, color: UI_COLORS.accent }}>
               {fareSuggestion}
             </span>
             {showFareSuggestion && (
-              <button
-                onClick={handleFareUpdate}
-                className="text-xs text-[#218FCE] hover:underline"
-              >
-                Update
-              </button>
+                <button
+                  onClick={handleFareUpdate}
+                  className="text-xs hover:underline"
+                  style={{ color: UI_COLORS.accent }}
+                >
+                  Update
+                </button>
             )}
           </div>
         )}

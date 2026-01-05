@@ -302,7 +302,7 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
             <p className="text-xs text-gray-500">Try asking:</p>
             <button
               onClick={() => setChipsVisible(!chipsVisible)}
-              className="text-xs text-gray-500 hover:text-[#218FCE] transition-colors underline"
+              className="text-xs text-gray-500 transition-colors underline"
             >
               {chipsVisible ? 'hide' : 'show'}
             </button>
@@ -313,17 +313,20 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
               <div className="flex flex-wrap gap-2 mb-3">
                 {suggestionButtons.map((suggestion, idx) => (
                   <button
-                    key={idx}
-                    onClick={() => {
-                      const parsedParams = parsePassengerQuery(suggestion)
-                      if (parsedParams) {
-                        onSendMessage(suggestion, parsedParams)
-                      }
-                    }}
-                    className="px-3 py-1.5 text-xs bg-gray-800 text-gray-300 rounded-full hover:bg-[#218FCE] hover:bg-opacity-20 hover:text-[#218FCE] transition-colors"
-                  >
-                    {suggestion}
-                  </button>
+                      key={idx}
+                      onClick={() => {
+                        const parsedParams = parsePassengerQuery(suggestion)
+                        if (parsedParams) {
+                          onSendMessage(suggestion, parsedParams)
+                        }
+                      }}
+                      className="px-3 py-1.5 text-xs bg-gray-800 text-gray-300 rounded-full transition-colors"
+                      style={{ color: UI_COLORS.textSecondary }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = UI_COLORS.accentBg; e.currentTarget.style.color = UI_COLORS.accent }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = UI_COLORS.textSecondary }}
+                    >
+                      {suggestion}
+                    </button>
                 ))}
               </div>
 

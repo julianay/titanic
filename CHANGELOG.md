@@ -11,6 +11,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2026-01-04] - SHAP Waterfall Chart Refinements
+
+### Added
+- **Final Prediction Line and Labels** - Visual indicator showing end prediction value
+  - Horizontal line extending from the right edge of the last bar
+  - SHAP value label (e.g., "1.234") positioned to the right
+  - Survival rate percentage label (e.g., "77%")
+  - Outcome label showing "Survived" or "Died" based on survival rate threshold (≥50%)
+  - File: frontend/src/components/visualizations/SHAPWaterfall.jsx:316-362
+
+- **Base Value in Section Header** - Moved base value display to section level
+  - Shows once at top of XGBoost section: "Base value: -0.386 (40%). Values shown in log-odds; survival rates in parentheses"
+  - Eliminates redundancy since base value is constant across all predictions
+  - File: frontend/src/components/ModelComparisonView.jsx:114-121
+
+- **Prediction Summary in Cohort Header** - Added outcome and survival rate to chart title
+  - Format: "[passenger description] — Survived (77%)"
+  - Survival rate shown in bold for emphasis
+  - Outcome determined by 50% threshold (Survived if ≥50%, Died if <50%)
+  - File: frontend/src/components/visualizations/SHAPWaterfall.jsx:437-442
+
+### Removed
+- **Redundant Chart Title** - Removed "Base Value → Final Prediction" text from chart top
+  - Information now displayed more clearly in section header and cohort description
+  - Simplifies visual hierarchy and reduces clutter
+  - File: frontend/src/components/visualizations/SHAPWaterfall.jsx:132-133
+
+### Changed
+- **Increased Right Margin** - Expanded from 60px to 110px to accommodate final prediction labels
+  - File: frontend/src/components/visualizations/SHAPWaterfall.jsx:90
+
+---
+
+## [2026-01-04] - Font Size Centralization & Decision Tree Label Improvements
+
+### Added
+- **Font Size Constants for Prediction Cards** - Centralized typography in uiStyles.js
+  - Regular cards: `FONTS.ui.cardValue` (48px), `cardValueMedium` (30px), `cardOutcome` (24px)
+  - Comparison cards: `FONTS.comparison.cardValue` (20px), `cohortLabel` (14px), `modelLabel` (12px)
+  - File: frontend/src/utils/uiStyles.js
+
+- **Survival Rate to Decision Tree Leaf Labels** - Shows outcome probability at leaf nodes
+  - Two-line format: "Survived" / "(73%)"
+  - Uses tspan elements for proper SVG multi-line text rendering
+  - Files: DecisionTreeViz.jsx, DecisionTreeVizHorizontal.jsx
+
+### Changed
+- **Prediction Card Font Sizes** - Replaced Tailwind classes with centralized constants
+  - PredictionCard.jsx: Uses FONTS.ui constants for all text sizing
+  - SinglePredictionCard.jsx: Uses cardValueMedium (30px) for chat display
+  - ComparisonCard.jsx: Uses FONTS.comparison constants for compact layout
+
+- **Decision Tree Font Weights** - Standardized using FONT_WEIGHTS variables
+  - Feature labels: Changed from bold to normal (500)
+  - Prediction labels: Normal weight (500)
+  - Survival percentages: Bold (700)
+  - Edge labels: Semibold (600) default, bold (700) when highlighted
+
+- **Edge Label Colors in Comparison Mode** - Fixed readability issue
+  - Changed from path-specific colors to consistent TREE_COLORS.textDefault
+  - Files: DecisionTreeViz.jsx, DecisionTreeVizHorizontal.jsx
+
+---
+
+## [2026-01-04] - UI Styling Centralization Attempt (Reverted)
+
+### Note
+An attempt was made to centralize all UI styling constants (colors, spacing, font weights) across the frontend by creating comprehensive constants in `uiStyles.js` and replacing hardcoded values throughout components. This included:
+- Link and accent color standardization
+- Spacing constants for card gaps
+- Font weight replacements (Tailwind classes → inline styles with FONT_WEIGHTS)
+
+**Status**: Changes were undone by user request. See LAST_CHANGES.md (archived) for complete details of what was attempted.
+
+---
+
 ## [2026-01-04] - SHAP Waterfall Visualization Enhancement
 
 ### Added

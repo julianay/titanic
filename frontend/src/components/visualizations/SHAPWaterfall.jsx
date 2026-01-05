@@ -87,7 +87,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     // Use normalized data for rendering
     const dataToRender = normalizedData
 
-    const margin = { top: 35, right: 60, bottom: 80, left: 60 }
+    const margin = { top: 35, right: 110, bottom: 80, left: 60 }
     const chartWidth = containerWidth - margin.left - margin.right
     const chartHeight = height - margin.top - margin.bottom
 
@@ -129,17 +129,8 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     // Use 'g' instead of 'svg' for all subsequent elements
     const chart = g
 
-    // Title with base value and final prediction (with survival rates)
-    const basePercent = logOddsToPercent(baseValue)
+    // Calculate survival percentages for labels
     const finalPercent = logOddsToPercent(finalPrediction)
-    chart.append("text")
-      .attr("x", chartWidth / 2)
-      .attr("y", -15)
-      .attr("text-anchor", "middle")
-      .attr("fill", SHAP_COLORS.text)
-      .attr("font-size", "11px")
-      .attr("font-weight", "bold")
-      .text(`Base Value: ${baseValue.toFixed(3)} (${basePercent}%) → Final Prediction: ${finalPrediction.toFixed(3)} (${finalPercent}%)`)
 
     // Create scales - VERTICAL orientation (swapped axes)
     const x = d3.scaleBand()
@@ -313,6 +304,54 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       })
       .text(d => (d.value >= 0 ? "+" : "") + d.value.toFixed(2))
 
+    // Add final prediction line and label on the right side
+    const finalLineX = x(dataToRender.length - 1) + x.bandwidth() + 10
+    const finalLineEndX = finalLineX + 40
+    const finalLineY = y(finalPrediction)
+
+    // Draw the final prediction line
+    chart.append("line")
+      .attr("class", "final-prediction-line")
+      .attr("x1", x(dataToRender.length - 1) + x.bandwidth())
+      .attr("y1", finalLineY)
+      .attr("x2", finalLineEndX)
+      .attr("y2", finalLineY)
+      .attr("stroke", SHAP_COLORS.text)
+      .attr("stroke-width", 2)
+
+    // Add label for SHAP value
+    chart.append("text")
+      .attr("class", "final-prediction-label")
+      .attr("x", finalLineEndX + 5)
+      .attr("y", finalLineY - 5)
+      .attr("text-anchor", "start")
+      .attr("fill", SHAP_COLORS.text)
+      .attr("font-size", "10px")
+      .attr("font-weight", "bold")
+      .text(`${finalPrediction.toFixed(3)}`)
+
+    // Add label for survival rate
+    chart.append("text")
+      .attr("class", "final-prediction-percent")
+      .attr("x", finalLineEndX + 5)
+      .attr("y", finalLineY + 10)
+      .attr("text-anchor", "start")
+      .attr("fill", SHAP_COLORS.text)
+      .attr("font-size", "10px")
+      .attr("font-weight", "bold")
+      .text(`${finalPercent}%`)
+
+    // Add label for survived/died status
+    const outcomeLabel = finalPercent >= 50 ? "Survived" : "Died"
+    chart.append("text")
+      .attr("class", "final-prediction-outcome")
+      .attr("x", finalLineEndX + 5)
+      .attr("y", finalLineY + 22)
+      .attr("text-anchor", "start")
+      .attr("fill", SHAP_COLORS.text)
+      .attr("font-size", "9px")
+      .text(outcomeLabel)
+
     // Add X axis with feature labels (feature names only, no values)
     chart.append("g")
       .attr("class", "axis")
@@ -386,7 +425,12 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       `}</style>
 
       <div className="w-full">
-        <h3 className="text-sm font-semibold mb-3" style={{ color: UI_COLORS.chartTitle }}>{formatPassengerDescription(passengerData)}</h3>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: UI_COLORS.chartTitle }}>
+          {formatPassengerDescription(passengerData)}
+          {' — '}
+          {logOddsToPercent(finalPrediction) >= 50 ? 'Survived' : 'Died'}{' '}
+          (<span style={{ fontWeight: 'bold' }}>{logOddsToPercent(finalPrediction)}%</span>)
+        </h3>
         <div ref={containerRef} className="w-full" />
       </div>
     </>

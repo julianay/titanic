@@ -36,7 +36,7 @@ function GlobalFeatureImportance({ data, height = 300 }) {
     // Clear existing content
     d3.select(containerRef.current).selectAll("*").remove()
 
-    const margin = { top: 20, right: 30, bottom: 60, left: 80 }
+    const margin = { top: 20, right: 30, bottom: 60, left: 60 }
     const width = containerWidth
     const chartWidth = width - margin.left - margin.right
     const chartHeight = height - margin.top - margin.bottom

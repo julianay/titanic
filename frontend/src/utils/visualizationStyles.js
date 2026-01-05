@@ -47,7 +47,7 @@ export const FONTS = {
 
 // Font weights for visualizations
 export const FONT_WEIGHTS = {
-  normal: 500,
+  normal: 400,
   bold: 700,
   semibold: 600,
   edgeLabelHighlight: 700,        // Font weight for highlighted edge labels
@@ -72,7 +72,7 @@ export const TREE_COLORS = {
   // These colors are used for nodes/labels, but path links will override to use survived/died colors
   comparisonA: '#02AE9B',      // Green (survived color) for path A (fallback)
   comparisonB: '#85785B',      // Orange (died color) for path B (fallback)
-  comparisonShared: '#ffd700', // Gold for shared paths (stands out from both)
+  comparisonShared: '#02AE9B', // Gold for shared paths (stands out from both)
 
   // General UI colors
   defaultStroke: '#666',       // Default link/edge color
@@ -91,9 +91,9 @@ export const SHAP_COLORS = {
   // Feature impact colors (used in waterfall and feature importance charts)
   // Positive = pushes toward survived (class 1), Negative = pushes toward died (class 0)
   positive: '#02AE9B',         // Same as survived - for positive impact (increases survival prediction)
-  positiveStroke: '#cef78e',   // Lighter version for stroke
+  positiveStroke: '#44ffe9ff',   // Lighter version for stroke
   negative: '#85785B',         // Same as died - for negative impact (decreases survival prediction)
-  negativeStroke: '#f5b06d',   // Lighter version for stroke
+  negativeStroke: '#d29b26ff',   // Lighter version for stroke
 
   // Highlighting
   highlight: '#ffffff',        // Gold for highlighted bars

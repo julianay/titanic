@@ -177,7 +177,7 @@ function WhatIfCard({ values, onChange, onApply, onCompare, initialComparisonDat
         <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-xs font-medium">Age</label>
-            <span className="text-xs font-semibold text-[#218FCE]">{cohortValues.age}</span>
+            <span className="text-xs font-semibold" style={{ color: UI_COLORS.accent }}>{cohortValues.age}</span>
           </div>
           <input
             type="range"
@@ -201,7 +201,7 @@ function WhatIfCard({ values, onChange, onApply, onCompare, initialComparisonDat
         <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-xs font-medium">Fare</label>
-            <span className="text-xs font-semibold text-[#218FCE]">£{cohortValues.fare}</span>
+            <span className="text-xs font-semibold" style={{ color: UI_COLORS.accent }}>£{cohortValues.fare}</span>
           </div>
           <input
             type="range"
@@ -223,13 +223,14 @@ function WhatIfCard({ values, onChange, onApply, onCompare, initialComparisonDat
           {/* Fare suggestion badge */}
           {fareSuggestion && (
             <div className="mt-2 flex items-center gap-2">
-              <span className="text-xs bg-[#218FCE] bg-opacity-20 text-[#218FCE] px-2 py-1 rounded">
+              <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: UI_COLORS.accentBg, color: UI_COLORS.accent }}>
                 {fareSuggestion}
               </span>
               {showFareSuggestion && (
                 <button
                   onClick={() => handleFareUpdate(cohortValues, updateCohort)}
-                  className="text-xs text-[#218FCE] hover:underline"
+                  className="text-xs hover:underline"
+                  style={{ color: UI_COLORS.accent }}
                 >
                   Update
                 </button>
@@ -244,7 +245,7 @@ function WhatIfCard({ values, onChange, onApply, onCompare, initialComparisonDat
   return (
     <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-[#218FCE] mb-1">What If?</h3>
+        <h3 className="text-sm font-semibold mb-1" style={{ color: UI_COLORS.accent }}>What If?</h3>
         <p className="text-xs text-gray-400">
           Adjust parameters to explore different scenarios
           {onCompare && !isComparisonMode && (
@@ -252,7 +253,8 @@ function WhatIfCard({ values, onChange, onApply, onCompare, initialComparisonDat
               , or{' '}
               <button
                 onClick={() => setIsComparisonMode(true)}
-                className="font-bold text-[#218FCE] hover:underline"
+                className="font-bold hover:underline"
+                style={{ color: UI_COLORS.linkColor }}
               >
                 compare scenarios
               </button>
@@ -267,13 +269,13 @@ function WhatIfCard({ values, onChange, onApply, onCompare, initialComparisonDat
           <div className="grid grid-cols-2 gap-4 mb-4">
             {/* Cohort A */}
             <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-              <h4 className="text-xs font-semibold text-[#218FCE] mb-3">Scenario A</h4>
+              <h4 className="text-xs font-semibold mb-3" style={{ color: UI_COLORS.accent }}>Scenario A</h4>
               {renderControls(cohortA, setCohortA, '-a')}
             </div>
 
             {/* Cohort B */}
             <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-              <h4 className="text-xs font-semibold text-[#218FCE] mb-3">Scenario B</h4>
+              <h4 className="text-xs font-semibold mb-3" style={{ color: UI_COLORS.accent }}>Scenario B</h4>
               {renderControls(cohortB, setCohortB, '-b')}
             </div>
           </div>
