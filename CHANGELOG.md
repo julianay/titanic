@@ -11,6 +11,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2026-01-04] - Critical Fix: sklearn Version Compatibility for Tree Values
+
+### Fixed
+- **CRITICAL: Survival Rate Display Bug on Hugging Face** - Fixed incorrect survival rates (5500% instead of 100%)
+  - Root cause: sklearn's `tree_.value` behavior varies between versions
+  - Some versions (HuggingFace) return actual counts: `[339, 232]`
+  - Other versions (local) return proportions: `[0.59, 0.41]`
+  - Previous fix (Jan 2) always multiplied by samples, causing probabilities > 1 on HuggingFace
+  - New fix: Auto-detects format by checking if values sum to ~1.0 (proportions) or samples (counts)
+  - Handles both cases correctly for cross-environment compatibility
+  - File: backend/models/decision_tree.py:117-131
+
+### Technical Details
+**History of This Issue**:
+- **Jan 2, 2026**: Donut charts disappeared because code cast proportions to int: `int(0.59)` → `0`
+  - Fix: Multiply by samples: `int(0.59 * 571)` → `337`
+  - Worked locally where `tree_.value` returns proportions
+- **Jan 4, 2026**: Same fix broke HuggingFace where `tree_.value` returns counts
+  - Problem: `int(55 * 571)` → `31405`, giving probability of 55.0 instead of 0.55
+  - Frontend multiplied by 100: `55.0 * 100` = `5500%`
+  - Fix: Detect format and handle both cases
+
+**Detection Logic**:
+```python
+value_sum = value[0] + value[1]
+if abs(value_sum - 1.0) < 0.01:
+    # Proportions - multiply by samples
+    class_0_count = int(value[0] * samples)
+    class_1_count = int(value[1] * samples)
+else:
+    # Already counts - use directly
+    class_0_count = int(value[0])
+    class_1_count = int(value[1])
+```
+
+**Impact**:
+- ✅ Local environment: Continues to work (proportions detected, multiplied by samples)
+- ✅ HuggingFace: Now works correctly (counts detected, used directly)
+- ✅ Future-proof: Will work regardless of sklearn version
+
+---
+
 ## [2026-01-04] - SHAP Waterfall Chart Refinements
 
 ### Added

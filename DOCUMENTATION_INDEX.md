@@ -2,7 +2,7 @@
 
 > **Purpose:** Central navigation hub for all project documentation
 
-**Last Updated:** January 3, 2026
+**Last Updated:** January 4, 2026
 
 ---
 
@@ -35,6 +35,7 @@
 | **[docs/FRONTEND.md](docs/FRONTEND.md)** | React frontend guide | Components, hooks, color system, development |
 | **[docs/BACKEND.md](docs/BACKEND.md)** | FastAPI backend guide | Models, routes, API setup |
 | **[docs/API.md](docs/API.md)** | API reference | Endpoints, request/response examples |
+| **[docs/SKLEARN_VERSION_COMPATIBILITY.md](docs/SKLEARN_VERSION_COMPATIBILITY.md)** | sklearn version compatibility | tree_.value format differences, recurring bugs, detection logic |
 
 ---
 
@@ -240,5 +241,5 @@ titanic/
 
 ---
 
-**Last Updated:** January 3, 2026
+**Last Updated:** January 4, 2026
 **Maintained By:** AI Assistants (Claude Code, GitHub Copilot, Cursor)
