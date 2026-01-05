@@ -29,20 +29,31 @@ export const FONTS = {
 
   // Font sizes for UI elements
   ui: {
-    cardTitle: '16px',           // Card titles
-    cardValue: '24px',           // Large values (probability, etc)
+    cardTitle: '14px',           // Card titles
+    cardValue: '10px',           // Large values (probability, etc) - single prediction cards
+    cardValueMedium: '20px',     // Medium values - single chat cards
+    cardOutcome: '24px',         // Outcome text (Survived/Died)
     cardLabel: '14px',           // Labels
     cardSubtext: '12px',         // Small text
-    sectionTitle: '20px',        // Section headings
+    sectionTitle: '16px',        // Section headings
     helper: '12px'               // Helper/hint text
+  },
+
+  // Font sizes for comparison cards (smaller since showing multiple)
+  comparison: {
+    cardValue: '20px',           // Probability percentages in comparison cards
+    cardOutcome: '12px',         // Survived/Died text
+    modelLabel: '12px',          // Decision Tree / XGBoost labels
+    cohortLabel: '14px',         // Cohort names (Women/Men)
+    summaryText: '12px'          // Summary text at bottom
   }
 }
 
 // Font weights
 export const FONT_WEIGHTS = {
-  normal: 500,
-  bold: 700,
-  semibold: 600
+  normal: 300,
+  bold: 800,
+  semibold: 500
 }
 
 // ============================================================================
@@ -112,7 +123,7 @@ export const UI_COLORS = {
   // Input fields
   inputBg: '#1f2937',             // Input background (gray-800)
   inputBorder: '#374151',         // Input border (gray-700)
-  inputBorderFocus: '#218FCE',    // Input border when focused (primary blue)
+  inputBorderFocus: '#6CA7FF',    // Input border when focused (primary blue)
   inputText: '#f3f4f6',           // Input text (gray-100)
   inputPlaceholder: '#6b7280',    // Placeholder text (gray-500)
 
@@ -145,11 +156,15 @@ export const UI_COLORS = {
 
   // Sliders and controls
   sliderBg: '#374151',            // Slider track background (gray-700)
-  sliderThumb: '#3F6192',         // Slider thumb color (primary blue)
+  sliderThumb: '#6CA7FF',         // Slider thumb color (primary blue)
 
   // Links
-  linkColor: '#3F6192',           // Link color (primary blue)
+  linkColor: '#6CA7FF',           // Link color (centralized) - updated per request
   linkColorHover: '#1a7ab8',      // Link hover color
+
+  // Accent used across small UI elements (badges, chips, hover states)
+  accent: '#6CA7FF',              // Accent blue used in WhatIf/controls
+  accentBg: 'rgba(33, 143, 206, 0.2)', // Accent background with opacity
 
   // Disabled states
   disabledBg: 'rgba(75, 85, 99, 0.5)',  // Disabled background
@@ -163,16 +178,17 @@ export const UI_COLORS = {
 
 export const SPACING = {
   // Section spacing
-  sectionGap: '24px',             // Gap between sections
-  sectionPadding: '12px',         // Padding inside sections
+  sectionGap: '0px',             // Gap between sections
+  sectionPadding: '0px',         // Padding inside sections
 
   // Card spacing
-  cardPadding: '16px',            // Padding inside cards
-  cardGap: '16px',                // Gap between cards
+  cardPadding: '0px',            // Padding inside cards
+  cardGap: 'gap-0',              // Tailwind gap between cards (24px)
+  cardGapValue: '0px',          // For inline styles
 
   // Chat spacing
-  chatMessageGap: '12px',         // Gap between chat messages
-  chatInputPadding: '12px',       // Padding around chat input
+  chatMessageGap: '8px',         // Gap between chat messages
+  chatInputPadding: '0px',       // Padding around chat input
 
   // Button padding
   buttonPaddingSmall: '6px 12px', // Small button padding

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UI_COLORS } from '../utils/uiStyles'
+import { UI_COLORS, FONT_WEIGHTS, FONTS } from '../utils/uiStyles'
 
 /**
  * ComparisonCard - Shows side-by-side survival predictions for two cohorts
@@ -105,12 +105,12 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
 
   return (
     <div className="p-4 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBg, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
-      <p className="text-sm mb-3" style={{ color: UI_COLORS.textPrimary }}>{description}</p>
+      <p className="mb-3" style={{ fontSize: FONTS.ui.cardLabel, color: UI_COLORS.textPrimary }}>{description}</p>
 
       <div className="grid grid-cols-2 gap-3 mb-3">
         {/* Cohort A */}
         <div className="space-y-2">
-          <div className="font-semibold text-sm" style={{ color: UI_COLORS.textPrimary }}>{labelA}</div>
+          <div style={{ fontSize: FONTS.comparison.cohortLabel, color: UI_COLORS.textPrimary, fontWeight: FONT_WEIGHTS.semibold }}>{labelA}</div>
 
           {/* Decision Tree */}
           <div
@@ -120,11 +120,11 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
               borderColor: dtColorsA.border
             }}
           >
-            <div className="text-xs mb-1" style={{ color: UI_COLORS.textSecondary }}>Decision Tree</div>
-            <div className="text-xl font-bold" style={{ color: dtColorsA.text }}>
+            <div className="mb-1" style={{ fontSize: FONTS.comparison.modelLabel, color: UI_COLORS.textSecondary }}>Decision Tree</div>
+            <div style={{ fontSize: FONTS.comparison.cardValue, color: dtColorsA.text, fontWeight: FONT_WEIGHTS.bold }}>
               {formatPercentage(predictionsA.decision_tree.probability_survived)}
             </div>
-            <div className="text-xs mt-1 opacity-80" style={{ color: dtColorsA.text }}>
+            <div className="mt-1 opacity-80" style={{ fontSize: FONTS.comparison.cardOutcome, color: dtColorsA.text }}>
               {predictionsA.decision_tree.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
@@ -137,11 +137,11 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
               borderColor: xgbColorsA.border
             }}
           >
-            <div className="text-xs mb-1" style={{ color: UI_COLORS.textSecondary }}>XGBoost</div>
-            <div className="text-xl font-bold" style={{ color: xgbColorsA.text }}>
+            <div className="mb-1" style={{ fontSize: FONTS.comparison.modelLabel, color: UI_COLORS.textSecondary }}>XGBoost</div>
+            <div style={{ fontSize: FONTS.comparison.cardValue, color: xgbColorsA.text, fontWeight: FONT_WEIGHTS.bold }}>
               {formatPercentage(predictionsA.xgboost.probability_survived)}
             </div>
-            <div className="text-xs mt-1 opacity-80" style={{ color: xgbColorsA.text }}>
+            <div className="mt-1 opacity-80" style={{ fontSize: FONTS.comparison.cardOutcome, color: xgbColorsA.text }}>
               {predictionsA.xgboost.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
@@ -149,7 +149,7 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
 
         {/* Cohort B */}
         <div className="space-y-2">
-          <div className="font-semibold text-sm" style={{ color: UI_COLORS.textPrimary }}>{labelB}</div>
+          <div style={{ fontSize: FONTS.comparison.cohortLabel, color: UI_COLORS.textPrimary, fontWeight: FONT_WEIGHTS.semibold }}>{labelB}</div>
 
           {/* Decision Tree */}
           <div
@@ -159,11 +159,11 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
               borderColor: dtColorsB.border
             }}
           >
-            <div className="text-xs mb-1" style={{ color: UI_COLORS.textSecondary }}>Decision Tree</div>
-            <div className="text-xl font-bold" style={{ color: dtColorsB.text }}>
+            <div className="mb-1" style={{ fontSize: FONTS.comparison.modelLabel, color: UI_COLORS.textSecondary }}>Decision Tree</div>
+            <div style={{ fontSize: FONTS.comparison.cardValue, color: dtColorsB.text, fontWeight: FONT_WEIGHTS.bold }}>
               {formatPercentage(predictionsB.decision_tree.probability_survived)}
             </div>
-            <div className="text-xs mt-1 opacity-80" style={{ color: dtColorsB.text }}>
+            <div className="mt-1 opacity-80" style={{ fontSize: FONTS.comparison.cardOutcome, color: dtColorsB.text }}>
               {predictionsB.decision_tree.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
@@ -176,11 +176,11 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
               borderColor: xgbColorsB.border
             }}
           >
-            <div className="text-xs mb-1" style={{ color: UI_COLORS.textSecondary }}>XGBoost</div>
-            <div className="text-xl font-bold" style={{ color: xgbColorsB.text }}>
+            <div className="mb-1" style={{ fontSize: FONTS.comparison.modelLabel, color: UI_COLORS.textSecondary }}>XGBoost</div>
+            <div style={{ fontSize: FONTS.comparison.cardValue, color: xgbColorsB.text, fontWeight: FONT_WEIGHTS.bold }}>
               {formatPercentage(predictionsB.xgboost.probability_survived)}
             </div>
-            <div className="text-xs mt-1 opacity-80" style={{ color: xgbColorsB.text }}>
+            <div className="mt-1 opacity-80" style={{ fontSize: FONTS.comparison.cardOutcome, color: xgbColorsB.text }}>
               {predictionsB.xgboost.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
@@ -188,7 +188,7 @@ function ComparisonCard({ cohortA, cohortB, labelA, labelB, description }) {
       </div>
 
       {/* Difference summary (using XGBoost) */}
-      <div className="text-xs border-t pt-2" style={{ color: UI_COLORS.textSecondary, borderColor: UI_COLORS.cardBorder }}>
+      <div className="border-t pt-2" style={{ fontSize: FONTS.comparison.summaryText, color: UI_COLORS.textSecondary, borderColor: UI_COLORS.cardBorder }}>
         <strong>{higherCohort}</strong> had a <strong>{formatPercentage(diff)}</strong> higher survival rate (XGBoost)
       </div>
     </div>

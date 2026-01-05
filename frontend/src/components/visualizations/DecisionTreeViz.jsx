@@ -568,21 +568,32 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
       .style("fill", TREE_COLORS.textDefault)
 
     // Labels for leaf nodes (Survived/Died) - shown only when highlighted
-    nodes.append("text")
-      .attr("class", "prediction-label")
-      .attr("dy", d => {
-        const radius = Math.sqrt(d.data.samples) * TREE_SIZING.radiusMultiplier
-        return radius + TREE_SIZING.labelOffset.leaf
-      })
-      .attr("x", 0)
-      .attr("text-anchor", "middle")
-      .text(d => {
-        if (d.data.is_leaf) {
-          return d.data.predicted_class === 1 ? "Survived" : "Died"
-        }
-        return ""
-      })
-      .style("fill", TREE_COLORS.textDefault)
+    nodes.each(function(d) {
+      if (!d.data.is_leaf) return
+
+      const radius = Math.sqrt(d.data.samples) * TREE_SIZING.radiusMultiplier
+      const survivalRate = Math.round(d.data.probability * 100)
+      const outcome = d.data.predicted_class === 1 ? "Survived" : "Died"
+
+      const textGroup = d3.select(this).append("text")
+        .attr("class", "prediction-label")
+        .attr("x", 0)
+        .attr("y", radius + TREE_SIZING.labelOffset.leaf)
+        .attr("text-anchor", "middle")
+        .style("fill", TREE_COLORS.textDefault)
+
+      // First line: outcome (Survived/Died)
+      textGroup.append("tspan")
+        .attr("x", 0)
+        .attr("dy", 0)
+        .text(outcome)
+
+      // Second line: survival rate
+      textGroup.append("tspan")
+        .attr("x", 0)
+        .attr("dy", "1.2em")
+        .text(`(${survivalRate}%)`)
+    })
       // Opacity controlled by CSS classes only
 
     // Cleanup function
@@ -692,7 +703,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .node text.feature-label {
           font-size: 12px;
-          font-weight: 500;
+          font-weight: ${FONT_WEIGHTS.normal};
           fill: ${TREE_COLORS.textDefault};
           opacity: ${TREE_OPACITY.inactive};
           transition: opacity 0.3s ease;
@@ -700,7 +711,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .node text.feature-label.active {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.normal};
           fill: ${TREE_COLORS.textDefault};
         }
 
@@ -713,7 +724,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         /* Prediction labels - hidden by default, shown when highlighted */
         .node text.prediction-label {
           font-size: ${FONTS.tree.predictionLabel};
-          font-weight: 500;
+          font-weight: ${FONT_WEIGHTS.normal};
           fill: ${TREE_COLORS.textDefault};
           opacity: 0;
           transition: all 0.3s ease;
@@ -725,11 +736,20 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         .node text.prediction-label.path-b,
         .node text.prediction-label.path-shared {
           opacity: ${TREE_OPACITY.active};
-          font-weight: ${FONT_WEIGHTS.predictionLabelHighlight};
+          font-weight: ${FONT_WEIGHTS.normal};
           font-size: ${FONTS.tree.predictionLabelHighlight};
           fill: white;
           transform: translateY(${TREE_SIZING.labelOffset.leafHighlight}px);
           filter: ${TREE_EFFECTS.labelShadow};
+        }
+
+        /* Keep survival rate (second tspan) bold */
+        .node text.prediction-label.active tspan:nth-child(2),
+        .node text.prediction-label.tutorial-highlight tspan:nth-child(2),
+        .node text.prediction-label.path-a tspan:nth-child(2),
+        .node text.prediction-label.path-b tspan:nth-child(2),
+        .node text.prediction-label.path-shared tspan:nth-child(2) {
+          font-weight: ${FONT_WEIGHTS.predictionLabelHighlight};
         }
 
         .node text.prediction-label.tutorial-highlight {
@@ -777,7 +797,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
         .edge-label {
           font-size: 11px;
           fill: ${TREE_COLORS.textDefault};
-          font-weight: 600;
+          font-weight: ${FONT_WEIGHTS.semibold};
           opacity: ${TREE_OPACITY.inactive};
           transition: all 0.3s ease;
         }
@@ -820,7 +840,7 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .node text.tutorial-highlight {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.normal};
           fill: ${TREE_COLORS.tutorial};
         }
 
@@ -854,14 +874,14 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .node text.path-a {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.normal};
           fill: ${TREE_COLORS.comparisonA};
         }
 
         .edge-label.path-a {
           opacity: ${TREE_OPACITY.active};
           font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
-          fill: ${TREE_COLORS.comparisonA};
+          fill: ${TREE_COLORS.textDefault};
           font-size: ${FONTS.tree.edgeLabelHighlight};
           filter: ${TREE_EFFECTS.labelShadow};
         }
@@ -888,14 +908,14 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .node text.path-b {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.normal};
           fill: ${TREE_COLORS.comparisonB};
         }
 
         .edge-label.path-b {
           opacity: ${TREE_OPACITY.active};
           font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
-          fill: ${TREE_COLORS.comparisonB};
+          fill: ${TREE_COLORS.textDefault};
           font-size: ${FONTS.tree.edgeLabelHighlight};
           filter: ${TREE_EFFECTS.labelShadow};
         }
@@ -913,14 +933,14 @@ function DecisionTreeViz({ treeData, passengerValues, width, height = 700, highl
 
         .node text.path-shared {
           opacity: ${TREE_OPACITY.active};
-          font-weight: 700;
+          font-weight: ${FONT_WEIGHTS.normal};
           fill: ${TREE_COLORS.comparisonShared};
         }
 
         .edge-label.path-shared {
           opacity: ${TREE_OPACITY.active};
           font-weight: ${FONT_WEIGHTS.edgeLabelHighlight};
-          fill: ${TREE_COLORS.comparisonShared};
+          fill: ${TREE_COLORS.textDefault};
           font-size: ${FONTS.tree.edgeLabelHighlight};
           filter: ${TREE_EFFECTS.labelShadow};
         }

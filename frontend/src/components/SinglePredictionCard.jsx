@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UI_COLORS } from '../utils/uiStyles'
+import { UI_COLORS, FONT_WEIGHTS, FONTS } from '../utils/uiStyles'
 
 /**
  * SinglePredictionCard - Shows survival predictions for a single passenger in chat
@@ -83,7 +83,7 @@ function SinglePredictionCard({ passengerData, label }) {
 
   return (
     <div className="p-4 rounded-lg" style={{ backgroundColor: UI_COLORS.cardBg, borderWidth: '1px', borderStyle: 'solid', borderColor: UI_COLORS.cardBorder }}>
-      <p className="text-sm mb-3" style={{ color: UI_COLORS.textSecondary }}>{label}</p>
+      <p className="mb-3" style={{ fontSize: FONTS.ui.cardLabel, color: UI_COLORS.textSecondary, fontWeight: FONT_WEIGHTS.normal }}>{label}</p>
 
       <div className="grid grid-cols-2 gap-3">
         {/* Decision Tree */}
@@ -95,11 +95,11 @@ function SinglePredictionCard({ passengerData, label }) {
           }}
         >
           <div className="text-center">
-            <div className="text-xs mb-2 uppercase tracking-wider" style={{ color: UI_COLORS.textSecondary }}>Decision Tree</div>
-            <div className="text-3xl font-bold mb-2" style={{ color: dtColors.text }}>
+            <div className="mb-2" style={{ fontSize: FONTS.ui.cardSubtext, color: UI_COLORS.textSecondary }}>Decision Tree</div>
+            <div className="mb-2" style={{ fontSize: FONTS.ui.cardValueMedium, color: dtColors.text, fontWeight: FONT_WEIGHTS.bold }}>
               {formatPercentage(predictions.decision_tree.probability_survived)}
             </div>
-            <div className="text-sm font-semibold" style={{ color: dtColors.text }}>
+            <div style={{ fontSize: FONTS.ui.cardLabel, color: dtColors.text, fontWeight: FONT_WEIGHTS.semibold }}>
               {predictions.decision_tree.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
@@ -114,11 +114,11 @@ function SinglePredictionCard({ passengerData, label }) {
           }}
         >
           <div className="text-center">
-            <div className="text-xs mb-2 uppercase tracking-wider" style={{ color: UI_COLORS.textSecondary }}>XGBoost</div>
-            <div className="text-3xl font-bold mb-2" style={{ color: xgbColors.text }}>
+            <div className="mb-2" style={{ fontSize: FONTS.ui.cardSubtext, color: UI_COLORS.textSecondary }}>XGBoost</div>
+            <div className="mb-2" style={{ fontSize: FONTS.ui.cardValueMedium, color: xgbColors.text, fontWeight: FONT_WEIGHTS.bold }}>
               {formatPercentage(predictions.xgboost.probability_survived)}
             </div>
-            <div className="text-sm font-semibold" style={{ color: xgbColors.text }}>
+            <div style={{ fontSize: FONTS.ui.cardLabel, color: xgbColors.text, fontWeight: FONT_WEIGHTS.semibold }}>
               {predictions.xgboost.prediction === 1 ? 'Survived' : 'Died'}
             </div>
           </div>
