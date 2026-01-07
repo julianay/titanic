@@ -64,7 +64,7 @@ export const TREE_COLORS = {
   survived: '#02AE9B',    // Light green for survived/class 1
 
   // Path highlighting colors
-  tutorial: '#ffffff',    // Gold for tutorial mode highlighting
+  tutorial: 'rgba(255, 221, 83, 0.9)',    // Gold for tutorial mode highlighting
   hover: '#ffffff',       // Gold for hover effects
 
   // Comparison mode colors - IMPORTANT: These are fallback colors only
@@ -113,7 +113,7 @@ export const SHAP_COLORS = {
 export const TREE_EFFECTS = {
   active: 'drop-shadow(0 0 6px rgba(255,255,255,0.3))',
   final: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))',
-  tutorial: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.2))',
+  tutorial: 'drop-shadow(0 0 8px rgba(229, 255, 0, 0.9))',
   hover: 'drop-shadow(0 0 4px rgba(255,215,0,0.4))',
   comparisonA: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.2))',   // Green glow (survived)
   comparisonB: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.2))',    // Orange glow (died)

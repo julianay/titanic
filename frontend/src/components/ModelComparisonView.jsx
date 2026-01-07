@@ -26,9 +26,8 @@ import { formatPassengerDescription } from '../utils/cohortPatterns'
  * @param {Object} activeComparison - Active comparison data (cohortA, cohortB) or null
  * @param {boolean} hasQuery - Whether user has made a query (hides predictions on first load)
  * @param {Function} onEditClick - Callback when Edit link is clicked
- * @param {number} animationTrigger - Increment to trigger re-animation of the same path
  */
-function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null, activeComparison = null, hasQuery = false, onEditClick = null, animationTrigger = 0 }) {
+function ModelComparisonView({ passengerData, highlightMode = null, highlightFeatures = null, activeComparison = null, hasQuery = false, onEditClick = null }) {
   const { data: treeData, loading: treeLoading } = useFetchTree()
   const { data: predictions, loading: predictionsLoading, error: predictionsError } = usePredictBoth(passengerData)
   const { data: shapData, loading: shapLoading } = useSHAPExplanation(passengerData)
@@ -104,7 +103,6 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
                 highlightMode={highlightMode}
                 comparisonData={hasQuery ? activeComparison : null}
                 height={450}
-                animationTrigger={animationTrigger}
               />
             </div>
           ) : (

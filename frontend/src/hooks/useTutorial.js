@@ -13,7 +13,7 @@ const TUTORIAL_STEPS = {
   0: {
     message: "👋 Welcome to the Explainable AI Explorer! Let me show you how these models make predictions. We'll explore a 30-year-old woman in 1st class traveling on the Titanic.",
     whatif_values: TUTORIAL_PASSENGER,
-    highlight_mode: null,  // No highlighting yet
+    highlight_mode: -1,  // Empty state - no path visible yet
     highlight_features: null,
     button_text: "Start"
   },
