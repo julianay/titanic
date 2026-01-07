@@ -32,6 +32,9 @@ function App() {
   // Track which message is currently being displayed in visualizations
   const [activeMessageIndex, setActiveMessageIndex] = useState(0)
 
+  // Animation trigger - increment to force re-animation of the same path
+  const [animationTrigger, setAnimationTrigger] = useState(0)
+
   // Track what-if mode (temporary state while adjusting parameters)
   const [whatIfData, setWhatIfData] = useState(null)
   const [isWhatIfModalOpen, setIsWhatIfModalOpen] = useState(false)
@@ -116,6 +119,12 @@ function App() {
 
   // Handle percentage click - highlight cohort path on decision tree
   const handleHighlightCohort = (cohortData, comparisonData, messageIndex) => {
+    // Check if we're clicking the same cohort (to trigger re-animation)
+    const isSameCohort = passengerData.sex === cohortData.sex &&
+                         passengerData.pclass === cohortData.pclass &&
+                         passengerData.age === cohortData.age &&
+                         passengerData.fare === cohortData.fare
+
     // Update passenger data to show the path for this cohort
     setPassengerData({ ...cohortData })
     setHasQuery(true)
@@ -131,6 +140,11 @@ function App() {
     // Update active message to highlight the correct section in chat
     if (messageIndex !== undefined) {
       setActiveMessageIndex(messageIndex)
+    }
+
+    // If clicking the same cohort, trigger re-animation
+    if (isSameCohort) {
+      setAnimationTrigger(prev => prev + 1)
     }
   }
 
@@ -306,6 +320,7 @@ function App() {
             activeComparison={activeComparison}
             hasQuery={hasQuery}
             onEditClick={handleWhatIfStart}
+            animationTrigger={animationTrigger}
           />
         }
         chatContent={

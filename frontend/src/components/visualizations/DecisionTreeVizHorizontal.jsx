@@ -13,8 +13,9 @@ import { FONTS, FONT_WEIGHTS, TREE_COLORS, TREE_EFFECTS, TREE_OPACITY, TREE_STRO
  * @param {number} height - Visualization height (default: 700)
  * @param {string|number} highlightMode - Controls path highlighting
  * @param {Object} comparisonData - Comparison data with cohortA and cohortB (optional)
+ * @param {number} animationTrigger - Increment to trigger re-animation of the same path
  */
-function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 700, highlightMode = null, comparisonData = null }) {
+function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 700, highlightMode = null, comparisonData = null, animationTrigger = 0 }) {
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -606,7 +607,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     const isTutorialMode = highlightMode && highlightMode !== 'full'
 
     updateTreeHighlight(limitedPath, isTutorialMode)
-  }, [passengerValues, treeData, highlightMode, comparisonData, treeVersion])
+  }, [passengerValues, treeData, highlightMode, comparisonData, treeVersion, animationTrigger])
 
   // Handle window resize
   useEffect(() => {
