@@ -143,7 +143,7 @@ export const UI_COLORS = {
   buttonTertiaryText: '#ffffff',  // Tertiary button text
 
   // Buttons - Chip/Tag style
-  chipBg: '#1f2937',              // Chip background (gray-800)
+  chipBg: '#3e3e3eff',              // Chip background (gray-800)
   chipBgHover: 'rgba(33, 143, 206, 0.2)', // Chip hover background (primary with opacity)
   chipText: '#d1d5db',            // Chip text (gray-300)
   chipTextHover: '#3F6192',       // Chip text on hover (primary blue)

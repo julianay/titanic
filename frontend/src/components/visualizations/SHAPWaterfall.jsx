@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { SHAP_COLORS } from '../../utils/visualizationStyles'
+import { SHAP_COLORS, TREE_COLORS } from '../../utils/visualizationStyles'
 import { UI_COLORS } from '../../utils/uiStyles'
 
 /**
@@ -21,6 +21,7 @@ import { UI_COLORS } from '../../utils/uiStyles'
 function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFeatures = null, passengerData = null, height = 250 }) {
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(650)
+  const tooltipIdRef = useRef(`shap-tooltip-${Math.random().toString(36).substr(2, 9)}`)
 
   // Convert log-odds to survival rate percentage
   const logOddsToPercent = (logOdds) => {
@@ -63,8 +64,9 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
   useEffect(() => {
     if (!waterfallData || waterfallData.length === 0 || !containerRef.current) return
 
-    // Clear existing content
+    // Clear existing content and this component's tooltip
     d3.select(containerRef.current).selectAll("*").remove()
+    d3.select(`#${tooltipIdRef.current}`).remove()
 
     // Normalize waterfall data to ensure proper continuity
     // Each bar should start exactly where the previous bar ended
@@ -128,6 +130,25 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
 
     // Use 'g' instead of 'svg' for all subsequent elements
     const chart = g
+
+    // Create tooltip (matching decision tree styles)
+    const tooltip = d3.select("body")
+      .append("div")
+      .attr("id", tooltipIdRef.current)
+      .attr("class", "shap-tooltip tooltip")
+      .style("position", "absolute")
+      .style("padding", "12px")
+      .style("background", TREE_COLORS.tooltipBg)
+      .style("color", TREE_COLORS.tooltipText)
+      .style("border-radius", "6px")
+      .style("pointer-events", "none")
+      .style("font-size", "13px")
+      .style("line-height", "1.5")
+      .style("max-width", "250px")
+      .style("box-shadow", "0 4px 6px rgba(0,0,0,0.3)")
+      .style("opacity", 0)
+      .style("transition", "opacity 0.2s")
+      .style("z-index", "1000")
 
     // Calculate survival percentages for labels
     const finalPercent = logOddsToPercent(finalPrediction)
@@ -209,6 +230,42 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
         return Math.max(height, 3)
       })
       .attr("rx", 2)
+      .on("mouseover", function(event, d) {
+        // Show tooltip
+        tooltip.style("opacity", 1)
+        // Highlight bar slightly
+        d3.select(this).style("opacity", 1)
+      })
+      .on("mousemove", function(event, d) {
+        // Calculate survival rate at this cumulative value
+        const survivalRate = logOddsToPercent(d.end)
+        const impactDirection = d.value >= 0 ? "survival" : "death"
+        const impactColor = d.value >= 0 ? SHAP_COLORS.positive : SHAP_COLORS.negative
+
+        // Format tooltip content
+        let tooltipContent = `<strong>${d.feature}</strong><br/>`
+
+        // Skip detailed info for base value
+        if (d.feature !== "Base") {
+          tooltipContent += `Contribution: <span style="color: ${impactColor}; font-weight: bold;">${d.value >= 0 ? '+' : ''}${d.value.toFixed(3)}</span><br/>`
+          tooltipContent += `Direction: Pushes toward <strong>${impactDirection}</strong><br/>`
+          tooltipContent += `Cumulative SHAP: ${d.end.toFixed(3)}<br/>`
+        } else {
+          tooltipContent += `Value: ${d.start.toFixed(3)}<br/>`
+        }
+
+        tooltipContent += `<strong>Survival Rate: ${survivalRate}%</strong>`
+
+        tooltip.html(tooltipContent)
+          .style("left", (event.pageX + 15) + "px")
+          .style("top", (event.pageY - 15) + "px")
+      })
+      .on("mouseout", function() {
+        // Hide tooltip
+        tooltip.style("opacity", 0)
+        // Reset bar opacity
+        d3.select(this).style("opacity", null)
+      })
 
     // Add vertical lines to bars (skip base bar)
     // Lines extend the full height of each bar
@@ -224,6 +281,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .attr("stroke", d => d.value >= 0 ? SHAP_COLORS.positiveStroke : SHAP_COLORS.negativeStroke)
       .attr("stroke-width", 2)
       .attr("opacity", 0.5)
+      .style("pointer-events", "none")
 
     // Add arrows to bars (skip base bar)
     // Up arrow for positive values, down arrow for negative values
@@ -259,6 +317,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       })
       .attr("fill", d => d.value >= 0 ? SHAP_COLORS.positiveStroke : SHAP_COLORS.negativeStroke)
       .attr("opacity", 0.5)
+      .style("pointer-events", "none")
 
     // Add value labels on bars (skip base value, smaller font)
     // Position labels inside bars when they fit, otherwise outside
@@ -303,6 +362,7 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
         }
       })
       .text(d => (d.value >= 0 ? "+" : "") + d.value.toFixed(2))
+      .style("pointer-events", "none")
 
     // Add final prediction line and label on the right side
     const finalLineX = x(dataToRender.length - 1) + x.bandwidth() + 10
@@ -367,6 +427,10 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .attr("dx", "-0.5em")
       .attr("dy", "0.5em")
 
+    // Cleanup function to remove this component's tooltip on unmount
+    return () => {
+      d3.select(`#${tooltipIdRef.current}`).remove()
+    }
   }, [waterfallData, baseValue, finalPrediction, highlightFeatures, containerWidth, height])
 
   if (!waterfallData || waterfallData.length === 0) {

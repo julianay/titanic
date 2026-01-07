@@ -29,6 +29,9 @@ function App() {
   // Track active comparison for visualization
   const [activeComparison, setActiveComparison] = useState(null)
 
+  // Track which message is currently being displayed in visualizations
+  const [activeMessageIndex, setActiveMessageIndex] = useState(0)
+
   // Track what-if mode (temporary state while adjusting parameters)
   const [whatIfData, setWhatIfData] = useState(null)
   const [isWhatIfModalOpen, setIsWhatIfModalOpen] = useState(false)
@@ -60,16 +63,20 @@ function App() {
     setActiveComparison(null) // Clear any active comparison
 
     // Add messages to chat with prediction card
-    setChatMessages(prev => [
-      ...prev,
-      { role: 'user', content: userMessage },
-      {
-        role: 'assistant',
-        type: 'prediction',
-        passengerData: { sex, pclass, age, fare },
-        label: passengerDesc
-      }
-    ])
+    setChatMessages(prev => {
+      const newMessages = [
+        ...prev,
+        { role: 'user', content: userMessage },
+        {
+          role: 'assistant',
+          type: 'prediction',
+          passengerData: { sex, pclass, age, fare },
+          label: passengerDesc
+        }
+      ]
+      setActiveMessageIndex(newMessages.length - 1) // Set active to the new prediction message
+      return newMessages
+    })
   }
 
   // Handle What-If chip click - open modal
@@ -88,6 +95,43 @@ function App() {
       setInitialComparisonData(null) // Clear comparison mode data
     }
     setIsWhatIfModalOpen(true)
+  }
+
+  // Handle Edit button click from cards - open modal with card's data
+  const handleEditCard = (data) => {
+    if (data.comparison) {
+      // Editing a comparison card - open in comparison mode
+      setInitialComparisonData({
+        cohortA: { ...data.comparison.cohortA },
+        cohortB: { ...data.comparison.cohortB }
+      })
+      setWhatIfData(null) // Clear single mode data
+    } else if (data.passengerData) {
+      // Editing a single prediction card - open in single mode
+      setWhatIfData({ ...data.passengerData })
+      setInitialComparisonData(null) // Clear comparison mode data
+    }
+    setIsWhatIfModalOpen(true)
+  }
+
+  // Handle percentage click - highlight cohort path on decision tree
+  const handleHighlightCohort = (cohortData, comparisonData, messageIndex) => {
+    // Update passenger data to show the path for this cohort
+    setPassengerData({ ...cohortData })
+    setHasQuery(true)
+
+    if (comparisonData) {
+      // Preserve comparison mode when clicking from a comparison card
+      setActiveComparison(comparisonData)
+    } else {
+      // Clear comparison mode when clicking from a single prediction card
+      setActiveComparison(null)
+    }
+
+    // Update active message to highlight the correct section in chat
+    if (messageIndex !== undefined) {
+      setActiveMessageIndex(messageIndex)
+    }
   }
 
   // Handle what-if control changes (update temporary state)
@@ -111,15 +155,19 @@ function App() {
     setActiveComparison(null)
 
     // Add prediction card to chat
-    setChatMessages(prev => [
-      ...prev,
-      {
-        role: 'assistant',
-        type: 'prediction',
-        passengerData: whatIfData,
-        label: passengerDesc
-      }
-    ])
+    setChatMessages(prev => {
+      const newMessages = [
+        ...prev,
+        {
+          role: 'assistant',
+          type: 'prediction',
+          passengerData: whatIfData,
+          label: passengerDesc
+        }
+      ]
+      setActiveMessageIndex(newMessages.length - 1) // Set active to the new prediction message
+      return newMessages
+    })
 
     // Clear what-if mode
     setWhatIfData(null)
@@ -148,15 +196,19 @@ function App() {
     setActiveComparison(comparisonResult)
 
     // Add comparison card to chat
-    setChatMessages(prev => [
-      ...prev,
-      { role: 'user', content: 'Compare these scenarios' },
-      {
-        role: 'assistant',
-        type: 'comparison',
-        comparison: comparisonResult
-      }
-    ])
+    setChatMessages(prev => {
+      const newMessages = [
+        ...prev,
+        { role: 'user', content: 'Compare these scenarios' },
+        {
+          role: 'assistant',
+          type: 'comparison',
+          comparison: comparisonResult
+        }
+      ]
+      setActiveMessageIndex(newMessages.length - 1) // Set active to the new comparison message
+      return newMessages
+    })
 
     // Clear what-if mode
     setWhatIfData(null)
@@ -173,15 +225,19 @@ function App() {
       // Handle comparison query - set active comparison for visualization
       setActiveComparison(comparisonResult)
 
-      setChatMessages(prev => [
-        ...prev,
-        { role: 'user', content: userMessage },
-        {
-          role: 'assistant',
-          type: 'comparison',
-          comparison: comparisonResult
-        }
-      ])
+      setChatMessages(prev => {
+        const newMessages = [
+          ...prev,
+          { role: 'user', content: userMessage },
+          {
+            role: 'assistant',
+            type: 'comparison',
+            comparison: comparisonResult
+          }
+        ]
+        setActiveMessageIndex(newMessages.length - 1) // Set active to the new comparison message
+        return newMessages
+      })
       return
     }
 
@@ -189,7 +245,7 @@ function App() {
     setActiveComparison(null)
 
     if (!parsedParams) {
-      // Could not parse - show error
+      // Could not parse - show error (don't update activeMessageIndex for errors)
       setChatMessages(prev => [
         ...prev,
         { role: 'user', content: userMessage },
@@ -208,16 +264,20 @@ function App() {
     const passengerDesc = formatPassengerDescription(sex, pclass, age, fare)
 
     // Add messages to chat with prediction card
-    setChatMessages(prev => [
-      ...prev,
-      { role: 'user', content: userMessage },
-      {
-        role: 'assistant',
-        type: 'prediction',
-        passengerData: { sex, pclass, age, fare },
-        label: passengerDesc
-      }
-    ])
+    setChatMessages(prev => {
+      const newMessages = [
+        ...prev,
+        { role: 'user', content: userMessage },
+        {
+          role: 'assistant',
+          type: 'prediction',
+          passengerData: { sex, pclass, age, fare },
+          label: passengerDesc
+        }
+      ]
+      setActiveMessageIndex(newMessages.length - 1) // Set active to the new prediction message
+      return newMessages
+    })
   }
 
   // Determine which highlights to use (tutorial takes precedence, then initial animation)
@@ -258,6 +318,9 @@ function App() {
             onTutorialSkip={tutorial.skipTutorial}
             onTutorialStart={tutorial.startTutorial}
             onWhatIfStart={handleWhatIfStart}
+            onEditCard={handleEditCard}
+            onHighlightCohort={handleHighlightCohort}
+            activeMessageIndex={activeMessageIndex}
           />
         }
       />

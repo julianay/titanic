@@ -2,7 +2,7 @@
 
 > **Purpose:** Central navigation hub for all project documentation
 
-**Last Updated:** January 4, 2026
+**Last Updated:** January 7, 2026
 
 ---
 
@@ -50,6 +50,7 @@ Detailed documentation for specific features and enhancements:
 | **[DECISION_TREE_FEATURES.md](DECISION_TREE_FEATURES.md)** | Decision tree visualization | Variable stroke widths, selective highlighting, dual paths |
 | **[COHORT_COMPARISON_FEATURE.md](COHORT_COMPARISON_FEATURE.md)** | Natural language comparisons | Cohort parsing, dual path visualization, comparison mode |
 | **[TUTORIAL_FEATURE.md](TUTORIAL_FEATURE.md)** | Interactive tutorial system | Progressive highlighting, inline controls |
+| **[ACTIVE_MESSAGE_TRACKING.md](ACTIVE_MESSAGE_TRACKING.md)** | Active message tracking | Visual indication of which chat message is currently visualized |
 
 ### Legacy/Archived
 
@@ -134,7 +135,8 @@ titanic/
 ├── Feature Documentation
 │   ├── DECISION_TREE_FEATURES.md      # Tree visualization features
 │   ├── COHORT_COMPARISON_FEATURE.md   # Comparison system
-│   └── TUTORIAL_FEATURE.md            # Tutorial system
+│   ├── TUTORIAL_FEATURE.md            # Tutorial system
+│   └── ACTIVE_MESSAGE_TRACKING.md     # Active message tracking
 │
 ├── Archived Changelogs (moved to docs/archive/)
 │   ├── CHANGELOG_JAN02_2026.md        → CHANGELOG.md [2026-01-02]
@@ -241,5 +243,5 @@ titanic/
 
 ---
 
-**Last Updated:** January 4, 2026
+**Last Updated:** January 7, 2026
 **Maintained By:** AI Assistants (Claude Code, GitHub Copilot, Cursor)
