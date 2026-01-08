@@ -97,9 +97,6 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
     e.preventDefault()
     if (!inputValue.trim()) return
 
-    // Mark that user has typed their own message
-    setHasTypedMessage(true)
-
     // Parse the query to extract passenger parameters
     const parsedParams = parsePassengerQuery(inputValue)
 
@@ -197,7 +194,7 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                       <div key={msgIdx} className={`text-sm ${animationClass}`}>
                         {msg.role === 'user' ? (
                           <div className="flex justify-end">
-                            <div className="bg-gray-800 text-gray-300 rounded-2xl px-4 py-2 max-w-[85%] font-medium">
+                            <div className="rounded-2xl px-4 py-2 max-w-[85%] font-medium" style={{ backgroundColor: UI_COLORS.chatBubbleUser, color: UI_COLORS.chatBubbleUserText }}>
                               {msg.content}
                             </div>
                           </div>
@@ -281,12 +278,13 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
 
       {/* Suggestion Buttons - styled as chips */}
       {shouldShowChips && (
-        <div className="mb-3 pt-3 border-t border-gray-800">
+        <div className="mb-3 pt-3 border-t" style={{ borderColor: UI_COLORS.chatDivider }}>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-gray-500">Try asking:</p>
+            <p className="text-xs" style={{ color: UI_COLORS.chatHintText }}>Try asking:</p>
             <button
               onClick={() => setChipsVisible(!chipsVisible)}
-              className="text-xs text-gray-500 transition-colors underline"
+              className="text-xs transition-colors underline"
+              style={{ color: UI_COLORS.chatHintText }}
             >
               {chipsVisible ? 'hide' : 'show'}
             </button>
@@ -304,17 +302,17 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                           onSendMessage(suggestion, parsedParams)
                         }
                       }}
-                      className="px-3 py-1.5 text-xs bg-gray-800 text-gray-300 rounded-full transition-colors"
-                      style={{ color: UI_COLORS.textSecondary }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = UI_COLORS.accentBg; e.currentTarget.style.color = UI_COLORS.accent }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = UI_COLORS.textSecondary }}
+                      className="px-3 py-1.5 text-xs rounded-full transition-colors"
+                      style={{ backgroundColor: UI_COLORS.chipBg, color: UI_COLORS.chipText }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = UI_COLORS.chipBgHover; e.currentTarget.style.color = UI_COLORS.chipTextHover }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = UI_COLORS.chipBg; e.currentTarget.style.color = UI_COLORS.chipText }}
                     >
                       {suggestion}
                     </button>
                 ))}
               </div>
 
-              {/* Tutorial and What If chips */}
+              {/* Tutorial chip */}
               <div className="flex gap-2">
                 <button
                   onClick={onTutorialStart}
@@ -324,15 +322,6 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
                 >
                   📚 Start Tutorial
-                </button>
-                <button
-                  onClick={onWhatIfStart}
-                  className="px-3 py-1.5 text-xs text-white rounded-full transition-colors"
-                  style={{ backgroundColor: UI_COLORS.buttonSecondaryBg }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBgHover)}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondaryBg)}
-                >
-                  🔮 What If?
                 </button>
               </div>
             </>
@@ -368,7 +357,9 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBgHover)}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
         >
-          Send
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+          </svg>
         </button>
       </form>
     </div>

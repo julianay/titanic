@@ -112,7 +112,7 @@ export const UI_COLORS = {
   chatTitle: '#ffffff',           // Chat section title (gray-100)
   chatSectionBgLatest: '#000000',    // Latest message section (gray-800 at 40%)
   chatSectionBgPrevious: '#1e1e1e',  // Previous message sections (gray-900 at 20%)
-  chatBubbleUser: '#1f2937',      // User message bubble background (gray-800)
+  chatBubbleUser: '#383838ff',      // User message bubble background (gray-800)
   chatBubbleUserText: '#d1d5db',  // User message text (gray-300)
   chatBubbleAssistant: 'transparent', // Assistant message (no background)
   chatBubbleAssistantText: '#f3f4f6', // Assistant message text (gray-100)

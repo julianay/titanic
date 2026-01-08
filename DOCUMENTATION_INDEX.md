@@ -35,6 +35,7 @@
 | **[docs/FRONTEND.md](docs/FRONTEND.md)** | React frontend guide | Components, hooks, color system, development |
 | **[docs/BACKEND.md](docs/BACKEND.md)** | FastAPI backend guide | Models, routes, API setup |
 | **[docs/API.md](docs/API.md)** | API reference | Endpoints, request/response examples |
+| **[docs/PREDICTIONS.md](docs/PREDICTIONS.md)** | Model predictions | How predictions work, SHAP values, mathematical conversions |
 | **[docs/SKLEARN_VERSION_COMPATIBILITY.md](docs/SKLEARN_VERSION_COMPATIBILITY.md)** | sklearn version compatibility | tree_.value format differences, recurring bugs, detection logic |
 
 ---
@@ -45,13 +46,23 @@ Detailed documentation for specific features and enhancements:
 
 ### Active Features
 
+All feature documentation is organized in the **[features/](features/)** directory:
+
 | File | Feature | Summary |
 |------|---------|---------|
-| **[DECISION_TREE_FEATURES.md](DECISION_TREE_FEATURES.md)** | Decision tree visualization | Variable stroke widths, selective highlighting, dual paths |
-| **[COHORT_COMPARISON_FEATURE.md](COHORT_COMPARISON_FEATURE.md)** | Natural language comparisons | Cohort parsing, dual path visualization, comparison mode |
-| **[TUTORIAL_FEATURE.md](TUTORIAL_FEATURE.md)** | Interactive tutorial system | Progressive highlighting, inline controls |
-| **[ACTIVE_MESSAGE_TRACKING.md](ACTIVE_MESSAGE_TRACKING.md)** | Active message tracking | Visual indication of which chat message is currently visualized |
-| **[REPLAY_ANIMATION_FEATURE.md](REPLAY_ANIMATION_FEATURE.md)** | Replay animation on click | Progressive path animation when clicking percentage values in chat cards |
+| **[features/DECISION_TREE_FEATURES.md](features/DECISION_TREE_FEATURES.md)** | Decision tree visualization | Variable stroke widths, selective highlighting, dual paths |
+| **[features/COHORT_COMPARISON_FEATURE.md](features/COHORT_COMPARISON_FEATURE.md)** | Natural language comparisons | Cohort parsing, dual path visualization, comparison mode |
+| **[features/TUTORIAL_FEATURE.md](features/TUTORIAL_FEATURE.md)** | Interactive tutorial system | Progressive highlighting, inline controls |
+| **[features/ACTIVE_MESSAGE_TRACKING.md](features/ACTIVE_MESSAGE_TRACKING.md)** | Active message tracking | Visual indication of which chat message is currently visualized |
+| **[features/REPLAY_ANIMATION_FEATURE.md](features/REPLAY_ANIMATION_FEATURE.md)** | Replay animation on click | Progressive path animation when clicking percentage values in chat cards |
+
+### Guides
+
+User guides and how-to documentation:
+
+| File | Purpose | Summary |
+|------|---------|---------|
+| **[guides/STYLE_CENTRALIZATION.md](guides/STYLE_CENTRALIZATION.md)** | Styling system guide | Complete guide to centralized styling, colors, typography, effects |
 
 ### Legacy/Archived
 
@@ -92,8 +103,9 @@ All notable changes in a single, consolidated file:
 
 ### "I want to understand a specific feature"
 1. Check [Feature Documentation](#-feature-documentation) section above
-2. Read the relevant feature doc (DECISION_TREE_FEATURES.md, COHORT_COMPARISON_FEATURE.md, etc.)
-3. Reference implementation in source code
+2. Browse the [features/](features/) directory
+3. Read the relevant feature doc (e.g., features/DECISION_TREE_FEATURES.md)
+4. Reference implementation in source code
 
 ### "I want to know what changed recently"
 1. Check [CHANGELOG.md](CHANGELOG.md) - All changes from Dec 20, 2025 to present in one place
@@ -108,7 +120,7 @@ All notable changes in a single, consolidated file:
 4. Update appropriate changelog when done
 
 ### "I want to understand the styling system"
-1. Read [STYLE_CENTRALIZATION.md](STYLE_CENTRALIZATION.md) - Complete styling guide
+1. Read [guides/STYLE_CENTRALIZATION.md](guides/STYLE_CENTRALIZATION.md) - Complete styling guide
 2. Check [AI_CONTEXT.md - Design System](AI_CONTEXT.md#-design-system--centralized-colors)
 3. Look at `frontend/src/utils/visualizationStyles.js` (visualizations)
 4. Look at `frontend/src/utils/uiStyles.js` (UI components)
@@ -127,31 +139,33 @@ titanic/
 ├── README.md                    # Public-facing overview
 ├── AI_CONTEXT.md                # Comprehensive AI assistant reference
 ├── ASSISTANT_GUIDE.md           # Step-by-step task patterns
-│
 ├── CHANGELOG.md                 # Consolidated changelog (Dec 20, 2025 - present)
 │
-├── Styling Documentation
-│   └── STYLE_CENTRALIZATION.md        # Complete styling guide
-│
-├── Feature Documentation
+├── features/                    # Feature documentation
 │   ├── DECISION_TREE_FEATURES.md      # Tree visualization features
 │   ├── COHORT_COMPARISON_FEATURE.md   # Comparison system
 │   ├── TUTORIAL_FEATURE.md            # Tutorial system
 │   ├── ACTIVE_MESSAGE_TRACKING.md     # Active message tracking
 │   └── REPLAY_ANIMATION_FEATURE.md    # Replay animation on click
 │
-├── Archived Changelogs (moved to docs/archive/)
-│   ├── CHANGELOG_JAN02_2026.md        → CHANGELOG.md [2026-01-02]
-│   ├── CHANGELOG_DEC22_2025.md        → CHANGELOG.md [2025-12-22]
-│   ├── CHANGELOG_DEC21_2025.md        → CHANGELOG.md [2025-12-21]
-│   └── CHANGELOG_DEC20_2025.md        → CHANGELOG.md [2025-12-20]
+├── guides/                      # User guides and how-tos
+│   └── STYLE_CENTRALIZATION.md        # Complete styling guide
 │
-└── docs/                              # Technical documentation
-    ├── FRONTEND.md                    # React frontend guide
-    ├── BACKEND.md                     # FastAPI backend guide
-    ├── API.md                         # API reference
-    ├── CHANGELOG_JAN03_2026.md        → CHANGELOG.md [2026-01-03]
-    └── archive/                       # Archived documentation
+└── docs/                        # Technical documentation
+    ├── FRONTEND.md              # React frontend guide
+    ├── BACKEND.md               # FastAPI backend guide
+    ├── API.md                   # API reference
+    ├── PREDICTIONS.md           # Model predictions and SHAP explanations
+    ├── SKLEARN_VERSION_COMPATIBILITY.md  # sklearn version compatibility
+    │
+    └── archive/                 # Archived/outdated documentation
+        ├── ANIMATION_GUIDE.md   # Implementation details (superseded by feature docs)
+        ├── FRONTEND_UI_UPDATES_2026-01-04.md  # Specific date updates
+        ├── CHANGELOG_JAN03_2026.md        → CHANGELOG.md [2026-01-03]
+        ├── CHANGELOG_JAN02_2026.md        → CHANGELOG.md [2026-01-02]
+        ├── CHANGELOG_DEC22_2025.md        → CHANGELOG.md [2025-12-22]
+        ├── CHANGELOG_DEC21_2025.md        → CHANGELOG.md [2025-12-21]
+        ├── CHANGELOG_DEC20_2025.md        → CHANGELOG.md [2025-12-20]
         ├── IMPLEMENTATION_PROGRESS.md
         ├── DECISION_TREE_HIGHLIGHT_MODES.md
         ├── STROKE_WIDTH_FIX.md
@@ -169,7 +183,7 @@ titanic/
 - **UI Styles:** `frontend/src/utils/uiStyles.js`
   - Purpose: All UI component colors, spacing, animations
   - Components: UI_COLORS, SPACING, BORDER_RADIUS, UI_EFFECTS, ANIMATIONS
-- **Documentation:** [STYLE_CENTRALIZATION.md](STYLE_CENTRALIZATION.md)
+- **Documentation:** [guides/STYLE_CENTRALIZATION.md](guides/STYLE_CENTRALIZATION.md)
 
 ### ChatPanel Smart Visibility
 - **Feature:** Suggestion chips with intelligent show/hide behavior
@@ -178,16 +192,15 @@ titanic/
 - **Documentation:** [ASSISTANT_GUIDE.md - Task 8](ASSISTANT_GUIDE.md#task-8-modify-chatpanel-chip-visibility-behavior)
 
 ### Layout
-- **Current Layout:** 80/20 split (visualizations 80%, chat 20%)
-- **Decision Tree:** Vertical (top-to-bottom) orientation
-- **Note:** Alternative layout files (AppAlt.jsx, etc.) removed on Jan 3, 2026
-- **Documentation:** [CHANGELOG.md](CHANGELOG.md)
+- **Current Layout:** 75/25 split (visualizations 75%, chat 25%)
+- **Decision Tree:** Horizontal (left-to-right) orientation
+- **Documentation:** [docs/FRONTEND.md](docs/FRONTEND.md)
 
 ### Natural Language Processing
 - **File:** `frontend/src/utils/cohortPatterns.js`
 - **Features:** Passenger queries, cohort comparisons
 - **Examples:** "woman in 1st class", "women vs men"
-- **Documentation:** [COHORT_COMPARISON_FEATURE.md](COHORT_COMPARISON_FEATURE.md)
+- **Documentation:** [features/COHORT_COMPARISON_FEATURE.md](features/COHORT_COMPARISON_FEATURE.md)
 
 ---
 
@@ -216,7 +229,9 @@ titanic/
 1. **For common tasks:** Check [ASSISTANT_GUIDE.md](ASSISTANT_GUIDE.md)
 2. **For architecture questions:** Check [AI_CONTEXT.md](AI_CONTEXT.md)
 3. **For component details:** Check [docs/FRONTEND.md](docs/FRONTEND.md)
-4. **For recent changes:** Check [CHANGELOG.md](CHANGELOG.md)
+4. **For styling questions:** Check [guides/STYLE_CENTRALIZATION.md](guides/STYLE_CENTRALIZATION.md)
+5. **For feature details:** Browse [features/](features/) directory
+6. **For recent changes:** Check [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
