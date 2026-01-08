@@ -130,7 +130,7 @@ function SinglePredictionCard({ passengerData, label, onEdit, onHighlightCohort,
             borderColor: dtColors.border
           }}
         >
-          <div className="text-center">
+          <div>
             <div className="mb-2" style={{ fontSize: FONTS.ui.cardSubtext, color: UI_COLORS.textSecondary }}>Decision Tree</div>
             <button
               onClick={onHighlightCohort ? () => onHighlightCohort(passengerData, null, messageIndex) : undefined}
@@ -153,7 +153,7 @@ function SinglePredictionCard({ passengerData, label, onEdit, onHighlightCohort,
             borderColor: xgbColors.border
           }}
         >
-          <div className="text-center">
+          <div>
             <div className="mb-2" style={{ fontSize: FONTS.ui.cardSubtext, color: UI_COLORS.textSecondary }}>XGBoost</div>
             <button
               onClick={onHighlightCohort ? () => onHighlightCohort(passengerData, null, messageIndex) : undefined}

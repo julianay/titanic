@@ -5,6 +5,7 @@ import ChatPanel from './components/ChatPanel'
 import WhatIfModal from './components/WhatIfModal'
 import useTutorial from './hooks/useTutorial'
 import useInitialAnimation from './hooks/useInitialAnimation'
+import useReplayAnimation from './hooks/useReplayAnimation'
 import { formatPassengerDescription, detectComparison, generateCohortLabel } from './utils/cohortPatterns'
 
 function App() {
@@ -45,6 +46,9 @@ function App() {
 
   // Initial animation hook (auto-plays on first load)
   const initialAnimation = useInitialAnimation()
+
+  // Replay animation hook (triggered when clicking chat card percentages)
+  const replayAnimation = useReplayAnimation()
 
   // Handle preset selection - update all values at once
   const handlePresetSelect = (presetValues) => {
@@ -132,6 +136,9 @@ function App() {
     if (messageIndex !== undefined) {
       setActiveMessageIndex(messageIndex)
     }
+
+    // Trigger replay animation to show the path building up
+    replayAnimation.triggerReplay()
   }
 
   // Handle what-if control changes (update temporary state)
@@ -280,15 +287,17 @@ function App() {
     })
   }
 
-  // Determine which highlights to use (tutorial takes precedence, then initial animation)
+  // Determine which highlights to use (priority: tutorial > replay > initial animation)
   const getHighlightMode = () => {
     if (tutorial.tutorialActive) return tutorial.getHighlightMode()
+    if (replayAnimation.isAnimating) return replayAnimation.getHighlightMode()
     if (initialAnimation.isAnimating) return initialAnimation.getHighlightMode()
     return null
   }
 
   const getHighlightFeatures = () => {
     if (tutorial.tutorialActive) return tutorial.getHighlightFeatures()
+    if (replayAnimation.isAnimating) return replayAnimation.getHighlightFeatures()
     if (initialAnimation.isAnimating) return initialAnimation.getHighlightFeatures()
     return null
   }

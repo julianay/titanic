@@ -51,6 +51,7 @@ Detailed documentation for specific features and enhancements:
 | **[COHORT_COMPARISON_FEATURE.md](COHORT_COMPARISON_FEATURE.md)** | Natural language comparisons | Cohort parsing, dual path visualization, comparison mode |
 | **[TUTORIAL_FEATURE.md](TUTORIAL_FEATURE.md)** | Interactive tutorial system | Progressive highlighting, inline controls |
 | **[ACTIVE_MESSAGE_TRACKING.md](ACTIVE_MESSAGE_TRACKING.md)** | Active message tracking | Visual indication of which chat message is currently visualized |
+| **[REPLAY_ANIMATION_FEATURE.md](REPLAY_ANIMATION_FEATURE.md)** | Replay animation on click | Progressive path animation when clicking percentage values in chat cards |
 
 ### Legacy/Archived
 
@@ -136,7 +137,8 @@ titanic/
 │   ├── DECISION_TREE_FEATURES.md      # Tree visualization features
 │   ├── COHORT_COMPARISON_FEATURE.md   # Comparison system
 │   ├── TUTORIAL_FEATURE.md            # Tutorial system
-│   └── ACTIVE_MESSAGE_TRACKING.md     # Active message tracking
+│   ├── ACTIVE_MESSAGE_TRACKING.md     # Active message tracking
+│   └── REPLAY_ANIMATION_FEATURE.md    # Replay animation on click
 │
 ├── Archived Changelogs (moved to docs/archive/)
 │   ├── CHANGELOG_JAN02_2026.md        → CHANGELOG.md [2026-01-02]

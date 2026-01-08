@@ -80,51 +80,72 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
 
   // Helper function: Update tree highlighting based on path
   const updateTreeHighlight = (path, isTutorialMode = false) => {
-    if (!path || path.length === 0) return
     if (!svgRef.current) return
 
     const svg = svgRef.current
-    const finalNodeId = path[path.length - 1]
+    const finalNodeId = path && path.length > 0 ? path[path.length - 1] : null
     const highlightClass = isTutorialMode ? 'tutorial-highlight' : 'active'
     const otherClass = isTutorialMode ? 'active' : 'tutorial-highlight'
 
+    // IMPORTANT: Clear BOTH highlight classes first to force CSS transitions to restart
     svg.selectAll('.pie-chart')
+      .classed(highlightClass, false)
       .classed(otherClass, false)
       .classed('path-a', false)
       .classed('path-b', false)
       .classed('path-shared', false)
+
+    // Then reapply the highlight class (forces CSS transition restart)
+    svg.selectAll('.pie-chart')
       .classed(highlightClass, function() {
+        if (!path || path.length === 0) return false
         const nodeData = d3.select(this.parentNode).datum()
         return path.includes(nodeData.data.id)
       })
       .classed('final', function() {
+        if (!finalNodeId) return false
         const nodeData = d3.select(this.parentNode).datum()
         return !isTutorialMode && nodeData.data.id === finalNodeId
       })
 
+    // Clear classes from feature labels
     svg.selectAll('.node text.feature-label')
+      .classed(highlightClass, false)
       .classed(otherClass, false)
       .classed('path-a', false)
       .classed('path-b', false)
       .classed('path-shared', false)
-      .classed(highlightClass, d => path.includes(d.data.id))
 
+    // Reapply highlight to feature labels
+    svg.selectAll('.node text.feature-label')
+      .classed(highlightClass, d => path && path.length > 0 && path.includes(d.data.id))
+
+    // Clear classes from prediction labels
     svg.selectAll('.node text.prediction-label')
+      .classed(highlightClass, false)
       .classed(otherClass, false)
       .classed('path-a', false)
       .classed('path-b', false)
       .classed('path-shared', false)
-      .classed(highlightClass, d => path.includes(d.data.id))
 
+    // Reapply highlight to prediction labels
+    svg.selectAll('.node text.prediction-label')
+      .classed(highlightClass, d => path && path.length > 0 && path.includes(d.data.id))
+
+    // Clear classes from links
     svg.selectAll('.link')
+      .classed(highlightClass, false)
       .classed(otherClass, false)
       .classed('path-a', false)
       .classed('path-b', false)
       .classed('path-shared', false)
-      .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
+
+    // Reapply highlight to links
+    svg.selectAll('.link')
+      .classed(highlightClass, d => path && path.length > 0 && path.includes(d.source.data.id) && path.includes(d.target.data.id))
       .classed('survived', d => {
         // RULE: Always apply survived/died colors based on leaf value, even in tutorial mode
-        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
+        if (path && path.length > 0 && finalNodeId && path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
           const finalNode = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeId)
           return finalNode && finalNode.data.predicted_class === 1
         }
@@ -132,19 +153,30 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
       })
       .classed('died', d => {
         // RULE: Always apply survived/died colors based on leaf value, even in tutorial mode
-        if (path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
+        if (path && path.length > 0 && finalNodeId && path.includes(d.source.data.id) && path.includes(d.target.data.id)) {
           const finalNode = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeId)
           return finalNode && finalNode.data.predicted_class === 0
         }
         return false
       })
 
+    // Clear classes from edge labels
     svg.selectAll('.edge-label')
+      .classed(highlightClass, false)
       .classed(otherClass, false)
       .classed('path-a', false)
       .classed('path-b', false)
       .classed('path-shared', false)
-      .classed(highlightClass, d => path.includes(d.source.data.id) && path.includes(d.target.data.id))
+
+    // Force browser reflow to ensure classes are fully removed before reapplying
+    // This is critical for CSS transitions to restart
+    if (containerRef.current) {
+      void containerRef.current.offsetHeight
+    }
+
+    // Reapply highlight to edge labels
+    svg.selectAll('.edge-label')
+      .classed(highlightClass, d => path && path.length > 0 && path.includes(d.source.data.id) && path.includes(d.target.data.id))
   }
 
   // Zoom control functions
@@ -164,15 +196,19 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
   }
 
   // Helper function: Update tree highlighting for TWO paths (comparison mode)
-  const updateDualPathHighlight = (pathA, pathB) => {
+  const updateDualPathHighlight = (pathA, pathB, tutorialMode = null) => {
     if (!pathA || pathA.length === 0 || !pathB || pathB.length === 0) return
     if (!svgRef.current) return
 
     const svg = svgRef.current
 
-    // Get final node IDs to determine leaf values
-    const finalNodeIdA = pathA[pathA.length - 1]
-    const finalNodeIdB = pathB[pathB.length - 1]
+    // Apply highlightMode limiting if specified (for progressive animation)
+    const limitedPathA = getLimitedPath(pathA)
+    const limitedPathB = getLimitedPath(pathB)
+
+    // Get final node IDs to determine leaf values (use limited paths)
+    const finalNodeIdA = limitedPathA[limitedPathA.length - 1]
+    const finalNodeIdB = limitedPathB[limitedPathB.length - 1]
     const finalNodeA = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeIdA)
     const finalNodeB = d3TreeRef.current.descendants().find(n => n.data.id === finalNodeIdB)
 
@@ -180,10 +216,12 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     const pathAClass = finalNodeA ? finalNodeA.data.predicted_class : null
     const pathBClass = finalNodeB ? finalNodeB.data.predicted_class : null
 
-    const sharedNodes = pathA.filter(id => pathB.includes(id))
-    const uniqueA = pathA.filter(id => !pathB.includes(id))
-    const uniqueB = pathB.filter(id => !pathA.includes(id))
+    // Use limited paths for calculating shared/unique nodes
+    const sharedNodes = limitedPathA.filter(id => limitedPathB.includes(id))
+    const uniqueA = limitedPathA.filter(id => !limitedPathB.includes(id))
+    const uniqueB = limitedPathB.filter(id => !limitedPathA.includes(id))
 
+    // STEP 1: Clear ALL classes from all elements (forces CSS transitions to restart)
     svg.selectAll('.pie-chart')
       .classed('active', false)
       .classed('tutorial-highlight', false)
@@ -215,6 +253,13 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
       .classed('path-b', false)
       .classed('path-shared', false)
 
+    // Force browser reflow to ensure classes are fully removed before reapplying
+    // This is critical for CSS transitions to restart
+    if (containerRef.current) {
+      void containerRef.current.offsetHeight
+    }
+
+    // STEP 2: Reapply path-shared classes (separate operation to trigger CSS transitions)
     svg.selectAll('.pie-chart')
       .classed('path-shared', function() {
         const nodeData = d3.select(this.parentNode).datum()
@@ -230,6 +275,7 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     svg.selectAll('.edge-label')
       .classed('path-shared', d => sharedNodes.includes(d.source.data.id) && sharedNodes.includes(d.target.data.id))
 
+    // STEP 3: Apply path-a classes
     svg.selectAll('.pie-chart')
       .classed('path-a', function() {
         const nodeData = d3.select(this.parentNode).datum()
@@ -239,37 +285,24 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-a', d => uniqueA.includes(d.data.id))
 
-    // RULE: Path A links are colored based on the LEAF VALUE (survived/died), not cohort
+    // Apply path-a to links
     svg.selectAll('.link')
       .classed('path-a', d => {
-        const sourceInPath = pathA.includes(d.source.data.id)
-        const targetInPath = pathA.includes(d.target.data.id)
+        const sourceInPath = limitedPathA.includes(d.source.data.id)
+        const targetInPath = limitedPathA.includes(d.target.data.id)
         const targetUnique = uniqueA.includes(d.target.data.id)
         return sourceInPath && targetInPath && targetUnique
-      })
-      .classed('survived', d => {
-        const sourceInPath = pathA.includes(d.source.data.id)
-        const targetInPath = pathA.includes(d.target.data.id)
-        const targetUnique = uniqueA.includes(d.target.data.id)
-        // Color path A links as 'survived' if path A leads to survived (class 1)
-        return sourceInPath && targetInPath && targetUnique && pathAClass === 1
-      })
-      .classed('died', d => {
-        const sourceInPath = pathA.includes(d.source.data.id)
-        const targetInPath = pathA.includes(d.target.data.id)
-        const targetUnique = uniqueA.includes(d.target.data.id)
-        // Color path A links as 'died' if path A leads to died (class 0)
-        return sourceInPath && targetInPath && targetUnique && pathAClass === 0
       })
 
     svg.selectAll('.edge-label')
       .classed('path-a', d => {
-        const sourceInPath = pathA.includes(d.source.data.id)
-        const targetInPath = pathA.includes(d.target.data.id)
+        const sourceInPath = limitedPathA.includes(d.source.data.id)
+        const targetInPath = limitedPathA.includes(d.target.data.id)
         const targetUnique = uniqueA.includes(d.target.data.id)
         return sourceInPath && targetInPath && targetUnique
       })
 
+    // STEP 4: Apply path-b classes
     svg.selectAll('.pie-chart')
       .classed('path-b', function() {
         const nodeData = d3.select(this.parentNode).datum()
@@ -279,35 +312,52 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
     svg.selectAll('.node text.feature-label, .node text.prediction-label')
       .classed('path-b', d => uniqueB.includes(d.data.id))
 
-    // RULE: Path B links are colored based on the LEAF VALUE (survived/died), not cohort
+    // Apply path-b to links
     svg.selectAll('.link')
       .classed('path-b', d => {
-        const sourceInPath = pathB.includes(d.source.data.id)
-        const targetInPath = pathB.includes(d.target.data.id)
+        const sourceInPath = limitedPathB.includes(d.source.data.id)
+        const targetInPath = limitedPathB.includes(d.target.data.id)
         const targetUnique = uniqueB.includes(d.target.data.id)
         return sourceInPath && targetInPath && targetUnique
-      })
-      .classed('survived', d => {
-        const sourceInPath = pathB.includes(d.source.data.id)
-        const targetInPath = pathB.includes(d.target.data.id)
-        const targetUnique = uniqueB.includes(d.target.data.id)
-        // Color path B links as 'survived' if path B leads to survived (class 1)
-        return sourceInPath && targetInPath && targetUnique && pathBClass === 1
-      })
-      .classed('died', d => {
-        const sourceInPath = pathB.includes(d.source.data.id)
-        const targetInPath = pathB.includes(d.target.data.id)
-        const targetUnique = uniqueB.includes(d.target.data.id)
-        // Color path B links as 'died' if path B leads to died (class 0)
-        return sourceInPath && targetInPath && targetUnique && pathBClass === 0
       })
 
     svg.selectAll('.edge-label')
       .classed('path-b', d => {
-        const sourceInPath = pathB.includes(d.source.data.id)
-        const targetInPath = pathB.includes(d.target.data.id)
+        const sourceInPath = limitedPathB.includes(d.source.data.id)
+        const targetInPath = limitedPathB.includes(d.target.data.id)
         const targetUnique = uniqueB.includes(d.target.data.id)
         return sourceInPath && targetInPath && targetUnique
+      })
+
+    // STEP 5: Apply survived/died colors (RULE: based on LEAF VALUE, not cohort)
+    svg.selectAll('.link')
+      .classed('survived', d => {
+        const sourceInPathA = limitedPathA.includes(d.source.data.id)
+        const targetInPathA = limitedPathA.includes(d.target.data.id)
+        const targetUniqueA = uniqueA.includes(d.target.data.id)
+        const isPathA = sourceInPathA && targetInPathA && targetUniqueA
+
+        const sourceInPathB = limitedPathB.includes(d.source.data.id)
+        const targetInPathB = limitedPathB.includes(d.target.data.id)
+        const targetUniqueB = uniqueB.includes(d.target.data.id)
+        const isPathB = sourceInPathB && targetInPathB && targetUniqueB
+
+        // Color as 'survived' if either path leads to survived (class 1)
+        return (isPathA && pathAClass === 1) || (isPathB && pathBClass === 1)
+      })
+      .classed('died', d => {
+        const sourceInPathA = limitedPathA.includes(d.source.data.id)
+        const targetInPathA = limitedPathA.includes(d.target.data.id)
+        const targetUniqueA = uniqueA.includes(d.target.data.id)
+        const isPathA = sourceInPathA && targetInPathA && targetUniqueA
+
+        const sourceInPathB = limitedPathB.includes(d.source.data.id)
+        const targetInPathB = limitedPathB.includes(d.target.data.id)
+        const targetUniqueB = uniqueB.includes(d.target.data.id)
+        const isPathB = sourceInPathB && targetInPathB && targetUniqueB
+
+        // Color as 'died' if either path leads to died (class 0)
+        return (isPathA && pathAClass === 0) || (isPathB && pathBClass === 0)
       })
   }
 
