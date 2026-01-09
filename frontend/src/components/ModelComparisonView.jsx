@@ -233,8 +233,8 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
         )}
       </section>
 
-      {/* Model Comparison Summary */}
-      <section className="rounded-lg p-6 shadow-lg">
+      {/* Model Comparison Summary - TEMPORARILY HIDDEN */}
+      {/* <section className="rounded-lg p-6 shadow-lg">
         <ErrorBoundary errorTitle="Comparison Error">
           <ComparisonSummary
             decisionTreePred={predictions?.decision_tree}
@@ -243,7 +243,7 @@ function ModelComparisonView({ passengerData, highlightMode = null, highlightFea
             error={predictionsError}
           />
         </ErrorBoundary>
-      </section>
+      </section> */}
     </div>
   )
 }

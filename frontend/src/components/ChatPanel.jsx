@@ -131,9 +131,9 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
 
   // Suggestion buttons shown only when chat is empty
   const suggestionButtons = [
-    "Show me a woman in 1st class",
-    "What about a 3rd class male?",
-    "Compare women vs men"
+    "Compare women vs men",
+    "1st class male passenger",
+    "Children in 3rd class",
   ]
 
   // Show chips until user types their own message (clicking chips doesn't count)
@@ -234,34 +234,29 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
                             </svg>
                             <div className="flex-1">
                               <div className="mb-3 text-gray-100">{msg.content}</div>
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={onTutorialAdvance}
-                                  className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors"
-                                  style={{ backgroundColor: UI_COLORS.buttonPrimaryBg, color: UI_COLORS.buttonPrimaryText }}
-                                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBgHover)}
-                                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
-                                >
-                                  {msg.isLastStep ? 'Finish Tutorial' : 'Next'}
-                                </button>
-                                {!msg.isLastStep && (
+                              {!msg.isLastStep && (
+                                <div className="flex gap-3">
+                                  <button
+                                    onClick={onTutorialAdvance}
+                                    className="text-xs hover:underline"
+                                    style={{ color: UI_COLORS.linkColor }}
+                                  >
+                                    Next
+                                  </button>
                                   <button
                                     onClick={onTutorialSkip}
-                                    className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors"
-                                    style={{ backgroundColor: UI_COLORS.buttonTertiaryBg, color: UI_COLORS.buttonTertiaryText }}
-                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonTertiaryBgHover)}
-                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonTertiaryBg)}
+                                    className="text-xs hover:underline"
+                                    style={{ color: UI_COLORS.linkColor }}
                                   >
                                     Skip
                                   </button>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ) : (
                           // Regular text message
                           <div className="flex gap-2">
-                            <span className="text-gray-400 text-base">✨</span>
                             <div className="flex-1 text-gray-100">{msg.content}</div>
                           </div>
                         )}
@@ -316,12 +311,12 @@ function ChatPanel({ messages, onSendMessage, onPresetSelect, onPresetChat, onTu
               <div className="flex gap-2">
                 <button
                   onClick={onTutorialStart}
-                  className="px-3 py-1.5 text-xs text-white rounded-full transition-colors"
-                  style={{ backgroundColor: UI_COLORS.buttonPrimaryBg }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBgHover)}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = UI_COLORS.buttonPrimaryBg)}
+                  className="px-3 py-1.5 text-xs rounded-full transition-colors"
+                  style={{ backgroundColor: UI_COLORS.chipBg, color: UI_COLORS.chipText }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = UI_COLORS.chipBgHover; e.currentTarget.style.color = UI_COLORS.chipTextHover }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = UI_COLORS.chipBg; e.currentTarget.style.color = UI_COLORS.chipText }}
                 >
-                  📚 Start Tutorial
+                  Start Tutorial
                 </button>
               </div>
             </>
