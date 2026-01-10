@@ -225,8 +225,8 @@ export function detectComparison(queryText) {
   }
 
   // 1st class vs 3rd class (simple)
-  if (/\b(1st|first)\s+class\s+(vs\.?|versus|against|and|or)\s+(3rd|third)\s+class\b/i.test(queryLower) ||
-      /\b(3rd|third)\s+class\s+(vs\.?|versus|against|and|or)\s+(1st|first)\s+class\b/i.test(queryLower)) {
+  if (/\b(1st|first)[\s-]?class\s+(vs\.?|versus|against|and|or)\s+(3rd|third)[\s-]?class\b/i.test(queryLower) ||
+      /\b(3rd|third)[\s-]?class\s+(vs\.?|versus|against|and|or)\s+(1st|first)[\s-]?class\b/i.test(queryLower)) {
     return {
       isComparison: true,
       cohortA: { sex: 0, pclass: 1, age: 30, fare: 84 },
@@ -257,11 +257,11 @@ export function parsePassengerQuery(queryText) {
 
   // Parse class
   let pclass = null
-  if (/1st class|first class|upper class|wealthy|rich/.test(queryLower)) {
+  if (/1st[\s-]?class|first[\s-]?class|upper[\s-]?class|wealthy|rich/.test(queryLower)) {
     pclass = 1
-  } else if (/2nd class|second class|middle class/.test(queryLower)) {
+  } else if (/2nd[\s-]?class|second[\s-]?class|middle[\s-]?class/.test(queryLower)) {
     pclass = 2
-  } else if (/3rd class|third class|lower class|poor|cheap/.test(queryLower)) {
+  } else if (/3rd[\s-]?class|third[\s-]?class|lower[\s-]?class|poor|cheap/.test(queryLower)) {
     pclass = 3
   }
 

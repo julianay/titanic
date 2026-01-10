@@ -8,6 +8,7 @@ Users can now compare survival rates between different passenger cohorts directl
 3. **Dual SHAP waterfall charts** (NEW!) showing feature contributions for both cohorts side-by-side
 
 **UPDATES**:
+- **Jan 10, 2026**: **Fixed hyphenated class input** - "1st-class male passenger" now correctly parses as 1st class instead of defaulting to 2nd class. Updated regex patterns to accept hyphens, spaces, or no separator between class level and "class".
 - **Dec 20, 2025 (Late Evening)**: **Fixed comparison detection** - "kids vs elderly" now works! Updated pattern to recognize "kids", "children", "elderly", "seniors"
 - **Dec 20, 2025 (PM)**: **Dual SHAP waterfall charts** - Comparison mode now shows side-by-side SHAP explanations for both cohorts!
 - **Dec 20, 2025 (AM)**: **Fixed comparison mode clearing** - Comparison paths now properly clear when switching to single path queries
@@ -283,6 +284,82 @@ const handlePresetChat = (preset) => {
 - ✅ Multiple switches between modes → works consistently
 
 **Impact**: All transition paths now work seamlessly, improving user experience when exploring different queries.
+
+### Bug Fix: Hyphenated Class Input (Jan 10, 2026)
+
+Fixed an issue where queries with hyphenated class notation (e.g., "1st-class male passenger") were not correctly parsed, causing the system to default to 2nd class instead of recognizing the intended class.
+
+**Problem**:
+1. User types "1st-class male passenger" in chat
+2. System parses the query but fails to recognize "1st-class" as 1st class
+3. Bug: Parser defaults to 2nd class (pclass: 2) instead of 1st class (pclass: 1)
+4. Result: Wrong cohort displayed, leading to incorrect predictions and visualizations
+
+**Root Cause**:
+- The regex patterns in `parsePassengerQuery()` only matched spaces between class level and "class"
+- Pattern `/1st class/` matched "1st class" but not "1st-class"
+- Users naturally type both formats, but only the space-separated version worked
+- Similarly affected comparison detection patterns
+
+**Examples of Affected Inputs**:
+- "1st-class male passenger" → Incorrectly parsed as 2nd class
+- "2nd-class woman" → Incorrectly parsed as 2nd class (coincidentally correct)
+- "3rd-class children" → Incorrectly parsed as 2nd class
+- "1st-class vs 3rd-class" → Comparison not detected correctly
+
+**Solution**:
+
+Updated regex patterns to accept hyphens, spaces, or no separator using `[\s-]?` (optional space or hyphen):
+
+**Fix 1: Main class parsing** (`cohortPatterns.js` lines 260-265)
+```javascript
+// Before:
+if (/1st class|first class|upper class|wealthy|rich/.test(queryLower)) {
+  pclass = 1
+}
+
+// After:
+if (/1st[\s-]?class|first[\s-]?class|upper[\s-]?class|wealthy|rich/.test(queryLower)) {
+  pclass = 1
+}
+```
+
+Applied to all three class levels:
+- 1st class: `/1st[\s-]?class|first[\s-]?class|upper[\s-]?class/`
+- 2nd class: `/2nd[\s-]?class|second[\s-]?class|middle[\s-]?class/`
+- 3rd class: `/3rd[\s-]?class|third[\s-]?class|lower[\s-]?class/`
+
+**Fix 2: Comparison detection patterns** (`cohortPatterns.js` lines 228-229)
+```javascript
+// Before:
+if (/\b(1st|first)\s+class\s+(vs\.?|versus|against|and|or)\s+(3rd|third)\s+class\b/i.test(queryLower))
+
+// After:
+if (/\b(1st|first)[\s-]?class\s+(vs\.?|versus|against|and|or)\s+(3rd|third)[\s-]?class\b/i.test(queryLower))
+```
+
+**Files Modified**:
+- `/frontend/src/utils/cohortPatterns.js` (lines 260-265, 228-229)
+  - Updated class parsing regex patterns in `parsePassengerQuery()`
+  - Updated comparison detection patterns in `detectComparison()`
+
+**Supported Formats**:
+All of these now work correctly:
+- ✅ "1st class" (with space)
+- ✅ "1st-class" (with hyphen)
+- ✅ "1stclass" (no separator)
+- ✅ "first class" (word form with space)
+- ✅ "first-class" (word form with hyphen)
+
+**Testing**:
+- ✅ "1st-class male passenger" → Correctly parsed as 1st class
+- ✅ "3rd-class children" → Correctly parsed as 3rd class
+- ✅ "2nd-class woman" → Correctly parsed as 2nd class
+- ✅ "1st-class vs 3rd-class" → Comparison correctly detected
+- ✅ "first-class women vs third-class men" → Comparison works
+- ✅ Existing space-separated format still works ("1st class")
+
+**Impact**: Natural language parsing is now more robust and handles common variations in user input, improving the user experience and reducing confusion from unexpected defaults.
 
 ### Chat-Centric Predictions (Dec 19, 2025)
 
