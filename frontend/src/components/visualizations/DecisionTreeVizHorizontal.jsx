@@ -603,11 +603,19 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
         .attr("dy", 0)
         .text(outcome)
 
-      // Second line: survival rate
+      // Second line: opening parenthesis (not bold)
       textGroup.append("tspan")
         .attr("x", radius + 10)
         .attr("dy", "1.2em")
-        .text(`(${survivalRate}%)`)
+        .text("(")
+
+      // Third line: survival rate (bold)
+      textGroup.append("tspan")
+        .text(`${survivalRate}%`)
+
+      // Fourth line: closing parenthesis (not bold)
+      textGroup.append("tspan")
+        .text(")")
     })
       // Opacity controlled by CSS classes only
 
@@ -751,12 +759,12 @@ function DecisionTreeVizHorizontal({ treeData, passengerValues, width, height = 
           filter: ${TREE_EFFECTS.labelShadow};
         }
 
-        /* Keep survival rate (second tspan) bold */
-        .node text.prediction-label.active tspan:nth-child(2),
-        .node text.prediction-label.tutorial-highlight tspan:nth-child(2),
-        .node text.prediction-label.path-a tspan:nth-child(2),
-        .node text.prediction-label.path-b tspan:nth-child(2),
-        .node text.prediction-label.path-shared tspan:nth-child(2) {
+        /* Keep survival rate (third tspan) bold, not parentheses */
+        .node text.prediction-label.active tspan:nth-child(3),
+        .node text.prediction-label.tutorial-highlight tspan:nth-child(3),
+        .node text.prediction-label.path-a tspan:nth-child(3),
+        .node text.prediction-label.path-b tspan:nth-child(3),
+        .node text.prediction-label.path-shared tspan:nth-child(3) {
           font-weight: ${FONT_WEIGHTS.predictionLabelHighlight};
         }
 

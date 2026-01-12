@@ -72,14 +72,14 @@ export const UI_COLORS = {
   survivedBorder: 'rgba(184, 240, 110, 0)',
 
   // Died colors (low probability)
-  diedText: '#85785B',            // Same as died in visualizations
+  diedText: 'rgb(203, 152, 42)',            // Same as died in visualizations
   diedBg: 'rgba(240, 154, 72, 0)',
   diedBorder: 'rgba(240, 154, 72, 0)',
 
   // Uncertain colors (medium probability)
-  uncertainText: '#fbbf24',       // Yellow/amber
-  uncertainBg: 'rgba(251, 191, 36, 0.15)',
-  uncertainBorder: 'rgba(251, 191, 36, 0.5)',
+  uncertainText: '#a7c1be',       // Yellow/amber
+  uncertainBg: 'rgba(251, 191, 36, 0.0)',
+  uncertainBorder: 'rgba(251, 191, 36, 0.0)',
 
   // Section backgrounds
   sectionBg: '#000000',           // Main section background (gray-800)

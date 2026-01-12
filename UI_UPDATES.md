@@ -1,7 +1,86 @@
-# UI Updates - January 9, 2026
+# UI Updates
 
-## Summary
-This document tracks recent UI improvements focused on simplifying the tutorial experience and cleaning up the interface.
+## January 12, 2026 - Prediction Label Color and Typography Updates
+
+### Summary
+Enhanced prediction label styling across visualizations for better color consistency and typography hierarchy.
+
+### Changes Made
+
+#### 1. Waterfall Chart - Dynamic Color Based on Probability
+**File:** `frontend/src/components/visualizations/SHAPWaterfall.jsx`
+
+- Added `getProbabilityColor()` function (lines 33-41) that matches PredictionCard color logic:
+  - `> 70%`: Survived color (turquoise - `#02AE9B`)
+  - `40-70%`: Uncertain color (amber - `#fbbf24`)
+  - `< 40%`: Died color (warm gray - `#85785B`)
+- Updated title prediction labels to use dynamic color (lines 498-502)
+- Updated chart-side prediction labels (percentage and outcome) to use dynamic color (lines 397-413)
+- Made parentheses use same color as prediction text instead of white (line 502)
+
+#### 2. Waterfall Chart - Increased Label Font Size
+**File:** `frontend/src/components/visualizations/SHAPWaterfall.jsx` (lines 382-413)
+
+- Increased final prediction labels from 9-10px to 12px
+- Labels now match axis label size for better readability
+- Applied to all three labels: SHAP value, percentage, and outcome
+
+#### 3. Typography - Non-Bold Parentheses
+**Files:**
+- `frontend/src/components/visualizations/SHAPWaterfall.jsx` (line 502)
+- `frontend/src/components/visualizations/DecisionTreeViz.jsx` (lines 591-603, 747-753)
+- `frontend/src/components/visualizations/DecisionTreeVizHorizontal.jsx` (lines 606-618, 762-768)
+
+**Changes:**
+- Split prediction labels into separate tspan elements for fine-grained styling
+- Opening parenthesis: normal weight
+- Percentage value: bold weight
+- Closing parenthesis: normal weight
+- Updated CSS selectors from `nth-child(2)` to `nth-child(3)` to target correct element
+
+**Example:** `Survived (99%)` → "Survived" is bold, "99%" is bold, "(" and ")" are normal weight
+
+#### 4. Comparison Mode - Added Person Icon
+**File:** `frontend/src/components/ModelComparisonView.jsx` (lines 57-88)
+
+- Added person icon to comparison mode header
+- Icon now appears before cohort labels (e.g., "Women vs Men")
+- Provides visual consistency between single and comparison modes
+- Makes cohort information clearer
+
+### Technical Details
+
+#### Color Matching Logic
+The waterfall chart now uses the exact same color logic as prediction cards:
+```javascript
+const getProbabilityColor = (probability) => {
+  if (probability > 70) return UI_COLORS.survivedText
+  if (probability >= 40) return UI_COLORS.uncertainText
+  return UI_COLORS.diedText
+}
+```
+
+#### Typography Hierarchy
+```
+Prediction Text:
+- "Survived/Died": normal weight (inherited from parent)
+- "(": normal weight, colored
+- "99%": bold weight, colored
+- ")": normal weight, colored
+```
+
+### Files Modified
+1. `frontend/src/components/visualizations/SHAPWaterfall.jsx`
+2. `frontend/src/components/visualizations/DecisionTreeViz.jsx`
+3. `frontend/src/components/visualizations/DecisionTreeVizHorizontal.jsx`
+4. `frontend/src/components/ModelComparisonView.jsx`
+
+---
+
+## January 9, 2026 - Tutorial Simplification
+
+### Summary
+UI improvements focused on simplifying the tutorial experience and cleaning up the interface.
 
 ## Changes Made
 

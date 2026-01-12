@@ -15,7 +15,7 @@
  * - GlobalFeatureImportance.jsx (feature importance bar chart)
  *
  * Quick Reference:
- * - Died (class 0): Warm Gray (#85785B) - used in tree & SHAP negative
+ * - Died (class 0): Warm Gray (#9e8b62) - used in tree & SHAP negative
  * - Survived (class 1): Turquoise (#02AE9B) - used in tree & SHAP positive
  * - Tutorial/Highlight: Gold (#ffd700)
  *
@@ -60,7 +60,7 @@ export const FONT_WEIGHTS = {
 
 export const TREE_COLORS = {
   // Class colors - used in pie charts and path highlighting
-  died: '#85785B',        // Orange for died/class 0
+  died: '#9e8b62',        // Orange for died/class 0
   survived: '#02AE9B',    // Light green for survived/class 1
 
   // Path highlighting colors
@@ -71,7 +71,7 @@ export const TREE_COLORS = {
   // RULE: Path colors ALWAYS reflect the leaf value (survived/died), not the cohort
   // These colors are used for nodes/labels, but path links will override to use survived/died colors
   comparisonA: '#02AE9B',      // Green (survived color) for path A (fallback)
-  comparisonB: '#85785B',      // Orange (died color) for path B (fallback)
+  comparisonB: '#9e8b62',      // Orange (died color) for path B (fallback)
   comparisonShared: '#02AE9B', // Gold for shared paths (stands out from both)
 
   // General UI colors
@@ -92,8 +92,8 @@ export const SHAP_COLORS = {
   // Positive = pushes toward survived (class 1), Negative = pushes toward died (class 0)
   positive: '#02AE9B',         // Same as survived - for positive impact (increases survival prediction)
   positiveStroke: '#44ffe9ff',   // Lighter version for stroke
-  negative: '#85785B',         // Same as died - for negative impact (decreases survival prediction)
-  negativeStroke: '#d29b26ff',   // Lighter version for stroke
+  negative: '#9e8b62',         // Same as died - for negative impact (decreases survival prediction)
+  negativeStroke: 'rgb(203, 152, 42)',   // Lighter version for stroke
 
   // Highlighting
   highlight: '#ffffff',        // Gold for highlighted bars

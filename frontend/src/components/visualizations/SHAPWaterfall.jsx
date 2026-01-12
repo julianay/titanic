@@ -29,6 +29,17 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
     return Math.round(probability * 100)
   }
 
+  // Get color based on probability (matching PredictionCard logic)
+  const getProbabilityColor = (probability) => {
+    if (probability > 70) {
+      return UI_COLORS.survivedText
+    }
+    if (probability >= 40) {
+      return UI_COLORS.uncertainText
+    }
+    return UI_COLORS.diedText
+  }
+
   // Format passenger description for title
   const formatPassengerDescription = (data) => {
     if (!data) return "SHAP Waterfall"
@@ -386,18 +397,19 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .attr("y", finalLineY - 5)
       .attr("text-anchor", "start")
       .attr("fill", SHAP_COLORS.text)
-      .attr("font-size", "10px")
+      .attr("font-size", "12px")
       .attr("font-weight", "bold")
       .text(`${finalPrediction.toFixed(3)}`)
 
     // Add label for survival rate
+    const probabilityColor = getProbabilityColor(finalPercent)
     chart.append("text")
       .attr("class", "final-prediction-percent")
       .attr("x", finalLineEndX + 5)
       .attr("y", finalLineY + 10)
       .attr("text-anchor", "start")
-      .attr("fill", SHAP_COLORS.text)
-      .attr("font-size", "10px")
+      .attr("fill", probabilityColor)
+      .attr("font-size", "12px")
       .attr("font-weight", "bold")
       .text(`${finalPercent}%`)
 
@@ -408,8 +420,8 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
       .attr("x", finalLineEndX + 5)
       .attr("y", finalLineY + 22)
       .attr("text-anchor", "start")
-      .attr("fill", SHAP_COLORS.text)
-      .attr("font-size", "9px")
+      .attr("fill", probabilityColor)
+      .attr("font-size", "12px")
       .text(outcomeLabel)
 
     // Add X axis with feature labels (feature names only, no values)
@@ -497,8 +509,10 @@ function SHAPWaterfall({ waterfallData, baseValue, finalPrediction, highlightFea
           )}
           {formatPassengerDescription(passengerData)}
           {' — '}
-          {logOddsToPercent(finalPrediction) >= 50 ? 'Survived' : 'Died'}{' '}
-          (<span style={{ fontWeight: 'bold' }}>{logOddsToPercent(finalPrediction)}%</span>)
+          <span style={{ color: getProbabilityColor(logOddsToPercent(finalPrediction)) }}>
+            {logOddsToPercent(finalPrediction) >= 50 ? 'Survived' : 'Died'}
+          </span>{' '}
+          <span style={{ fontWeight: 'normal', color: getProbabilityColor(logOddsToPercent(finalPrediction)) }}>(</span><span style={{ fontWeight: 'bold', color: getProbabilityColor(logOddsToPercent(finalPrediction)) }}>{logOddsToPercent(finalPrediction)}%</span><span style={{ fontWeight: 'normal', color: getProbabilityColor(logOddsToPercent(finalPrediction)) }}>)</span>
         </h3>
         <div ref={containerRef} className="w-full" />
       </div>
